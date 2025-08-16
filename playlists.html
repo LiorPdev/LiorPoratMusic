@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>פלייליסטים ישראליים איכותיים</title>
+  <meta name="description" content="פתחו פלייליסטים באפליקציית Spotify עם נפילה אוטומטית לדפדפן" />
+  <link rel="preconnect" href="https://open.spotify.com">
+  <link rel="preconnect" href="https://i.scdn.co">
+
+  <style>
+    :root { --bg:#0f1115; --card:#1b1f2a; --text:#eef2ff; --muted:#a5b0c4; --accent:#1DB954 }
+    * { box-sizing:border-box }
+    body { margin:0; font-family:system-ui, -apple-system, Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--text) }
+    header { padding:28px 16px 8px; text-align:center }
+    header h1 { margin:0 0 6px; font-size:clamp(23px, 3.5vw, 30px) }
+    header p { margin:0; color:var(--muted); font-size:18px }
+    .container { max-width:1000px; margin:18px auto 60px; padding:0 14px }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px }
+
+    .card { background:var(--card); border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.35); display:flex; flex-direction:column; transition:transform .15s ease, box-shadow .15s ease }
+    .card:hover { transform:translateY(-2px); box-shadow:0 14px 36px rgba(0,0,0,.45) }
+
+    .thumb { background:#000; display:flex; justify-content:center; align-items:center; overflow:hidden; max-width:60%; margin:18px auto 0; border-radius:12px }
+    .img { width:100%; height:auto; display:block; }
+    .skeleton { width:100%; padding-top:100%; background:linear-gradient(90deg,#222 25%,#2a2a2a 37%,#222 63%); background-size:400% 100%; animation:sh 1.2s ease-in-out infinite }
+    @keyframes sh { 0%{background-position:100% 0} 100%{background-position:0 0} }
+
+    .body { padding:14px 14px 18px }
+    .title { margin:0 0 10px; font-weight:700; font-size:16px; line-height:1.3 }
+    .btn { display:block; text-align:center; text-decoration:none; background:var(--accent); color:#0b0f12; padding:12px 14px; border-radius:10px; font-weight:700; font-size:14px; transition:opacity .15s ease }
+    .btn:hover { opacity:.9 }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>פלייליסטים ישראליים איכותיים</h1>
+    <p>Spotify</p>
+  </header>
+
+  <main class="container">
+    <section class="grid" id="list"></section>
+  </main>
+
+  <script>
+    // put your local images under /img and update the file names below
+    const PLAYLISTS = [
+      { name: "ישראלי שקט ורגוע", url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU", image: "img/quiet.jpg" },
+      { name: "ישראלי איכותי לסופש ונסיעה רגועים", url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl", image: "img/drive.jpg" },
+      { name: "בלוז ישראלי", url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq", image: "img/blues.jpg" },
+      { name: "רוק ישראלי קצבי", url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK", image: "img/rock.jpg" },
+      { name: "גרוב ישראלי קצבי", url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb", image: "img/groove.jpg" },
+      { name: "המילים במרכז", url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq", image: "img/words.jpg" },
+    ];
+
+    const toId = url => (url.match(/playlist\/([a-zA-Z0-9]+)/) || [,""])[1];
+
+    function openInApp(playlistUrl) {
+      const id = toId(playlistUrl);
+      const web = playlistUrl;
+      const uri = `spotify://playlist/${id}`;
+      const ua = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+      if (isAndroid) {
+        const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(web)};end`;
+        location.href = intent;
+        return;
+      }
+      if (isIOS) {
+        const t = Date.now();
+        location.href = uri;
+        setTimeout(() => { if (Date.now() - t < 1500) location.href = web }, 1200);
+        return;
+      }
+      location.href = web;
+    }
+
+    function cardTemplate({ name, url, thumbnail }) {
+      const id = toId(url);
+      const img = thumbnail || "";
+      return `
+        <article class="card" data-id="${id}">
+          <div class="thumb">
+            ${img
+              ? `<img class="img" alt="${name}" src="${img}" loading="lazy" width="512" height="512">`
+              : `<div class="skeleton" aria-hidden="true"></div>`}
+          </div>
+          <div class="body">
+            <a class="btn" href="#" data-open-app="${url}">פתח פלייליסט</a>
+          </div>
+        </article>
+      `;
+    }
+
+    async function fetchThumb(url) {
+      try {
+        const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`);
+        if (!res.ok) throw new Error("oEmbed failed");
+        const data = await res.json();
+        return data.thumbnail_url || "";
+      } catch { return "" }
+    }
+
+    (async function render() {
+      // prefer local image, otherwise fetch from Spotify oEmbed
+      const thumbs = await Promise.all(
+        PLAYLISTS.map(async p => p.image ? p.image : await fetchThumb(p.url))
+      );
+      const html = PLAYLISTS.map((p, i) => cardTemplate({ ...p, thumbnail: thumbs[i] })).join("");
+      document.getElementById("list").innerHTML = html;
+
+      document.querySelectorAll("[data-open-app]").forEach(btn => {
+        btn.addEventListener("click", e => {
+          e.preventDefault();
+          openInApp(btn.getAttribute("data-open-app"));
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
