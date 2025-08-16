@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>מילות שירים</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .songs {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 16px
+    }
+
+    .song-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #1b1f2a;
+      margin-bottom: 12px
+    }
+
+    .song-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #eef2ff;
+      width: 100%
+    }
+
+    .song-thumb {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      object-fit: cover
+    }
+
+    .song-name {
+      font-size: 18px;
+      font-weight: 600
+    }
+  </style>
+</head>
+
+<body>
+  <div class="back-link">
+    <a href="index.html">⟶ חזרה לדף ראשי</a>
+  </div>
+
+  <main class="songs" id="songs"></main>
+
+  <script>
+    const songs = [
+      "בלוז לשבת",
+      "קלישאות"
+    ];
+
+    const collator = new Intl.Collator('he', { sensitivity: 'base', numeric: true });
+    songs.sort(collator.compare);
+
+    const el = document.getElementById('songs');
+    songs.forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'song-item';
+
+      const a = document.createElement('a');
+      a.href = `lyrics/${name}.html`;
+
+      const img = document.createElement('img');
+      img.src = `lyrics/${name}.jpg`;
+      img.alt = name;
+      img.className = 'song-thumb';
+
+      const span = document.createElement('span');
+      span.className = 'song-name';
+      span.textContent = name;
+
+      a.appendChild(img);
+      a.appendChild(span);
+      row.appendChild(a);
+      el.appendChild(row);
+    });
+  </script>
+</body>
+
+</html>

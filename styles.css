@@ -80,28 +80,81 @@ h1 {
 }
 
 .btn-youtube {
-    background-color: #ecedf0;
-    color: #121212;
+    background-color: #FF0000;
+    color: #fff;
 }
 
 .btn-youtube i {
-    color: #FF0000;
+    color: #fff;
 }
 
 .btn-youtube:hover {
-    background-color: #f7f8fa;
+    background-color: #cc0000;
 }
 
 .btn-apple {
-    background-color: #ecedf0;
-    color: #121212;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #ddd;
 }
 
-.btn-apple-img{
+.btn-apple i {
+    color: #FA57C1;
+}
+
+.btn-apple:hover {
+    background-color: #f2f2f2;
+}
+
+
+.btn-apple-img {
     width: 20px;
     height: 20px;
 }
 
 .btn-apple:hover {
     background-color: #f7f8fa;
+}
+
+.back-link {
+    max-width: 720px;
+    margin: 20px auto 0;
+    padding: 0 16px;
+    font-size: 16px;
+}
+
+.back-link a {
+    color: #a5b0c4;
+    text-decoration: none;
+}
+
+.back-link a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.lyrics-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 40px;
+    font-size: 22px;
+    color: #a5b0c4;
+    text-decoration: none;
+}
+
+.lyrics-text {
+    text-decoration: underline;
+}
+
+.lyrics-link:hover {
+    color: #ffffff;
+}
+
+.credits {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #a5b0c4;
+    text-align: right;
+    line-height: 1.5;
 }
