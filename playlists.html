@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>פלייליסטים ישראליים איכותיים</title>
   <meta name="description" content="פתחו פלייליסטים באפליקציית Spotify />
-  <link rel="preconnect" href="https://open.spotify.com">
+  <link rel=" preconnect" href="https://open.spotify.com">
   <link rel="preconnect" href="https://i.scdn.co">
 
   <style>
@@ -122,12 +122,14 @@
       display: block;
       text-align: center;
       text-decoration: none;
-      background: var(--accent);
-      color: #0b0f12;
+      background: #3bb273;
+      color: white;
       padding: 12px 14px;
       border-radius: 10px;
       font-weight: 700;
       font-size: 14px;
+      width: 85%;
+      margin: 0 auto;
       transition: opacity .15s ease
     }
 
@@ -140,7 +142,6 @@
 <body>
   <header>
     <h1>פלייליסטים ישראליים איכותיים</h1>
-    <p>Spotify</p>
   </header>
 
   <main class="container">
@@ -155,7 +156,7 @@
       { name: "בלוז ישראלי", url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq", image: "img/blues.png" },
       { name: "רוק ישראלי קצבי", url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK", image: "img/rock.jpg" },
       { name: "גרוב ישראלי קצבי", url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb", image: "img/groove.png" },
-      { name: "המילים במרכז", url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq", image: "img/words.png" },
+      { name: "Lo-fi מרגיע", url: "https://open.spotify.com/playlist/7pKTU5iEu9jRLHpHkCb7aN", image: "img/LoFi.jpg" },
     ];
 
     const toId = url => (url.match(/playlist\/([a-zA-Z0-9]+)/) || [, ""])[1];
@@ -193,7 +194,7 @@
           : `<div class="skeleton" aria-hidden="true"></div>`}
       </div>
       <div class="body">
-        <a class="btn" href="#" data-open-app="${url}">פתח פלייליסט</a>
+        <a class="btn" href="#" data-open-app="${url}">האזנה בספוטיפיי</a>
       </div>
     </article>
   `;
