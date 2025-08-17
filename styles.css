@@ -115,3 +115,15 @@ a.back-link:hover,
     color: #ffffff;
     text-decoration: underline;
 }
+
+.share-link {
+  display: inline-block;
+  font-size: 18px;
+  color: #eef2ff;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.share-link:hover {
+  color: #1DB954;
+}
