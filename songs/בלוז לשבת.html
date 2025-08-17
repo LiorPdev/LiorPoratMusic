@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>בלוז לשבת</title>
+  <meta name="description" content="מילים לשיר - ליאור פורת" />
   <link rel="stylesheet" href="../styles.css" />
   <link rel="stylesheet" href="../song.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
 </head>
-
 <body>
   <main class="wrap">
-    <a href="../songs.html" class="close-btn" aria-label="חזרה">×</a>
-    <h1> <span class="title">בלוז לשבת</span> </h1>
+    <script>
+      window.SONG = {
+        spotifyId: '6fdOj5yM8PnMrLIWsh6ZGk',
+        appleId: '1830984515',
+        youtubeId: 'wnHWE5PoL3k',
+        lyricsBy: 'אדי פישמן',
+        musicBy: 'ליאור פורת'
+      };
+    </script>
 
-    <pre>
+    <script type="text/plain" id="lyrics">
 שבת בבוקר אין לי שום אשליות
 ברקע התראה
 של חמש עשרה שניות
@@ -44,37 +50,10 @@
 הגשם מפלח את הדממה
 מה עוד נותר שם
 שאריות של נחמה
-    </pre>
-
-    <div class="credits">
-      מילים: אדי פישמן<br>
-      לחן: ליאור פורת
-    </div>
-
-    <span class="icons">
-      האזינו לשיר
-      <a href="https://open.spotify.com/track/6fdOj5yM8PnMrLIWsh6ZGk" target="_blank" class="song-icon">
-        <i class="fa-brands fa-spotify"></i>
-      </a>
-      <a href="https://music.apple.com/il/song/%D7%91%D7%9C%D7%95%D7%96-%D7%9C%D7%A9%D7%91%D7%AA/1830984515"
-        target="_blank" class="song-icon">
-        <i class="fa-brands fa-apple"></i>
-      </a>
-      <a href="https://youtu.be/wnHWE5PoL3k" target="_blank" class="song-icon">
-        <i class="fa-brands fa-youtube"></i>
-      </a>
-    </span>
-
-    <div style="height:20px;"></div>
-    <a href="#" class="share-link" id="shareBtn" aria-label="שתף עמוד זה">
-      <i class="fa-solid fa-share-nodes"></i>
-      שיתוף
-    </a>
-    <div style="height:20px;"></div>
-    <a href="../songs.html" class="back-link">חזרה לרשימת השירים</a>
-
-    <script src="../script.js"></script>
+    </script>
   </main>
-</body>
 
+  <script src="../songPage.js"></script>
+  <script src="../script.js"></script>
+</body>
 </html>

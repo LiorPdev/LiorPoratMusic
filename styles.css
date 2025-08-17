@@ -99,7 +99,7 @@ a.back-link,
 .back-link a {
     display: inline-block;
     font-size: 18px;
-    color: #eef2ffd0;
+    color: #EEF2FF;
     text-decoration: none;
     transition: color .2s;
 }
@@ -114,7 +114,7 @@ a.back-link:hover,
 .share-link {
   display: inline-block;
   font-size: 18px;
-  color: #eef2ff;
+  color: #eef2ffd0;
   text-decoration: none;
   transition: color 0.2s;
 }
