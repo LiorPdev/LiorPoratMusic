@@ -17,13 +17,11 @@
 .lyrics-link {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     margin-top: 40px;
-    font-size: 22px;
-    color: #a5b0c4;
+    font-size: 24px;
+    color: #c8ced8;
     text-decoration: none;
 }
-
-.lyrics-text { text-decoration: underline; }
 
 .lyrics-link:hover { color: #ffffff; }
