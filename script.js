@@ -2,20 +2,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const shareBtn = document.getElementById('shareBtn');
   if (!shareBtn) return;
 
-  shareBtn.addEventListener('click', async e => {
-    e.preventDefault();
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: document.title,
-          text: 'Check this out',
-          url: window.location.href
-        });
-      } catch (err) {
-        // user canceled or error
-      }
+  const payload = {
+    title: document.title || 'Share',
+    text: 'Check this out',
+    url: window.location.href
+  };
+
+  function fallbackCopy() {
+    const url = window.location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url)
+        .then(() => alert('הקישור הועתק'))
+        .catch(() => prompt('העתיקו את הקישור', url));
     } else {
-      alert('שיתוף מובנה לא נתמך בדפדפן הזה');
+      prompt('העתיקו את הקישור', url);
     }
+  }
+
+  function doShare() {
+    if (navigator.share && (!navigator.canShare || navigator.canShare(payload))) {
+      navigator.share(payload).catch(() => {
+      });
+    } else {
+      fallbackCopy();
+    }
+  }
+
+  shareBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    doShare();
   });
 });
