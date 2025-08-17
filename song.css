@@ -1,0 +1,52 @@
+body {
+  font-family: 'Noto Sans Hebrew', Arial, sans-serif;
+  font-size: 18px;
+}
+
+.wrap {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 16px;
+  color: #eef2ff
+}
+
+.wrap h1 {
+  font-size: 28px;
+  margin-bottom: 16px
+}
+
+.wrap pre {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  background: #1b1f2a;
+  padding: 16px;
+  border-radius: 12px
+}
+
+.wrap a:not(.back-link) { color: #a5b0c4; text-decoration: none; }
+
+
+h1 a:nth-of-type(2) {
+  margin-right: 30px;
+}
+
+.song-icon {
+  margin-right: 12px;
+  font-size: 20px;
+  color: #a5b0c4;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.song-icon:hover {
+  color: #ffffff;
+}
+
+
+.credits {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #a5b0c4;
+  text-align: right;
+  line-height: 1.5;
+}
