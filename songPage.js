@@ -40,8 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     main.appendChild(pre);
   }
 
-  // credits (show whichever exists)
-  if (cfg.lyricsBy || cfg.musicBy) {
+  // credits
     const cr = document.createElement('div');
     cr.className = 'credits';
     if (cfg.lyricsBy) {
@@ -49,13 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
       line1.textContent = 'מילים: ' + cfg.lyricsBy;
       cr.appendChild(line1);
     }
-    if (cfg.musicBy) {
-      const line2 = document.createElement('div');
-      line2.textContent = 'לחן: ' + cfg.musicBy;
-      cr.appendChild(line2);
-    }
     main.appendChild(cr);
-  }
 
   // listen icons
   const icons = document.createElement('span');
