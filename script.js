@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const payload = {
     title: document.title || 'Share',
-    text: 'Check this out',
+    text: '',
     url: window.location.href
   };
 
