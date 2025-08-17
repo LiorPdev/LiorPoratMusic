@@ -48,6 +48,34 @@
 }
 
 .back-link {
-  text-align: center;
-  display: block;
+    text-align: center;
+    display: block;
 }
+
+.songs-header {
+  position: relative;
+  max-width: 720px;
+  margin: 30px auto;
+}
+
+.songs-title {
+  text-align: center;
+  font-size: 24px;
+  color: #eef2ff;
+  margin: 0;
+}
+
+.close-btn {
+  position: absolute;
+  left: 5px;
+  top: -20px;
+  width: 32px;
+  height: 32px;
+  color: #a5b0c4;
+  text-align: center;
+  line-height: 32px;
+  font-size: 32px;
+  text-decoration: none;
+  transition: 0.2s;
+}
+.close-btn:hover { color: #ffffff; }

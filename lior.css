@@ -18,10 +18,24 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    margin-top: 40px;
-    font-size: 24px;
-    color: #c8ced8;
+    margin: 42px 0 0;
+    padding: 14px 16px;
+    font-size: 20px;
+    font-weight: 600;
+    color: #eef2ff;
     text-decoration: none;
+    background: #2c2f3a;
+    border-radius: 12px;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .25);
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
 }
 
-.lyrics-link:hover { color: #ffffff; }
+.lyrics-link:hover {
+    background: #202638;
+    transform: translateY(-1px);
+}
+
+.lyrics-link i {
+    font-size: 20px;
+    opacity: .9;
+}

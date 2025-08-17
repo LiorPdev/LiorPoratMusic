@@ -85,10 +85,6 @@ h1 {
     border: 1px solid #ddd;
 }
 
-.btn-apple i {
-    color: #FA57C1;
-}
-
 .btn-apple:hover {
     background-color: #f2f2f2;
 }
@@ -102,9 +98,8 @@ a.back-link,
 .back-link,
 .back-link a {
     display: inline-block;
-    font-size: 20px;
+    font-size: 18px;
     color: #eef2ffd0;
-    margin: 20px 0;
     text-decoration: none;
     transition: color .2s;
 }

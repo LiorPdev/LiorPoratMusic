@@ -29,7 +29,7 @@ pre {
 }
 
 .wrap a:not(.back-link) {
-  color: #a5b0c4;
+  color: #eef2ff;
   text-decoration: none;
 }
 
@@ -42,7 +42,7 @@ pre {
   color: #a5b0c4;
   text-align: center;
   line-height: 32px;
-  font-size: 24px;
+  font-size: 32px;
   text-decoration: none;
   transition: 0.2s;
 }
