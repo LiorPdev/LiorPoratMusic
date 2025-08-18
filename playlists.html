@@ -43,12 +43,12 @@
 
   <script>
     const PLAYLISTS = [
-      { name: "ישראלי שקט ורגוע", url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU", image: "Media/playlist/quiet.webp" },
-      { name: "ישראלי איכותי לסופש ונסיעה רגועים", url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl", image: "Media/playlist/drive.webp" },
-      { name: "בלוז ישראלי", url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq", image: "Media/playlist/blues.webp" },
-      { name: "רוק ישראלי קצבי", url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK", image: "Media/playlist/rock.webp" },
-      { name: "גרוב ישראלי קצבי", url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb", image: "Media/playlist/groove.webp" },
-      { name: "Lo-fi מרגיע", url: "https://open.spotify.com/playlist/7pKTU5iEu9jRLHpHkCb7aN", image: "Media/playlist/LoFi.webp" }
+      { url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU", image: "Media/playlist/quiet.webp" },
+      { url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl", image: "Media/playlist/drive.webp" },
+      { url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq", image: "Media/playlist/blues.webp" },
+      { url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK", image: "Media/playlist/rock.webp" },
+      { url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb", image: "Media/playlist/groove.webp" },
+      { url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq", image: "Media/playlist/words.webp" }
     ];
 
     const toId = url => (url.match(/playlist\/([a-zA-Z0-9]+)/) || [, ""])[1];
@@ -102,7 +102,6 @@
     }
 
     (async function render() {
-      // prefer local image, otherwise fetch from Spotify oEmbed
       const thumbs = await Promise.all(
         PLAYLISTS.map(async p => p.image ? p.image : await fetchThumb(p.url))
       );
