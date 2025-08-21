@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>הקונטרול פריקס</title>
+  <meta name="description" content="להקת הקונטרול פריקס, מילים לשירים">
+  <link rel="canonical" href="https://liorporat.com/ctrlfreaks.html">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="הקונטרול פריקס">
+  <meta property="og:title" content="הקונטרול פריקס">
+  <meta property="og:description" content="להקת הקונטרול פריקס, מילים לשירים">
+  <meta property="og:locale" content="he_IL">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="הקונטרול פריקס">
+  <meta property="og:url" content="https://liorporat.com/ctrlfreaks.html">
+  <meta property="og:image" content="https://liorporat.com/Media/ogCtrlF.webp">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="הקונטרול פריקס">
+  <meta name="twitter:description" content="להקת הקונטרול פריקס, מילים לשירים">
+  <meta name="twitter:image" content="https://liorporat.com/Media/ogCtrlF.webp">
+
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="songs.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+
+<body>
+
+
+  <div class="songs-header">
+    <a href="index.html" class="close-btn" aria-label="חזרה">×</a>
+    <h2 class="songs-title">הקונטרול פריקס</h2>
+  </div>
+
+
+  <h1 class="visually-hidden">מילות שירים להקת הקונטרול פריקס</h1>
+
+  <main class="songs" id="songs"></main>
+
+  <div style="height:20px;"></div>
+  <div class="back-link">
+    <a href="index.html">חזרה לדף הראשי</a>
+    <div style="height:20px;"></div>
+    <a href="#" class="share-link" id="shareBtn" aria-label="שתף עמוד זה">
+      <i class="fa-solid fa-share-nodes"></i>
+    </a>
+  </div>
+
+  <script>
+    const songs = [
+      "אסיר 1376",
+      "בלוז לשבת",
+      "בלוז לשירלי",
+      "בלוז לחילוני",
+      "בלוז לנפטר",
+      "דמייני שאת בסרט",
+      "הדברים הפשוטים שבחיים"
+    ];
+
+    const collator = new Intl.Collator('he', { sensitivity: 'base', numeric: true });
+    songs.sort(collator.compare);
+
+    const el = document.getElementById('songs');
+    songs.forEach(name => {
+      const row = document.createElement('div');
+      row.className = 'song-item';
+
+      const a = document.createElement('a');
+      a.href = `songs/${name}.html`;
+
+      const img = document.createElement('img');
+      img.src = `Media/songs/${name}.webp`;
+      img.alt = name;
+      img.className = 'song-thumb';
+
+      const span = document.createElement('span');
+      span.className = 'song-name';
+      span.textContent = name;
+
+      a.appendChild(img);
+      a.appendChild(span);
+      row.appendChild(a);
+      el.appendChild(row);
+    });
+  </script>
+  <script src="script.js"></script>
+</body>
+
+</html>
