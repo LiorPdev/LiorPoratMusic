@@ -13,13 +13,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // remove any legacy duplicated markup if exists
   [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn')].forEach(n => n.remove());
 
-  // add close button automatically
+  // add close button automatically (prefers previous page; falls back to songs list)
   const closeBtn = document.createElement('a');
-  closeBtn.href = '../songs.html';
+  closeBtn.href = '../songs.html'; // fallback
   closeBtn.className = 'close-btn';
   closeBtn.setAttribute('aria-label', 'חזרה');
   closeBtn.textContent = '×';
+
+  try {
+    const ref = document.referrer ? new URL(document.referrer) : null;
+    if (ref && ref.origin === location.origin && ref.href !== location.href) {
+      closeBtn.href = ref.href;
+    }
+  } catch (_) {
+    // ignore
+  }
+
+  closeBtn.addEventListener('click', (e) => {
+    if (window.history.length > 1) {
+      e.preventDefault();
+      window.history.back();
+    }
+  });
+
   main.prepend(closeBtn);
+
 
   // read lyrics from <script type="text/plain" id="lyrics">
   const lyricsNode = document.getElementById('lyrics');
@@ -41,14 +59,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // credits
-    const cr = document.createElement('div');
-    cr.className = 'credits';
-    if (cfg.lyricsBy) {
-      const line1 = document.createElement('div');
-      line1.textContent = 'מילים: ' + cfg.lyricsBy;
-      cr.appendChild(line1);
-    }
-    main.appendChild(cr);
+  const cr = document.createElement('div');
+  cr.className = 'credits';
+  if (cfg.lyricsBy) {
+    const line1 = document.createElement('div');
+    line1.textContent = 'מילים: ' + cfg.lyricsBy;
+    cr.appendChild(line1);
+  }
+  main.appendChild(cr);
 
   // listen icons
   const icons = document.createElement('span');
@@ -92,11 +110,31 @@ document.addEventListener('DOMContentLoaded', () => {
   spacer2.style.height = '20px';
   main.appendChild(spacer2);
 
-  // back link
+  // back link (prefers previous page; falls back to songs list)
   const back = document.createElement('a');
-  back.href = '../songs.html';
+  back.href = '../songs.html'; // fallback URL
   back.className = 'back-link';
   back.innerHTML = '<i class="fa-solid fa-arrow-right"></i> חזרה לרשימת השירים';
+
+  // If there is a same-origin referrer and it's not this page, prefer it
+  try {
+    const ref = document.referrer ? new URL(document.referrer) : null;
+    if (ref && ref.origin === location.origin && ref.href !== location.href) {
+      back.href = ref.href;
+    }
+  } catch (_) {
+    // ignore malformed referrer
+  }
+
+  // Use history.back() when possible
+  back.addEventListener('click', (e) => {
+    if (window.history.length > 1) {
+      e.preventDefault();
+      window.history.back();
+    }
+  });
+
   main.appendChild(back);
+
 
 });
