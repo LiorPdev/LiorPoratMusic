@@ -1,5 +1,5 @@
 body {
-  font-family: 'Noto Sans Hebrew', Arial, sans-serif;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   font-size: 18px;
 }
 
@@ -21,12 +21,16 @@ h1 .title {
 }
 
 pre {
+  font-family: inherit;
   white-space: pre-wrap;
-  line-height: 1.6;
+  line-height: 1.8;
   background: #1b1f2a;
+  color: #eef2ff;
   padding: 16px;
   border-radius: 12px;
 }
+
+
 
 .wrap a:not(.back-link) {
   color: #eef2ff;
@@ -63,7 +67,7 @@ pre {
 
 .credits {
   margin-top: 16px;
-  font-size: 12px;
+  font-size: 14px;
   color: #a5b0c4;
   text-align: right;
   line-height: 1.5;
