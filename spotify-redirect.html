@@ -64,7 +64,7 @@
           class="btn"
           href="https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e"
           rel="noopener"
-          >פלייליסט רוקרנרול ישראלי</a
+          >פלייליסט רוקנרול ישראלי</a
         >
         <div style="height: 10px"></div>
         <div>
@@ -87,43 +87,16 @@
     </main>
 
     <script>
+      // Use the full HTTPS URL with context so Spotify opens inside the playlist at the right track
       const webUrl =
         "https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e";
-      const m = webUrl.match(
-        /open\.spotify\.com\/(playlist|track|album)\/([A-Za-z0-9]+)/
-      );
-      const kind = m ? m[1] : "track";
-      const val = m ? m[2] : "";
-      const appUri = `spotify://${kind}/${val}`;
-      const ua = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(ua);
-      const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-      function openOnAndroid() {
-        const intent = `intent://${kind}/${val}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
-          webUrl
-        )};end`;
-        location.href = intent;
-      }
-
-      function openOniOS() {
-        const start = Date.now();
-        location.href = appUri;
-        setTimeout(() => {
-          if (Date.now() - start < 1500) location.href = webUrl;
-        }, 1200);
-      }
-
-      function openWeb() {
-        location.href = webUrl;
-      }
-
+      // Set the visible button to the same URL (for safety/consistency)
       const openWebBtn = document.getElementById("openWebBtn");
-      openWebBtn.href = webUrl;
+      if (openWebBtn) openWebBtn.href = webUrl;
 
-      if (isAndroid) openOnAndroid();
-      else if (isIOS) openOniOS();
-      else openWeb();
+      // Auto-navigate using HTTPS (preserves playlist context). replace() avoids back navigation loop.
+      window.location.replace(webUrl);
     </script>
   </body>
 </html>
