@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>פתיחה בספוטיפיי</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        min-height: 100dvh;
+        background: #0b0b0b;
+        color: #fff;
+      }
+      .card {
+        max-width: 600px;
+        padding: 24px;
+        text-align: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 14px 18px;
+        margin: 10px 6px;
+        border-radius: 999px;
+        background: #2a2a2a;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div id="actions">
+        <a
+          id="openWebBtn"
+          class="btn"
+          href="https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK"
+          rel="noopener"
+          >פלייליסט רוקרנרול ישראלי</a
+        >
+        <div style="height: 10px"></div>
+        <div>
+          <a
+            href="https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              src="Media/playlist/rock.webp"
+              alt="פלייליסט רוקנרול ישראלי"
+              width="200"
+              height="200"
+              loading="lazy"
+              style="opacity: 0; animation: fadeIn 8s ease forwards"
+            />
+
+            <style>
+              @keyframes fadeIn {
+                from {
+                  opacity: 0;
+                }
+                to {
+                  opacity: 1;
+                }
+              }
+            </style>
+          </a>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const webUrl =
+        "https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e";
+      const m = webUrl.match(
+        /open\.spotify\.com\/(playlist|track|album)\/([A-Za-z0-9]+)/
+      );
+      const kind = m ? m[1] : "track";
+      const val = m ? m[2] : "";
+      const appUri = `spotify://${kind}/${val}`;
+      const ua = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+      function openOnAndroid() {
+        const intent = `intent://${kind}/${val}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
+          webUrl
+        )};end`;
+        location.href = intent;
+      }
+
+      function openOniOS() {
+        const start = Date.now();
+        location.href = appUri;
+        setTimeout(() => {
+          if (Date.now() - start < 1500) location.href = webUrl;
+        }, 1200);
+      }
+
+      function openWeb() {
+        location.href = webUrl;
+      }
+
+      const openWebBtn = document.getElementById("openWebBtn");
+      openWebBtn.href = webUrl;
+
+      if (isAndroid) openOnAndroid();
+      else if (isIOS) openOniOS();
+      else openWeb();
+    </script>
+  </body>
+</html>
