@@ -1,121 +1,181 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>פלייליסטים ישראליים איכותיים</title>
+    <meta
+      name="description"
+      content="פלייליסטים ישראליים איכותיים להאזנה בספוטיפיי בלוז רוק וגרוב"
+    />
+    <link rel="canonical" href="https://liorporat.com/playlists.html" />
+    <meta name="robots" content="index, follow" />
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>פלייליסטים ישראליים איכותיים</title>
-  <meta name="description" content="פלייליסטים ישראליים איכותיים להאזנה בספוטיפיי בלוז רוק וגרוב">
-  <link rel="canonical" href="https://liorporat.com/playlists.html">
-  <meta name="robots" content="index, follow">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="פלייליסטים ישראליים איכותיים" />
+    <meta
+      property="og:description"
+      content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי"
+    />
+    <meta property="og:url" content="https://liorporat.com/playlists.html" />
+    <meta
+      property="og:image"
+      content="https://liorporat.com/Media/playlist/og.webp"
+    />
+    <meta property="og:site_name" content="Lior Porat Music" />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="פלייליסטים ישראליים איכותיים" />
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="פלייליסטים ישראליים איכותיים">
-  <meta property="og:description" content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי">
-  <meta property="og:url" content="https://liorporat.com/playlists.html">
-  <meta property="og:image" content="https://liorporat.com/Media/playlist/og.webp">
-  <meta property="og:site_name" content="Lior Porat Music">
-  <meta property="og:locale" content="he_IL">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="פלייליסטים ישראליים איכותיים">
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="פלייליסטים ישראליים איכותיים" />
+    <meta
+      name="twitter:description"
+      content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי"
+    />
+    <meta
+      name="twitter:image"
+      content="https://liorporat.com/Media/playlist/og.webp"
+    />
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="פלייליסטים ישראליים איכותיים">
-  <meta name="twitter:description" content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי">
-  <meta name="twitter:image" content="https://liorporat.com/Media/playlist/og.webp">
+    <link rel="preconnect" href="https://open.spotify.com" />
+    <link rel="preconnect" href="https://i.scdn.co" />
+    <link rel="stylesheet" href="playlists.css" />
+    <script type="text/javascript">
+      (function (c, l, a, r, i, t, y) {
+        c[a] =
+          c[a] ||
+          function () {
+            (c[a].q = c[a].q || []).push(arguments);
+          };
+        t = l.createElement(r);
+        t.async = 1;
+        t.src = "https://www.clarity.ms/tag/" + i;
+        y = l.getElementsByTagName(r)[0];
+        y.parentNode.insertBefore(t, y);
+      })(window, document, "clarity", "script", "tqmhdyey6p");
+    </script>
+  </head>
 
-  <link rel="preconnect" href="https://open.spotify.com">
-  <link rel="preconnect" href="https://i.scdn.co">
-  <link rel="stylesheet" href="playlists.css">
-</head>
+  <body>
+    <header>
+      <h1>פלייליסטים ישראליים איכותיים</h1>
+    </header>
 
-<body>
-  <header>
-    <h1>פלייליסטים ישראליים איכותיים</h1>
-  </header>
+    <main class="container">
+      <section class="grid" id="list"></section>
+    </main>
 
-  <main class="container">
-    <section class="grid" id="list"></section>
-  </main>
+    <script>
+      const PLAYLISTS = [
+        {
+          url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU",
+          image: "Media/playlist/quiet.webp",
+        },
+        {
+          url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl",
+          image: "Media/playlist/drive.webp",
+        },
+        {
+          url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
+          image: "Media/playlist/blues.webp",
+        },
+        {
+          url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK",
+          image: "Media/playlist/rock.webp",
+        },
+        {
+          url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb",
+          image: "Media/playlist/groove.webp",
+        },
+        {
+          url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq",
+          image: "Media/playlist/words.webp",
+        },
+      ];
 
-  <script>
-    const PLAYLISTS = [
-      { url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU", image: "Media/playlist/quiet.webp" },
-      { url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl", image: "Media/playlist/drive.webp" },
-      { url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq", image: "Media/playlist/blues.webp" },
-      { url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK", image: "Media/playlist/rock.webp" },
-      { url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb", image: "Media/playlist/groove.webp" },
-      { url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq", image: "Media/playlist/words.webp" }
-    ];
+      const toId = (url) =>
+        (url.match(/playlist\/([a-zA-Z0-9]+)/) || [, ""])[1];
 
-    const toId = url => (url.match(/playlist\/([a-zA-Z0-9]+)/) || [, ""])[1];
+      function openInApp(playlistUrl) {
+        const id = toId(playlistUrl);
+        const web = playlistUrl;
+        const uri = `spotify://playlist/${id}`;
+        const ua = navigator.userAgent || "";
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-    function openInApp(playlistUrl) {
-      const id = toId(playlistUrl);
-      const web = playlistUrl;
-      const uri = `spotify://playlist/${id}`;
-      const ua = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(ua);
-      const isIOS = /iPhone|iPad|iPod/i.test(ua);
-
-      if (isAndroid) {
-        const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(web)};end`;
-        location.href = intent;
-        return;
+        if (isAndroid) {
+          const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
+            web
+          )};end`;
+          location.href = intent;
+          return;
+        }
+        if (isIOS) {
+          const t = Date.now();
+          location.href = uri;
+          setTimeout(() => {
+            if (Date.now() - t < 1500) location.href = web;
+          }, 1200);
+          return;
+        }
+        location.href = web;
       }
-      if (isIOS) {
-        const t = Date.now();
-        location.href = uri;
-        setTimeout(() => { if (Date.now() - t < 1500) location.href = web }, 1200);
-        return;
-      }
-      location.href = web;
-    }
 
-    function cardTemplate({ name, url, thumbnail }) {
-      const id = toId(url);
-      const img = thumbnail || "";
-      return `
+      function cardTemplate({ name, url, thumbnail }) {
+        const id = toId(url);
+        const img = thumbnail || "";
+        return `
         <article class="card" data-id="${id}">
           <div class="thumb" data-open-app="${url}">
-            ${img
-          ? `<img class="img" alt="${name}" src="${img}" loading="lazy" width="512" height="512">`
-          : `<div class="skeleton" aria-hidden="true"></div>`}
+            ${
+              img
+                ? `<img class="img" alt="${name}" src="${img}" loading="lazy" width="512" height="512">`
+                : `<div class="skeleton" aria-hidden="true"></div>`
+            }
           </div>
           <div class="body">
             <a class="btn" href="#" data-open-app="${url}">האזנה בספוטיפיי</a>
           </div>
         </article>
       `;
-    }
+      }
 
-    async function fetchThumb(url) {
-      try {
-        const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`);
-        if (!res.ok) throw new Error("oEmbed failed");
-        const data = await res.json();
-        return data.thumbnail_url || "";
-      } catch { return "" }
-    }
+      async function fetchThumb(url) {
+        try {
+          const res = await fetch(
+            `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`
+          );
+          if (!res.ok) throw new Error("oEmbed failed");
+          const data = await res.json();
+          return data.thumbnail_url || "";
+        } catch {
+          return "";
+        }
+      }
 
-    (async function render() {
-      const thumbs = await Promise.all(
-        PLAYLISTS.map(async p => p.image ? p.image : await fetchThumb(p.url))
-      );
-      const html = PLAYLISTS.map((p, i) => cardTemplate({ ...p, thumbnail: thumbs[i] })).join("");
-      document.getElementById("list").innerHTML = html;
+      (async function render() {
+        const thumbs = await Promise.all(
+          PLAYLISTS.map(async (p) =>
+            p.image ? p.image : await fetchThumb(p.url)
+          )
+        );
+        const html = PLAYLISTS.map((p, i) =>
+          cardTemplate({ ...p, thumbnail: thumbs[i] })
+        ).join("");
+        document.getElementById("list").innerHTML = html;
 
-      document.querySelectorAll("[data-open-app]").forEach(btn => {
-        btn.addEventListener("click", e => {
-          e.preventDefault();
-          openInApp(btn.getAttribute("data-open-app"));
+        document.querySelectorAll("[data-open-app]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openInApp(btn.getAttribute("data-open-app"));
+          });
         });
-      });
-    })();
-  </script>
-</body>
-
+      })();
+    </script>
+  </body>
 </html>
