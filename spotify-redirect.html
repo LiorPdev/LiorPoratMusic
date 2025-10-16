@@ -3,50 +3,48 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>פתיחה בספוטיפיי</title>
-    <meta name="robots" content="noindex, nofollow" />
-    <style>
-      body {
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
-          Arial;
-        margin: 0;
-        display: grid;
-        place-items: center;
-        min-height: 100dvh;
-        background: #0b0b0b;
-        color: #fff;
-      }
-      .card {
-        max-width: 600px;
-        padding: 24px;
-        text-align: center;
-      }
-      .btn {
-        display: inline-block;
-        padding: 14px 18px;
-        margin: 8px 6px;
-        border-radius: 999px;
-        background: #1db954;
-        color: #000;
-        text-decoration: none;
-        font-weight: 700;
-      }
-      .btn.secondary {
-        background: #2a2a2a;
-        color: #fff;
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-    </style>
+    <title>פלייליסטים ישראליים איכותיים</title>
+    <meta
+      name="description"
+      content="פלייליסטים ישראליים איכותיים להאזנה בספוטיפיי בלוז רוק וגרוב"
+    />
+    <link rel="canonical" href="https://liorporat.com/playlists.html" />
+    <meta name="robots" content="index, follow" />
 
-    <!-- Microsoft Clarity -->
-    <script>
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="פלייליסטים ישראליים איכותיים" />
+    <meta
+      property="og:description"
+      content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי"
+    />
+    <meta property="og:url" content="https://liorporat.com/playlists.html" />
+    <meta
+      property="og:image"
+      content="https://liorporat.com/Media/playlist/og.webp"
+    />
+    <meta property="og:site_name" content="Lior Porat Music" />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="פלייליסטים ישראליים איכותיים" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="פלייליסטים ישראליים איכותיים" />
+    <meta
+      name="twitter:description"
+      content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי"
+    />
+    <meta
+      name="twitter:image"
+      content="https://liorporat.com/Media/playlist/og.webp"
+    />
+
+    <link rel="preconnect" href="https://open.spotify.com" />
+    <link rel="preconnect" href="https://i.scdn.co" />
+    <link rel="stylesheet" href="playlists.css" />
+    <script type="text/javascript">
       (function (c, l, a, r, i, t, y) {
         c[a] =
           c[a] ||
@@ -61,52 +59,107 @@
       })(window, document, "clarity", "script", "tqmhdyey6p");
     </script>
   </head>
+
   <body>
-    <main class="card">
-      3
-      <div id="actions">
-        <a
-          id="openAppBtn"
-          class="btn"
-          href="https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e"
-          target="_blank"
-          rel="noopener"
-        >
-          פתח באפליקציית ספוטיפיי
-        </a>
-        <a id="openWebBtn" class="btn secondary" href="#" rel="noopener"
-          >פתח באתר</a
-        >
-        <div style="height: 10px"></div>
-        <a id="imgLink" href="#" rel="noopener">
-          <img
-            src="Media/playlist/rock.webp"
-            alt="פלייליסט רוקנרול ישראלי"
-            width="200"
-            height="200"
-            loading="lazy"
-            style="opacity: 0; animation: fadeIn 1s ease forwards"
-          />
-        </a>
-      </div>
+    <header>
+      <h1>פלייליסטים ישראליים איכותיים</h1>
+    </header>
+
+    <main class="container">
+      <section class="grid" id="list"></section>
     </main>
 
     <script>
-      const webUrl =
-        "https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e";
+      const PLAYLISTS = [
+        {
+          url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK",
+          image: "Media/playlist/rock.webp",
+        },
+        {
+          url: "https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e",
+          image: "Media/playlist/groove.webp",
+        },
+      ];
 
-      const openAppBtn = document.getElementById("openAppBtn");
-      if (openAppBtn) {
-        openAppBtn.href = webUrl;
-        openAppBtn.addEventListener("click", () => {
-          // גיבוי: אם ה-IAB לא מעביר ל-App דרך הלשונית החדשה
+      const toId = (url) =>
+        (url.match(/playlist\/([a-zA-Z0-9]+)/) || [, ""])[1];
+
+      function openInApp(playlistUrl) {
+        const id = toId(playlistUrl);
+        const web = playlistUrl;
+        const uri = `spotify://playlist/${id}`;
+        const ua = navigator.userAgent || "";
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+        if (isAndroid) {
+          const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
+            web
+          )};end`;
+          location.href = intent;
+          return;
+        }
+        if (isIOS) {
+          const t = Date.now();
+          location.href = uri;
           setTimeout(() => {
-            try {
-              location.href = webUrl;
-            } catch (_) {}
-          }, 50);
-        });
+            if (Date.now() - t < 1500) location.href = web;
+          }, 1200);
+          return;
+        }
+        location.href = web;
       }
+
+      function cardTemplate({ name, url, thumbnail }) {
+        const id = toId(url);
+        const img = thumbnail || "";
+        return `
+        <article class="card" data-id="${id}">
+          <div class="thumb" data-open-app="${url}">
+            ${
+              img
+                ? `<img class="img" alt="${name}" src="${img}" loading="lazy" width="512" height="512">`
+                : `<div class="skeleton" aria-hidden="true"></div>`
+            }
+          </div>
+          <div class="body">
+            <a class="btn" href="#" data-open-app="${url}">האזנה בספוטיפיי</a>
+          </div>
+        </article>
+      `;
+      }
+
+      async function fetchThumb(url) {
+        try {
+          const res = await fetch(
+            `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`
+          );
+          if (!res.ok) throw new Error("oEmbed failed");
+          const data = await res.json();
+          return data.thumbnail_url || "";
+        } catch {
+          return "";
+        }
+      }
+
+      (async function render() {
+        const thumbs = await Promise.all(
+          PLAYLISTS.map(async (p) =>
+            p.image ? p.image : await fetchThumb(p.url)
+          )
+        );
+        const html = PLAYLISTS.map((p, i) =>
+          cardTemplate({ ...p, thumbnail: thumbs[i] })
+        ).join("");
+        document.getElementById("list").innerHTML = html;
+
+        document.querySelectorAll("[data-open-app]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openInApp(btn.getAttribute("data-open-app"));
+          });
+        });
+      })();
     </script>
   </body>
 </html>
