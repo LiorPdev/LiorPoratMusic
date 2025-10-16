@@ -63,7 +63,7 @@
   </head>
   <body>
     <main class="card">
-      2
+      3
       <div id="actions">
         <a
           id="openAppBtn"
@@ -92,33 +92,21 @@
     </main>
 
     <script>
-      // Target (keeps playlist context)
       const webUrl =
         "https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e";
 
-      // Wire visible links to same URL
-      const btn = document.getElementById("openWebBtn");
-      if (btn) btn.href = webUrl;
-      const imgLink = document.querySelector(
-        "#actions a[href^='https://open.spotify.com']"
-      );
-      if (imgLink) imgLink.href = webUrl;
-
-      // Mobile-only logic
-      const ua = navigator.userAgent || "";
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
-      const inFB = /\bFBAN|\bFBAV|\bFB_IAB/i.test(ua);
-      const inIG = /\bInstagram/i.test(ua);
-      const inIAB = inFB || inIG;
-
-      if (isMobile) {
-        // In FB/IG in-app browser: require user tap to hand off to the app
-        if (!inIAB) {
-          // Regular mobile browsers: auto open via HTTPS Universal Link
-          setTimeout(() => window.location.replace(webUrl), 150);
-        }
+      const openAppBtn = document.getElementById("openAppBtn");
+      if (openAppBtn) {
+        openAppBtn.href = webUrl;
+        openAppBtn.addEventListener("click", () => {
+          // גיבוי: אם ה-IAB לא מעביר ל-App דרך הלשונית החדשה
+          setTimeout(() => {
+            try {
+              location.href = webUrl;
+            } catch (_) {}
+          }, 50);
+        });
       }
-      // On desktop: do nothing (no auto-redirect)
     </script>
   </body>
 </html>
