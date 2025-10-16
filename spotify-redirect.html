@@ -24,12 +24,16 @@
       .btn {
         display: inline-block;
         padding: 14px 18px;
-        margin: 10px 6px;
+        margin: 8px 6px;
         border-radius: 999px;
-        background: #2a2a2a;
-        color: #fff;
+        background: #1db954;
+        color: #000;
         text-decoration: none;
         font-weight: 700;
+      }
+      .btn.secondary {
+        background: #2a2a2a;
+        color: #fff;
       }
       @keyframes fadeIn {
         from {
@@ -41,7 +45,8 @@
       }
     </style>
 
-    <script type="text/javascript">
+    <!-- Microsoft Clarity -->
+    <script>
       (function (c, l, a, r, i, t, y) {
         c[a] =
           c[a] ||
@@ -58,45 +63,54 @@
   </head>
   <body>
     <main class="card">
+      1
       <div id="actions">
-        <a
-          id="openWebBtn"
-          class="btn"
-          href="https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e"
-          rel="noopener"
-          >פלייליסט רוקנרול ישראלי</a
+        <a id="openAppBtn" class="btn" href="#">פתח באפליקציית ספוטיפיי</a>
+        <a id="openWebBtn" class="btn secondary" href="#" rel="noopener"
+          >פתח באתר</a
         >
         <div style="height: 10px"></div>
-        <div>
-          <a
-            href="https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e"
-            target="_blank"
-            rel="noopener"
-          >
-            <img
-              src="Media/playlist/rock.webp"
-              alt="פלייליסט רוקנרול ישראלי"
-              width="200"
-              height="200"
-              loading="lazy"
-              style="opacity: 0; animation: fadeIn 8s ease forwards"
-            />
-          </a>
-        </div>
+        <a id="imgLink" href="#" rel="noopener">
+          <img
+            src="Media/playlist/rock.webp"
+            alt="פלייליסט רוקנרול ישראלי"
+            width="200"
+            height="200"
+            loading="lazy"
+            style="opacity: 0; animation: fadeIn 1s ease forwards"
+          />
+        </a>
       </div>
     </main>
 
     <script>
-      // Use the full HTTPS URL with context so Spotify opens inside the playlist at the right track
+      // Target (keeps playlist context)
       const webUrl =
         "https://open.spotify.com/track/6Fw60WEa75rS2ybMWIo1me?context=spotify%3Aplaylist%3A36YoT388ljvJSssrC0LUMK&si=6071ab70321e4b3e";
 
-      // Set the visible button to the same URL (for safety/consistency)
-      const openWebBtn = document.getElementById("openWebBtn");
-      if (openWebBtn) openWebBtn.href = webUrl;
+      // Wire visible links to same URL
+      const btn = document.getElementById("openWebBtn");
+      if (btn) btn.href = webUrl;
+      const imgLink = document.querySelector(
+        "#actions a[href^='https://open.spotify.com']"
+      );
+      if (imgLink) imgLink.href = webUrl;
 
-      // Auto-navigate using HTTPS (preserves playlist context). replace() avoids back navigation loop.
-      window.location.replace(webUrl);
+      // Mobile-only logic
+      const ua = navigator.userAgent || "";
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+      const inFB = /\bFBAN|\bFBAV|\bFB_IAB/i.test(ua);
+      const inIG = /\bInstagram/i.test(ua);
+      const inIAB = inFB || inIG;
+
+      if (isMobile) {
+        // In FB/IG in-app browser: require user tap to hand off to the app
+        if (!inIAB) {
+          // Regular mobile browsers: auto open via HTTPS Universal Link
+          setTimeout(() => window.location.replace(webUrl), 150);
+        }
+      }
+      // On desktop: do nothing (no auto-redirect)
     </script>
   </body>
 </html>
