@@ -122,3 +122,18 @@ a.back-link:hover,
 .share-link:hover {
   color: #1DB954;
 }
+
+.songs-title a {
+  margin-right: 11px;
+  color: #e6e0e0;
+  text-decoration: none;
+}
+
+.songs-title a:hover {
+  color: white; 
+}
+
+.songs-title i {
+  font-size: 1.1em;
+  vertical-align: middle;
+}
