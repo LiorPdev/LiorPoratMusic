@@ -149,7 +149,7 @@
           const t = Date.now();
           location.href = uri;
           setTimeout(() => {
-            if (Date.now() - t < 1500) location.href = web;
+            if (Date.now() - t < 1500) location.replace(web);
           }, 1200);
           return;
         }
@@ -194,18 +194,37 @@
             p.image ? p.image : await fetchThumb(p.url)
           )
         );
+
         const html = PLAYLISTS.map((p, i) =>
           cardTemplate({ ...p, thumbnail: thumbs[i] })
         ).join("");
+
         document.getElementById("list").innerHTML = html;
 
         document.querySelectorAll("[data-open-app]").forEach((btn) => {
           btn.addEventListener("click", (e) => {
             e.preventDefault();
-            openInApp(btn.getAttribute("data-open-app"));
+            const target = btn.getAttribute("data-open-app"); // guard null
+            if (target) openInApp(target);
           });
         });
+
+        // auto-open after render (once per session)
+        const first = PLAYLISTS?.[0]?.url;
+        if (first && !sessionStorage.getItem("autoOpenTried")) {
+          sessionStorage.setItem("autoOpenTried", String(Date.now()));
+          try {
+            setTimeout(() => openInApp(first), 300);
+          } catch {}
+        }
       })();
+
+      // prevent repeated auto-open when user returns
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          sessionStorage.setItem("autoOpenTried", String(Date.now()));
+        }
+      });
     </script>
   </body>
 </html>
