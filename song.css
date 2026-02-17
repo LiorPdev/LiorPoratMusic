@@ -72,3 +72,40 @@ pre {
   text-align: right;
   line-height: 1.5;
 }
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .wrap {
+    color: black !important;
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  pre {
+    background: transparent !important;
+    color: black !important;
+    padding: 0;
+    border-radius: 0;
+    line-height: 1.5;
+  }
+
+  .close-btn,
+  .icons,
+  .back-link,
+  .share-link {
+    display: none !important;
+  }
+
+  h1 {
+    color: black !important;
+  }
+
+  .credits {
+    color: #555 !important;
+  }
+}
