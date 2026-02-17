@@ -39,22 +39,75 @@ document.addEventListener('DOMContentLoaded', () => {
   main.prepend(closeBtn);
 
 
-  // read lyrics from <script type="text/plain" id="lyrics">
+  // read lyrics and chords from scripts
   const lyricsNode = document.getElementById('lyrics');
+  const chordsNode = document.getElementById('chords');
   const lyricsText = lyricsNode ? lyricsNode.textContent.trim() : '';
+  const chordsText = chordsNode ? chordsNode.textContent.trim() : '';
 
-  // title
+  // title container
   const h1 = document.createElement('h1');
+  h1.className = 'song-header';
+
   const spanTitle = document.createElement('span');
   spanTitle.className = 'title';
   spanTitle.textContent = title;
   h1.appendChild(spanTitle);
+
+  // toggle
+  if (lyricsText && chordsText) {
+    const toggle = document.createElement('div');
+    toggle.className = 'view-toggle';
+
+    const btnLyrics = document.createElement('button');
+    btnLyrics.className = 'toggle-btn active';
+    btnLyrics.textContent = 'מילים';
+
+    const btnChords = document.createElement('button');
+    btnChords.className = 'toggle-btn';
+    btnChords.textContent = 'אקורדים';
+
+    const separator = document.createElement('span');
+    separator.className = 'toggle-separator';
+    separator.textContent = '|';
+
+    toggle.appendChild(btnLyrics);
+    toggle.appendChild(separator);
+    toggle.appendChild(btnChords);
+    h1.appendChild(toggle);
+
+    const highlightChords = (text) => {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
+    };
+
+    const updateView = (showChords) => {
+      const text = showChords ? chordsText : lyricsText;
+      pre.innerHTML = highlightChords(text);
+      btnLyrics.classList.toggle('active', !showChords);
+      btnChords.classList.toggle('active', showChords);
+    };
+
+    btnLyrics.addEventListener('click', () => updateView(false));
+    btnChords.addEventListener('click', () => updateView(true));
+  }
+
   main.appendChild(h1);
 
-  // lyrics
-  if (lyricsText) {
-    const pre = document.createElement('pre');
-    pre.textContent = lyricsText;
+  // content display
+  const pre = document.createElement('pre');
+  if (lyricsText || chordsText) {
+    const highlightChords = (text) => {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
+    };
+    pre.innerHTML = highlightChords(lyricsText || chordsText);
     main.appendChild(pre);
   }
 
