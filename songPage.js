@@ -54,13 +54,28 @@ document.addEventListener('DOMContentLoaded', () => {
   spanTitle.textContent = title;
   h1.appendChild(spanTitle);
 
+  // content display
+  const pre = document.createElement('pre');
+  if (lyricsText || chordsText) {
+    const highlightChords = (text) => {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
+    };
+    pre.innerHTML = highlightChords(lyricsText || chordsText);
+    main.appendChild(pre);
+  }
+
+  // toggle
   // toggle
   if (lyricsText && chordsText) {
     const toggle = document.createElement('div');
     toggle.className = 'view-toggle';
 
     const btnLyrics = document.createElement('button');
-    btnLyrics.className = 'toggle-btn active';
+    btnLyrics.className = 'toggle-btn';
     btnLyrics.textContent = 'מילים';
 
     const btnChords = document.createElement('button');
@@ -89,27 +104,24 @@ document.addEventListener('DOMContentLoaded', () => {
       pre.innerHTML = highlightChords(text);
       btnLyrics.classList.toggle('active', !showChords);
       btnChords.classList.toggle('active', showChords);
+
+      // Update URL without jumping
+      const hash = showChords ? '#chords' : '#lyrics';
+      if (window.location.hash !== hash) {
+        history.replaceState(null, '', hash);
+      }
     };
 
     btnLyrics.addEventListener('click', () => updateView(false));
     btnChords.addEventListener('click', () => updateView(true));
+
+    // Initialize based on URL hash
+    const initialShowChords = window.location.hash === '#chords';
+    updateView(initialShowChords);
   }
 
   main.appendChild(h1);
-
-  // content display
-  const pre = document.createElement('pre');
-  if (lyricsText || chordsText) {
-    const highlightChords = (text) => {
-      return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
-    };
-    pre.innerHTML = highlightChords(lyricsText || chordsText);
-    main.appendChild(pre);
-  }
+  main.appendChild(pre);
 
   // credits
   const cr = document.createElement('div');

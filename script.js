@@ -13,12 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const shareBtn = document.getElementById('shareBtn');
   if (!shareBtn) return;
 
-  const payload = {
-    title: document.title || 'Share',
-    text: '',
-    url: window.location.href
-  };
-
   function fallbackCopy() {
     const url = window.location.href;
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -31,8 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function doShare() {
-    if (navigator.share && (!navigator.canShare || navigator.canShare(payload))) {
-      navigator.share(payload).catch(() => {});
+    const payload = {
+      title: document.title || 'Share',
+      text: '',
+      url: window.location.href
+    };
+    if (navigator.share && navigator.canShare && navigator.canShare(payload)) {
+      navigator.share(payload).catch(() => { });
     } else {
       fallbackCopy();
     }
