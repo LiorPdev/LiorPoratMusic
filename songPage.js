@@ -11,9 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // remove any legacy duplicated markup if exists
-  [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn')].forEach(n => n.remove());
+  [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn,.song-topbar')].forEach(n => n.remove());
+  document.querySelectorAll('.song-topbar').forEach(n => n.remove());
 
-  // add close button automatically (prefers previous page; falls back to songs list)
+  // ── Fixed top bar ────────────────────────────────────────────────────────
+  const topbar = document.createElement('div');
+  topbar.className = 'song-topbar';
+
+  const topbarInner = document.createElement('div');
+  topbarInner.className = 'topbar-inner';
+
+  // Close button (×)
   const closeBtn = document.createElement('a');
   closeBtn.href = '../songs.html'; // fallback
   closeBtn.className = 'close-btn';
@@ -25,9 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ref && ref.origin === location.origin && ref.href !== location.href) {
       closeBtn.href = ref.href;
     }
-  } catch (_) {
-    // ignore
-  }
+  } catch (_) { /* ignore */ }
 
   closeBtn.addEventListener('click', (e) => {
     if (window.history.length > 1) {
@@ -36,40 +42,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  main.prepend(closeBtn);
-
-
-  // read lyrics and chords from scripts
-  const lyricsNode = document.getElementById('lyrics');
-  const chordsNode = document.getElementById('chords');
-  const lyricsText = lyricsNode ? lyricsNode.textContent.trim() : '';
-  const chordsText = chordsNode ? chordsNode.textContent.trim() : '';
-
-  // title container
+  // Title
   const h1 = document.createElement('h1');
   h1.className = 'song-header';
-
   const spanTitle = document.createElement('span');
   spanTitle.className = 'title';
   spanTitle.textContent = title;
   h1.appendChild(spanTitle);
 
-  // content display
+  // Read lyrics / chords
+  const lyricsNode = document.getElementById('lyrics');
+  const chordsNode = document.getElementById('chords');
+  const lyricsText = lyricsNode ? lyricsNode.textContent.trim() : '';
+  const chordsText = chordsNode ? chordsNode.textContent.trim() : '';
+
+  const highlightChords = (text) =>
+    text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
+
+  // Content <pre>
   const pre = document.createElement('pre');
   if (lyricsText || chordsText) {
-    const highlightChords = (text) => {
-      return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
-    };
     pre.innerHTML = highlightChords(lyricsText || chordsText);
-    main.appendChild(pre);
   }
 
-  // toggle
-  // toggle
+  // מילים / אקורדים toggle
+  let playBtn; // declared here so auto-scroll section can reference it
   if (lyricsText && chordsText) {
     const toggle = document.createElement('div');
     toggle.className = 'view-toggle';
@@ -91,36 +92,33 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle.appendChild(btnChords);
     h1.appendChild(toggle);
 
-    const highlightChords = (text) => {
-      return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
-    };
+    // Play/Stop button – after the toggle
+    playBtn = document.createElement('button');
+    playBtn.id = 'scroll-play-btn';
+    playBtn.setAttribute('aria-label', 'הפעל גלילה אוטומטית');
+    playBtn.textContent = '▶';
+    h1.appendChild(playBtn);
 
     const updateView = (showChords) => {
-      const text = showChords ? chordsText : lyricsText;
-      pre.innerHTML = highlightChords(text);
+      pre.innerHTML = highlightChords(showChords ? chordsText : lyricsText);
       btnLyrics.classList.toggle('active', !showChords);
       btnChords.classList.toggle('active', showChords);
-
-      // Update URL without jumping
       const hash = showChords ? '#chords' : '#lyrics';
-      if (window.location.hash !== hash) {
-        history.replaceState(null, '', hash);
-      }
+      if (window.location.hash !== hash) history.replaceState(null, '', hash);
     };
 
     btnLyrics.addEventListener('click', () => updateView(false));
     btnChords.addEventListener('click', () => updateView(true));
-
-    // Initialize based on URL hash
-    const initialShowChords = window.location.hash === '#chords';
-    updateView(initialShowChords);
+    updateView(window.location.hash === '#chords');
   }
 
-  main.appendChild(h1);
+  // Assemble topbar: [ title+toggle+play ]   [ × ]
+  topbarInner.appendChild(h1);
+  topbarInner.appendChild(closeBtn);
+  topbar.appendChild(topbarInner);
+  document.body.prepend(topbar);
+
+  // Content goes into main (below the topbar)
   main.appendChild(pre);
 
   // credits
@@ -158,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ].forEach(x => x && icons.appendChild(x));
   main.appendChild(icons);
 
-  // share
   const spacer1 = document.createElement('div');
   spacer1.style.height = '20px';
   main.appendChild(spacer1);
@@ -175,31 +172,51 @@ document.addEventListener('DOMContentLoaded', () => {
   spacer2.style.height = '20px';
   main.appendChild(spacer2);
 
-  // back link (prefers previous page; falls back to songs list)
-  const back = document.createElement('a');
-  back.href = '../songs.html'; // fallback URL
-  back.className = 'back-link';
-  back.innerHTML = '<i class="fa-solid fa-arrow-right"></i> חזרה לרשימת השירים';
+  // ── Auto-scroll ────────────────────────────────────────────────────────────
+  let scrollRafId = null;
+  let scrollSpeed = cfg.scrollSpeed ?? 0.1;
+  let scrollAccum = 0;
 
-  // If there is a same-origin referrer and it's not this page, prefer it
-  try {
-    const ref = document.referrer ? new URL(document.referrer) : null;
-    if (ref && ref.origin === location.origin && ref.href !== location.href) {
-      back.href = ref.href;
-    }
-  } catch (_) {
-    // ignore malformed referrer
+  const setPlaying = (playing) => {
+    if (!playBtn) return;
+    playBtn.textContent = playing ? '■' : '▶';
+    playBtn.setAttribute('aria-label', playing ? 'עצור גלילה' : 'הפעל גלילה אוטומטית');
+    playBtn.classList.toggle('active', playing);
+  };
+
+  const startScroll = () => {
+    if (scrollRafId) return;
+    scrollAccum = 0;
+    setPlaying(true);
+    const step = () => {
+      scrollAccum += scrollSpeed;
+      const px = Math.floor(scrollAccum);
+      if (px > 0) { window.scrollBy(0, px); scrollAccum -= px; }
+      const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 2;
+      if (atBottom) { scrollRafId = null; setPlaying(false); }
+      else { scrollRafId = requestAnimationFrame(step); }
+    };
+    scrollRafId = requestAnimationFrame(step);
+  };
+
+  const stopScroll = () => {
+    if (!scrollRafId) return;
+    cancelAnimationFrame(scrollRafId);
+    scrollRafId = null;
+    setPlaying(false);
+  };
+
+  if (playBtn) {
+    playBtn.addEventListener('click', () => scrollRafId ? stopScroll() : startScroll());
   }
 
-  // Use history.back() when possible
-  back.addEventListener('click', (e) => {
-    if (window.history.length > 1) {
-      e.preventDefault();
-      window.history.back();
-    }
+  // Tap anywhere (not on interactive elements) to toggle scroll
+  document.addEventListener('click', (e) => {
+    const tag = e.target.tagName;
+    if (['A', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'].includes(tag)) return;
+    if (e.target.closest('a, button')) return;
+    scrollRafId ? stopScroll() : startScroll();
   });
-
-  main.appendChild(back);
-
+  // ──────────────────────────────────────────────────────────────────────────
 
 });
