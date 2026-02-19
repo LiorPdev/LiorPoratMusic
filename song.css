@@ -72,26 +72,36 @@ body {
 #scroll-play-btn {
   flex-shrink: 0;
   background: none;
-  border: none;
+  border: 1px solid #7a8796;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #a5b0c4;
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 4px 6px;
-  transition: color 0.2s;
+  transition: all 0.2s;
   line-height: 1;
-  transform: translateY(1px);
-  /* Nudge ▶ icon slightly */
+  margin-right: 10px;
+}
+
+#scroll-play-btn:not(.active) {
+  padding-left: 7px;
+  /* Optical adjustment for play triangle */
 }
 
 #scroll-play-btn:hover,
 #scroll-play-btn.active {
   color: #ffffff;
+  border-color: #a5b0c4;
 }
 
 #scroll-play-btn.active {
-  font-size: 28px;
-  transform: translateY(0);
-  /* Reset for ■ icon */
+  font-size: 18px;
+  padding-bottom: 6px;
+  /* Optical adjustment to move stop icon up */
 }
 
 /* ── Main content ──────────────────────────────────────────────────────── */
