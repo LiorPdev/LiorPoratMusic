@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
-      .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>');
+      .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>')
+      .replace(/♫/g, '<span class="scroll-pause-marker">♫</span>');
 
   // Content <pre>
   const pre = document.createElement('pre');
@@ -176,6 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let scrollRafId = null;
   let scrollSpeed = cfg.scrollSpeed ?? 0.1;
   let scrollAccum = 0;
+  let pauseUntil = 0;
+  let pausePositions = [];
+  let nextPauseIdx = 0;
 
   const setPlaying = (playing) => {
     if (!playBtn) return;
@@ -186,12 +190,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const startScroll = () => {
     if (scrollRafId) return;
+
+    // Recalculate pause positions based on current view (lyrics or chords)
+    const topBar = document.querySelector('.song-topbar');
+    const topBarHt = topBar ? topBar.offsetHeight : 60;
+    const markers = document.querySelectorAll('.scroll-pause-marker');
+
+    // Group markers by their vertical position (roughly same line)
+    const grouped = {};
+    [...markers].forEach(m => {
+      const pos = Math.round(m.getBoundingClientRect().top + window.scrollY - topBarHt);
+      // Use a small threshold (5px) to group markers on the same line
+      const key = Object.keys(grouped).find(k => Math.abs(k - pos) < 5) || pos;
+      grouped[key] = (grouped[key] || 0) + 1;
+    });
+
+    pausePositions = Object.entries(grouped)
+      .map(([pos, count]) => ({ pos: Number(pos), duration: count * 2000 }))
+      .filter(p => p.pos > window.scrollY)
+      .sort((a, b) => a.pos - b.pos);
+
+    nextPauseIdx = 0;
     scrollAccum = 0;
+    pauseUntil = 0;
+
     setPlaying(true);
     const step = () => {
+      if (Date.now() < pauseUntil) {
+        scrollRafId = requestAnimationFrame(step);
+        return;
+      }
+
       scrollAccum += scrollSpeed;
       const px = Math.floor(scrollAccum);
-      if (px > 0) { window.scrollBy(0, px); scrollAccum -= px; }
+      if (px > 0) {
+        window.scrollBy(0, px);
+        scrollAccum -= px;
+
+        // Check if we hit a pause position
+        if (nextPauseIdx < pausePositions.length && window.scrollY >= pausePositions[nextPauseIdx].pos) {
+          pauseUntil = Date.now() + pausePositions[nextPauseIdx].duration;
+          while (nextPauseIdx < pausePositions.length && window.scrollY >= pausePositions[nextPauseIdx].pos) {
+            nextPauseIdx++;
+          }
+        }
+      }
+
       const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 2;
       if (atBottom) { scrollRafId = null; setPlaying(false); }
       else { scrollRafId = requestAnimationFrame(step); }
