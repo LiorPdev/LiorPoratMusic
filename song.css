@@ -100,7 +100,7 @@ body {
 
 #scroll-play-btn.active {
   font-size: 18px;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   /* Optical adjustment to move stop icon up */
 }
 
