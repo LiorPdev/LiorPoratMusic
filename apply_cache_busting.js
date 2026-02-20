@@ -3,7 +3,7 @@ const path = require('path');
 
 const songsDir = path.join(__dirname, 'songs');
 const files = fs.readdirSync(songsDir).filter(f => f.endsWith('.html'));
-const version = '1.0.1';
+const version = '1.0.3';
 
 files.forEach(file => {
     const filePath = path.join(songsDir, file);
