@@ -70,6 +70,15 @@ document.addEventListener('DOMContentLoaded', () => {
     pre.innerHTML = highlightChords(lyricsText || chordsText);
   }
 
+  // credits – declared early so updateView can show/hide it
+  const cr = document.createElement('div');
+  cr.className = 'credits';
+  if (cfg.lyricsBy) {
+    const line1 = document.createElement('div');
+    line1.textContent = 'מילים: ' + cfg.lyricsBy;
+    cr.appendChild(line1);
+  }
+
   // מילים / אקורדים toggle
   let playBtn; // declared here so auto-scroll section can reference it
   if (lyricsText && chordsText) {
@@ -106,6 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
       btnChords.classList.toggle('active', showChords);
       const hash = showChords ? '#chords' : '#lyrics';
       if (window.location.hash !== hash) history.replaceState(null, '', hash);
+      // hide credits in chords view
+      if (cr) cr.style.display = showChords ? 'none' : '';
     };
 
     btnLyrics.addEventListener('click', () => updateView(false));
@@ -122,14 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Content goes into main (below the topbar)
   main.appendChild(pre);
 
-  // credits
-  const cr = document.createElement('div');
-  cr.className = 'credits';
-  if (cfg.lyricsBy) {
-    const line1 = document.createElement('div');
-    line1.textContent = 'מילים: ' + cfg.lyricsBy;
-    cr.appendChild(line1);
-  }
   main.appendChild(cr);
 
   // listen icons
