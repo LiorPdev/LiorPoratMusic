@@ -164,13 +164,27 @@ document.addEventListener('DOMContentLoaded', () => {
   spacer1.style.height = '20px';
   main.appendChild(spacer1);
 
+  const actionRow = document.createElement('div');
+  actionRow.style.cssText = 'display:flex;gap:36px;align-items:center;flex-wrap:wrap;';
+
   const share = document.createElement('a');
   share.href = '#';
   share.className = 'share-link';
   share.id = 'shareBtn';
   share.setAttribute('aria-label', 'שתף עמוד זה');
   share.innerHTML = '<i class="fa-solid fa-share-nodes"></i> שיתוף';
-  main.appendChild(share);
+  actionRow.appendChild(share);
+
+  const printBtn = document.createElement('a');
+  printBtn.href = '#';
+  printBtn.className = 'share-link';
+  printBtn.id = 'printBtn';
+  printBtn.setAttribute('aria-label', 'הדפס עמוד זה');
+  printBtn.innerHTML = '<i class="fa-solid fa-print"></i> הדפסה';
+  printBtn.addEventListener('click', (e) => { e.preventDefault(); window.print(); });
+  actionRow.appendChild(printBtn);
+
+  main.appendChild(actionRow);
 
   const spacer2 = document.createElement('div');
   spacer2.style.height = '20px';
