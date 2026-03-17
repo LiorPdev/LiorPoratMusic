@@ -26,14 +26,10 @@ body {
 }
 
 .song-topbar .songs-title {
-    flex: 1;
+    flex: 0 0 auto;
     margin: 0;
     font-size: 24px;
     color: #eef2ff;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    overflow: hidden;
     white-space: nowrap;
 }
 
@@ -48,33 +44,40 @@ body {
     text-decoration: none;
     transition: color 0.2s;
     position: relative;
+    display: block;
 }
 
 .close-btn:hover {
     color: #ffffff;
 }
 
-@media (max-width: 600px) {
-    body {
-        padding-top: 100px;
-    }
+/* ── Search Bar ─────────────────────────────────────────────────────────── */
+.search-container {
+    flex: 1;
+    max-width: 300px;
+    margin: 5px 20px 0 20px;
+    min-width: 0;
+}
 
-    .song-topbar {
-        height: auto;
-        min-height: 90px;
-    }
+#songSearch {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #1e2433;
+    background: #1b1f2a;
+    color: #eef2ff;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-    .topbar-inner {
-        padding: 10px 16px;
-        align-items: flex-start;
-    }
+#songSearch:focus {
+    border-color: #6366f1;
+    background: #242938;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
 
-    .song-topbar .songs-title {
-        flex: 1 1 calc(100% - 40px);
-        flex-wrap: wrap;
-        font-size: 22px;
-        white-space: normal;
-    }
+#songSearch::placeholder {
+    color: #64748b;
 }
 
 /* ── Song List ──────────────────────────────────────────────────────────── */
@@ -130,4 +133,44 @@ body {
 .back-link {
     text-align: center;
     display: block;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding-top: 70px;
+    }
+
+    .song-topbar {
+        height: 70px;
+    }
+
+    .topbar-inner {
+        padding: 0 16px;
+        gap: 12px;
+        flex-wrap: nowrap;
+    }
+
+    .song-topbar .songs-title {
+        flex: 0 0 75px;
+        font-size: 16px;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    .search-container {
+        flex: 1;
+        margin: 0;
+        max-width: none;
+        min-width: 0;
+    }
+
+    .close-btn {
+        flex: 0 0 32px;
+        margin: 0;
+    }
+
+    #songSearch {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
 }

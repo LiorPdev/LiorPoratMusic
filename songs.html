@@ -36,11 +36,14 @@
   <div class="song-topbar">
     <div class="topbar-inner">
       <h2 class="songs-title">מילים ואקורדים</h2>
+      <div class="search-container">
+        <input type="text" id="songSearch" placeholder="חפש שיר..." aria-label="חפש שיר">
+      </div>
       <a href="index.html" class="close-btn" aria-label="חזרה">×</a>
     </div>
   </div>
 
-  <h1 class="visually-hidden">מילים ואקורדים לכל השירים של ליאור פורת</h1>
+  <h1 class="visually-hidden">מילים ואקורדים לשירים של ליאור פורת</h1>
 
   <main class="songs" id="songs"></main>
 
@@ -108,26 +111,38 @@
     songs.sort(collator.compare);
 
     const el = document.getElementById('songs');
-    songs.forEach(name => {
-      const row = document.createElement('div');
-      row.className = 'song-item';
 
-      const a = document.createElement('a');
-      a.href = `songs/${name}.html`;
+    function renderSongs(filter = '') {
+      el.innerHTML = '';
+      const filteredSongs = songs.filter(name => name.includes(filter));
 
-      const img = document.createElement('img');
-      img.src = `Media/songs/${name}.webp`;
-      img.alt = name;
-      img.className = 'song-thumb';
+      filteredSongs.forEach(name => {
+        const row = document.createElement('div');
+        row.className = 'song-item';
 
-      const span = document.createElement('span');
-      span.className = 'song-name';
-      span.textContent = name;
+        const a = document.createElement('a');
+        a.href = `songs/${name}.html`;
 
-      a.appendChild(img);
-      a.appendChild(span);
-      row.appendChild(a);
-      el.appendChild(row);
+        const img = document.createElement('img');
+        img.src = `Media/songs/${name}.webp`;
+        img.alt = name;
+        img.className = 'song-thumb';
+
+        const span = document.createElement('span');
+        span.className = 'song-name';
+        span.textContent = name;
+
+        a.appendChild(img);
+        a.appendChild(span);
+        row.appendChild(a);
+        el.appendChild(row);
+      });
+    }
+
+    renderSongs();
+
+    document.getElementById('songSearch').addEventListener('input', (e) => {
+      renderSongs(e.target.value);
     });
   </script>
   <script src="script.js?v=1.0.3"></script>
