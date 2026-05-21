@@ -38,6 +38,9 @@
       <h2 class="songs-title">מילים ואקורדים</h2>
       <div class="search-container">
         <input type="text" id="songSearch" placeholder="חפש שיר..." aria-label="חפש שיר">
+        <select id="genreFilter" aria-label="סנן לפי סגנון">
+          <option value="">הכל</option>
+        </select>
       </div>
       <a href="index.html" class="close-btn" aria-label="חזרה">×</a>
     </div>
@@ -58,83 +61,115 @@
 
   <script>
     const songs = [
-      "אי אפשר",
-      "אין כבר דרך חזרה",
-      "אני בוחר",
-      "אסיר 1376",
-      "בארץ דמיונית",
-      "בוקר טוב לך שמש",
-      "בלוז לחילוני",
-      "בלוז לנפטר",
-      "בלוז לשבת",
-      "בלוז לשירלי",
-      "במקום שבו נולדתי",
-      "בפינת החדר",
-      "בשורה תחתונה (קלישאות)",
-      "גרשון רוזנצוויג",
-      "דמייני שאת בסרט",
-      "הביתה לחזור",
-      "הדברים הפשוטים שבחיים",
-      "הוא ידע",
-      "היא זרה לי",
-      "היא לא מוצאת",
-      "הים נחצה לשניים",
-      "הכל מושלם",
-      "המוזרה הזאת",
-      "הצעירות הללו",
-      "הרשימה",
-      "כל כך לחוץ",
-      "לאון השען",
-      "להיות ישראלי",
-      "לו ראית אותי הערב",
-      "מדריך געגוע",
-      "מה נשמע הבוקר",
-      "מה עוד צריך לקרות",
-      "מחשבות",
-      "נוסע",
-      "נחתכתי בגילוח",
-      "ניפגש שוב בקרוב",
-      "נמאס לי",
-      "עשרים דקות לתשע",
-      "צוף לעמק האסור",
-      "קונספירציה",
-      "קיץ משוגע",
-      "שתיים כוסות של תה אדום",
-      "תופסים ראש קטן",
-      "תל אביבי",
-      "תנו לי שקט",
-      "תנסו להשתחרר",
-      "תקוע באדום",
-      "תקשיב אחי"
+      { name: "אי אפשר", genre: "רוקנרול", bpm: 89 },
+      { name: "אין כבר דרך חזרה", genre: "רוקנרול", bpm: 88 },
+      { name: "אני בוחר", genre: "גרוב", bpm: 123 },
+      { name: "אסיר 1376", genre: "שונות", bpm: 123 },
+      { name: "בארץ דמיונית", genre: "אינדי", bpm: 81 },
+      { name: "בוקר טוב לך שמש", genre: "רוקנרול", bpm: 103 },
+      { name: "בלוז לחילוני", genre: "בלוז", bpm: 115 },
+      { name: "בלוז לנפטר", genre: "בלוז", bpm: 89 },
+      { name: "בלוז לשבת", genre: "בלוז", bpm: 70 },
+      { name: "בלוז לשירלי", genre: "בלוז", bpm: 172 },
+      { name: "במקום שבו נולדתי", genre: "בלוז", bpm: 157 },
+      { name: "בפינת החדר", genre: "שקט", bpm: 85 },
+      { name: "בשורה תחתונה (קלישאות)", genre: "גרוב", bpm: 136 },
+      { name: "גרשון רוזנצוויג", genre: "גרוב", bpm: 99 },
+      { name: "דמייני שאת בסרט", genre: "גרוב", bpm: 98 },
+      { name: "הביתה לחזור", genre: "גרוב", bpm: 96 },
+      { name: "הדברים הפשוטים שבחיים", genre: "שקט", bpm: 157 },
+      { name: "הוא ידע", genre: "בלוז", bpm: 126 },
+      { name: "היא זרה לי", genre: "שקט", bpm: 148 },
+      { name: "היא לא מוצאת", genre: "בלוז", bpm: 76 },
+      { name: "הים נחצה לשניים", genre: "רוקנרול", bpm: 92 },
+      { name: "הכל מושלם", genre: "רוק", bpm: 82 },
+      { name: "המוזרה הזאת", genre: "שקט", bpm: 191 },
+      { name: "הצעירות הללו", genre: "רוקנרול", bpm: 85 },
+      { name: "הרשימה", genre: "שקט", bpm: 144 },
+      { name: "כל כך לחוץ", genre: "בלוז", bpm: 167 },
+      { name: "לאון השען", genre: "בלוז" },
+      { name: "להיות ישראלי", genre: "רוקנרול", bpm: 96 },
+      { name: "לו ראית אותי הערב", genre: "רוקנרול", bpm: 115 },
+      { name: "מדריך געגוע", genre: "אינדי", bpm: 68 },
+      { name: "מה נשמע הבוקר", genre: "בלוז", bpm: 129 },
+      { name: "מה עוד צריך לקרות", genre: "רוק", bpm: 75 },
+      { name: "מחשבות", genre: "שקט", bpm: 75 },
+      { name: "נוסע", genre: "רוק", bpm: 62 },
+      { name: "נחתכתי בגילוח", genre: "שונות", bpm: 98 },
+      { name: "ניפגש שוב בקרוב", genre: "גרוב", bpm: 191 },
+      { name: "נמאס לי", genre: "בלוז", bpm: 167 },
+      { name: "עשרים דקות לתשע", genre: "בלוז", bpm: 207 },
+      { name: "צוף לעמק האסור", genre: "רוקנרול", bpm: 88 },
+      { name: "קונספירציה", genre: "בלוז", bpm: 75 },
+      { name: "קיץ משוגע", genre: "בלוז", bpm: 80 },
+      { name: "שלושים שנה וחלום", genre: "בלוז", bpm: 74 },
+      { name: "שתיים כוסות של תה אדום", genre: "רוקנרול", bpm: 162 },
+      { name: "תופסים ראש קטן", genre: "רוקנרול", bpm: 96 },
+      { name: "תל אביבי", genre: "רוקנרול", bpm: 144 },
+      { name: "תנו לי שקט", genre: "אינדי", bpm: 88 },
+      { name: "תנסו להשתחרר", genre: "רוק", bpm: 129 },
+      { name: "תקוע באדום", genre: "שונות", bpm: 129 },
+      { name: "תקשיב אחי", genre: "שקט", bpm: 148 }
     ];
 
     const collator = new Intl.Collator('he', { sensitivity: 'base', numeric: true });
-    songs.sort(collator.compare);
+    songs.sort((a, b) => collator.compare(a.name, b.name));
+
+    // Populate genre filter dynamically
+    const genreFilter = document.getElementById('genreFilter');
+    const genresSet = new Set();
+    songs.forEach(song => {
+      if (song.genre) genresSet.add(song.genre);
+    });
+    const genres = Array.from(genresSet).sort(collator.compare);
+    genres.forEach(genre => {
+      const option = document.createElement('option');
+      option.value = genre;
+      option.textContent = genre;
+      genreFilter.appendChild(option);
+    });
 
     const el = document.getElementById('songs');
 
-    function renderSongs(filter = '') {
+    function renderSongs() {
       el.innerHTML = '';
-      const filteredSongs = songs.filter(name => name.includes(filter));
+      const searchText = document.getElementById('songSearch').value.trim();
+      const selectedGenre = genreFilter.value;
 
-      filteredSongs.forEach(name => {
+      const filteredSongs = songs.filter(song => {
+        const matchesSearch = song.name.includes(searchText);
+        const matchesGenre = !selectedGenre || song.genre === selectedGenre;
+        return matchesSearch && matchesGenre;
+      });
+
+      filteredSongs.forEach(song => {
         const row = document.createElement('div');
         row.className = 'song-item';
 
         const a = document.createElement('a');
-        a.href = `songs/${name}.html`;
+        a.href = `songs/${song.name}.html`;
 
         const img = document.createElement('img');
-        img.src = `Media/songs/${name}.webp`;
-        img.alt = name;
+        img.src = `Media/songs/${song.name}.webp`;
+        img.alt = song.name;
         img.className = 'song-thumb';
 
-        const span = document.createElement('span');
-        span.className = 'song-name';
-        span.textContent = name;
+        const info = document.createElement('div');
+        info.className = 'song-info';
+
+        const spanName = document.createElement('span');
+        spanName.className = 'song-name';
+        spanName.textContent = song.name;
+
+        const spanGenre = document.createElement('span');
+        spanGenre.className = 'song-genre';
+        spanGenre.textContent = song.bpm ? `${song.genre} • ${song.bpm} BPM` : song.genre;
+
+        info.appendChild(spanName);
+        info.appendChild(spanGenre);
 
         a.appendChild(img);
-        a.appendChild(span);
+        a.appendChild(info);
         row.appendChild(a);
         el.appendChild(row);
       });
@@ -142,8 +177,12 @@
 
     renderSongs();
 
-    document.getElementById('songSearch').addEventListener('input', (e) => {
-      renderSongs(e.target.value);
+    document.getElementById('songSearch').addEventListener('input', () => {
+      renderSongs();
+    });
+
+    genreFilter.addEventListener('change', () => {
+      renderSongs();
     });
   </script>
   <script src="script.js?v=1.0.3"></script>
