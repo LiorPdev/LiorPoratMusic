@@ -68,8 +68,9 @@ body {
   color: #ffffff;
 }
 
-/* Play/Stop button inside topbar (after toggle) */
-#scroll-play-btn {
+/* Play/Stop and YouTube buttons inside topbar */
+#scroll-play-btn,
+#youtube-play-btn {
   flex-shrink: 0;
   background: none;
   border: 1px solid #7a8796;
@@ -87,21 +88,33 @@ body {
   margin-right: 10px;
 }
 
-#scroll-play-btn:not(.active) {
-  padding-left: 7px;
-  /* Optical adjustment for play triangle */
-}
-
 #scroll-play-btn:hover,
-#scroll-play-btn.active {
+#scroll-play-btn.active,
+#youtube-play-btn:hover,
+#youtube-play-btn.active {
   color: #ffffff;
   border-color: #a5b0c4;
 }
 
-#scroll-play-btn.active {
+#youtube-play-btn:not(.active) {
+  padding-left: 7px;
+  /* Optical adjustment for play triangle */
+}
+
+#youtube-play-btn.active {
   font-size: 16px;
   padding-bottom: 3px;
   /* Optical adjustment to move stop icon up */
+}
+
+#scroll-play-btn:not(.active) {
+  font-size: 11px;
+  /* Adjust size for the chevron-down / angles-down icon to fit nicely */
+}
+
+#scroll-play-btn.active {
+  font-size: 13px;
+  /* Perfectly centered by flexbox */
 }
 
 /* ── Main content ──────────────────────────────────────────────────────── */

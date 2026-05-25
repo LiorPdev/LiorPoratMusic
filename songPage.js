@@ -79,6 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
     cr.appendChild(line1);
   }
 
+  // ── Auto-scroll state variables (declared early to avoid TDZ errors on load) ──
+  let scrollRafId = null;
+  let scrollSpeed = cfg.scrollSpeed ?? 0.1;
+  let scrollAccum = 0;
+  let pauseUntil = 0;
+  let pausePositions = [];
+  let nextPauseIdx = 0;
+
   // מילים / אקורדים toggle
   let playBtn; // declared here so auto-scroll section can reference it
   if (lyricsText && chordsText) {
@@ -102,11 +110,53 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle.appendChild(btnChords);
     h1.appendChild(toggle);
 
-    // Play/Stop button – after the toggle
+    // YouTube Play/Stop button
+    let ytPlayBtn;
+    let ytIframe = null;
+    let ytPlaying = false;
+
+    const setYtPlaying = (playing) => {
+      if (!ytPlayBtn) return;
+      ytPlaying = playing;
+      ytPlayBtn.textContent = playing ? '■' : '▶';
+      ytPlayBtn.setAttribute('aria-label', playing ? 'עצור שיר' : 'נגן שיר מיוטיוב');
+      ytPlayBtn.classList.toggle('active', playing);
+    };
+
+    if (cfg.youtubeId) {
+      ytPlayBtn = document.createElement('button');
+      ytPlayBtn.id = 'youtube-play-btn';
+      ytPlayBtn.setAttribute('aria-label', 'נגן שיר מיוטיוב');
+      ytPlayBtn.textContent = '▶';
+      h1.appendChild(ytPlayBtn);
+
+      ytPlayBtn.addEventListener('click', () => {
+        if (ytPlaying) {
+          if (ytIframe) {
+            ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+          }
+          setYtPlaying(false);
+        } else {
+          if (!ytIframe) {
+            ytIframe = document.createElement('iframe');
+            ytIframe.id = 'youtube-player';
+            ytIframe.style.display = 'none';
+            ytIframe.setAttribute('allow', 'autoplay');
+            ytIframe.src = `https://www.youtube.com/embed/${cfg.youtubeId}?enablejsapi=1&autoplay=1`;
+            document.body.appendChild(ytIframe);
+          } else {
+            ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+          }
+          setYtPlaying(true);
+        }
+      });
+    }
+
+    // Play/Stop button – after the toggle (and YouTube button)
     playBtn = document.createElement('button');
     playBtn.id = 'scroll-play-btn';
     playBtn.setAttribute('aria-label', 'הפעל גלילה אוטומטית');
-    playBtn.textContent = '▶';
+    playBtn.innerHTML = '<i class="fa-solid fa-angles-down"></i>';
     h1.appendChild(playBtn);
 
     const updateView = (showChords) => {
@@ -117,6 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.location.hash !== hash) history.replaceState(null, '', hash);
       // hide credits in chords view
       if (cr) cr.style.display = showChords ? 'none' : '';
+      if (playBtn) playBtn.style.display = showChords ? '' : 'none';
+      if (!showChords && typeof stopScroll === 'function') stopScroll();
     };
 
     btnLyrics.addEventListener('click', () => updateView(false));
@@ -191,21 +243,15 @@ document.addEventListener('DOMContentLoaded', () => {
   main.appendChild(spacer2);
 
   // ── Auto-scroll ────────────────────────────────────────────────────────────
-  let scrollRafId = null;
-  let scrollSpeed = cfg.scrollSpeed ?? 0.1;
-  let scrollAccum = 0;
-  let pauseUntil = 0;
-  let pausePositions = [];
-  let nextPauseIdx = 0;
 
-  const setPlaying = (playing) => {
+  function setPlaying(playing) {
     if (!playBtn) return;
-    playBtn.textContent = playing ? '■' : '▶';
+    playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-angles-down"></i>';
     playBtn.setAttribute('aria-label', playing ? 'עצור גלילה' : 'הפעל גלילה אוטומטית');
     playBtn.classList.toggle('active', playing);
-  };
+  }
 
-  const startScroll = () => {
+  function startScroll() {
     if (scrollRafId) return;
 
     // Recalculate pause positions based on current view (lyrics or chords)
@@ -258,14 +304,14 @@ document.addEventListener('DOMContentLoaded', () => {
       else { scrollRafId = requestAnimationFrame(step); }
     };
     scrollRafId = requestAnimationFrame(step);
-  };
+  }
 
-  const stopScroll = () => {
+  function stopScroll() {
     if (!scrollRafId) return;
     cancelAnimationFrame(scrollRafId);
     scrollRafId = null;
     setPlaying(false);
-  };
+  }
 
   if (playBtn) {
     playBtn.addEventListener('click', () => scrollRafId ? stopScroll() : startScroll());
@@ -273,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Tap anywhere (not on interactive elements) to toggle scroll
   document.addEventListener('click', (e) => {
+    if (playBtn && playBtn.style.display === 'none') return;
     const tag = e.target.tagName;
     if (['A', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'].includes(tag)) return;
     if (e.target.closest('a, button')) return;
