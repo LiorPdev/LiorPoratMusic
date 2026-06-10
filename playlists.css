@@ -132,3 +132,40 @@ header p {
 .btn:hover {
   opacity: .9
 }
+
+.song-week-section {
+  margin-top: 54px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 40px;
+}
+
+.song-week-title {
+  font-size: clamp(20px, 3.5vw, 26px);
+  margin: 0 auto 28px;
+  position: relative;
+  display: inline-block;
+  color: var(--text);
+  font-weight: 700;
+  animation: title-flicker 4s infinite;
+}
+
+.song-week-card {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.song-week-card .thumb {
+  max-width: 80%;
+}
+
+@keyframes title-flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.1));
+  }
+  20%, 24%, 55% {
+    opacity: 0.55;
+    filter: none;
+  }
+}

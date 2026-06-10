@@ -71,6 +71,19 @@
 
   <main class="container">
     <section class="grid" id="list"></section>
+
+    <section class="song-week-section">
+      <h2 class="song-week-title">שיר השבוע</h2>
+      <div class="card song-week-card">
+        <div class="description">לאון השען</div>
+        <div class="thumb" data-open-track="https://open.spotify.com/track/5FPWbbSV2sjktJqNKDRygK?si=81c9f22f7b6f4a49">
+          <img class="img" alt="לאון השען" src="Media/playlist/SongWeek.webp" loading="lazy" width="512" height="512">
+        </div>
+        <div class="body">
+          <a class="btn" href="#" data-open-track="https://open.spotify.com/track/5FPWbbSV2sjktJqNKDRygK?si=81c9f22f7b6f4a49">האזנה בספוטיפיי</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -80,6 +93,12 @@
         url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl",
         image: "Media/playlist/drive.webp",
         description: "מוזיקה נעימה לכל מצב רוח",
+      },
+      {
+        name: "בלוז",
+        url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
+        image: "Media/playlist/blues.webp",
+        description: "בלוז ישראלי לנשמה",
       },
       {
         name: "שקט ורגוע",
@@ -104,12 +123,6 @@
         url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
         image: "Media/playlist/Indie.webp",
         description: "אינדי ישראלי חדש ורגוע",
-      },
-      {
-        name: "בלוז",
-        url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
-        image: "Media/playlist/blues.webp",
-        description: "בלוז ישראלי לנשמה",
       },
       {
         name: "מסע מרתק בין מילים",
@@ -146,6 +159,36 @@
 
       if (isAndroid) {
         const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
+          web
+        )};end`;
+        location.href = intent;
+        return;
+      }
+      if (isIOS) {
+        const t = Date.now();
+        location.href = uri;
+        setTimeout(() => {
+          if (Date.now() - t < 1500) location.href = web;
+        }, 1200);
+        return;
+      }
+      location.href = web;
+    }
+
+    function openTrackInApp(trackUrl) {
+      if (typeof fbq === 'function') {
+        fbq('track', 'Contact', { content_name: trackUrl });
+      }
+
+      const id = (trackUrl.match(/track\/([a-zA-Z0-9]+)/) || [, ""])[1];
+      const web = trackUrl;
+      const uri = `spotify://track/${id}`;
+      const ua = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+      if (isAndroid) {
+        const intent = `intent://track/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
           web
         )};end`;
         location.href = intent;
@@ -209,6 +252,13 @@
         btn.addEventListener("click", (e) => {
           e.preventDefault();
           openInApp(btn.getAttribute("data-open-app"));
+        });
+      });
+
+      document.querySelectorAll("[data-open-track]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          openTrackInApp(btn.getAttribute("data-open-track"));
         });
       });
     })();
