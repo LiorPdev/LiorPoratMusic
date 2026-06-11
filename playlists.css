@@ -60,6 +60,11 @@ header p {
   box-shadow: 0 14px 36px rgba(0, 0, 0, .45)
 }
 
+.card[data-open-app],
+.card[data-open-track] {
+  cursor: pointer;
+}
+
 .description {
   text-align: center;
   margin: 18px 14px 0;
@@ -76,7 +81,7 @@ header p {
   max-width: 60%;
   margin: 18px auto 0;
   border-radius: 12px;
-  cursor: pointer
+  cursor: pointer;
 }
 
 .img {
@@ -120,11 +125,11 @@ header p {
   text-decoration: none;
   background: #3bb273;
   color: #fff;
-  padding: 12px 14px;
+  padding: 8px 10px;
   border-radius: 10px;
   font-weight: 700;
   font-size: 14px;
-  width: 85%;
+  width: 70%;
   margin: 0 auto;
   transition: opacity .15s ease
 }
@@ -159,12 +164,26 @@ header p {
   max-width: 80%;
 }
 
+.song-week-card .btn {
+  width: 80%;
+}
+
 @keyframes title-flicker {
-  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+
+  0%,
+  18%,
+  22%,
+  25%,
+  53%,
+  57%,
+  100% {
     opacity: 1;
     filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.1));
   }
-  20%, 24%, 55% {
+
+  20%,
+  24%,
+  55% {
     opacity: 0.55;
     filter: none;
   }

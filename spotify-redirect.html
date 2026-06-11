@@ -43,7 +43,7 @@
 
     <link rel="preconnect" href="https://open.spotify.com" />
     <link rel="preconnect" href="https://i.scdn.co" />
-    <link rel="stylesheet" href="playlists.css?v=1.0.3" />
+    <link rel="stylesheet" href="playlists.css?v=1.0.4" />
     <script type="text/javascript">
       (function (c, l, a, r, i, t, y) {
         c[a] =
@@ -160,8 +160,8 @@
         const id = toId(url);
         const img = thumbnail || "";
         return `
-        <article class="card" data-id="${id}">
-          <div class="thumb" data-open-app="${url}">
+        <article class="card" data-id="${id}" data-open-app="${url}">
+          <div class="thumb">
             ${
               img
                 ? `<img class="img" alt="${name}" src="${img}" loading="lazy" width="512" height="512">`
@@ -169,7 +169,7 @@
             }
           </div>
           <div class="body">
-            <a class="btn" href="#" data-open-app="${url}">האזנה בספוטיפיי</a>
+            <a class="btn" href="#">האזנה בספוטיפיי</a>
           </div>
         </article>
       `;
