@@ -29,7 +29,7 @@
 
   <link rel="preconnect" href="https://open.spotify.com" />
   <link rel="preconnect" href="https://i.scdn.co" />
-  <link rel="stylesheet" href="playlists.css?v=1.0.4" />
+  <link rel="stylesheet" href="playlists.css?v=1.1.2" />
   <script type="text/javascript">
     (function (c, l, a, r, i, t, y) {
       c[a] =
@@ -98,34 +98,34 @@
         description: "מוזיקה נעימה לכל מצב רוח",
       },
       {
-        name: "אינדי",
-        url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
-        image: "Media/playlist/Indie.webp",
-        description: "ישראלי אינטימי רגוע",
-      },
-      {
         name: "ישראלי - הכי מושמעים ברדיו",
         url: "https://open.spotify.com/playlist/5T7r6CHJZd5ifrkjbhKHJR",
         image: "Media/playlist/Radio IL Playlist.webp",
-        description: "הכי מושמעים ברדיו | ישראלי",
+        description: "מה שמושמע עכשיו ברדיו | ישראלי",
+      },
+      {
+        name: "אינדי",
+        url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
+        image: "Media/playlist/Indie.webp",
+        description: "פולק ישראלי",
       },
       {
         name: "שקט ורגוע",
         url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU",
         image: "Media/playlist/quiet.webp",
-        description: "שקט ורגוע",
-      },
-      {
-        name: "בלוז",
-        url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
-        image: "Media/playlist/blues.webp",
-        description: "בלוז ישראלי לנשמה",
+        description: "להירגע ולשכוח מהכול",
       },
       {
         name: "רוק",
         url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK",
         image: "Media/playlist/rock.webp",
         description: "לאוהבי רוק ישראלי קצבי",
+      },
+      {
+        name: "בלוז",
+        url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
+        image: "Media/playlist/blues.webp",
+        description: "בלוז ישראלי לנשמה",
       },
       {
         name: "גרוב",
@@ -137,7 +137,7 @@
         name: "ישראלי/לועזי - הכי מושמעים ברדיו",
         url: "https://open.spotify.com/playlist/7EMf0tuEIQHBPj3ol56LyV",
         image: "Media/playlist/Radio All Playlist.webp",
-        description: "הכי מושמעים ברדיו | ישראלי/לועזי",
+        description: "מה שמושמע עכשיו ברדיו | ישראלי/לועזי",
       },
       {
         name: "מסע מרתק בין מילים",
@@ -225,9 +225,7 @@
           ? `<img class="img" alt="${name}" src="${img}" loading="lazy" width="512" height="512">`
           : `<div class="skeleton" aria-hidden="true"></div>`
         }
-          </div>
-          <div class="body">
-            <a class="btn" href="#">האזנה בספוטיפיי</a>
+            <span class="btn">האזנה בספוטיפיי</span>
           </div>
         </article>
       `;
