@@ -58,8 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Read lyrics / chords
   const lyricsNode = document.getElementById('lyrics');
   const chordsNode = document.getElementById('chords');
-  const lyricsText = lyricsNode ? lyricsNode.textContent.trim() : '';
-  const chordsText = chordsNode ? chordsNode.textContent.trim() : '';
+  let lyricsText = lyricsNode ? lyricsNode.textContent.trim() : '';
+  let chordsText = chordsNode ? chordsNode.textContent.trim() : '';
+
+  if (cfg.mode === 'lyrics') {
+    chordsText = '';
+  } else if (cfg.mode === 'chords') {
+    lyricsText = '';
+  }
 
   const highlightChords = (text) =>
     text
@@ -71,6 +77,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Content <pre>
   const pre = document.createElement('pre');
+  if (cfg.fontSize) {
+    const fs = typeof cfg.fontSize === 'number' ? `${cfg.fontSize}em` : cfg.fontSize;
+    pre.style.setProperty('font-size', fs, 'important');
+    document.documentElement.style.setProperty('--song-font-size', fs);
+  }
+  if (cfg.lineHeight) {
+    pre.style.setProperty('line-height', cfg.lineHeight, 'important');
+    document.documentElement.style.setProperty('--song-line-height', cfg.lineHeight);
+  }
   if (lyricsText || chordsText) {
     pre.innerHTML = highlightChords(lyricsText || chordsText);
   }
@@ -196,7 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Content goes into main (below the topbar)
   main.appendChild(pre);
 
-  main.appendChild(cr);
+  if (!isShow) {
+    main.appendChild(cr);
+  }
 
   // listen icons and footer action buttons (omitted for Show songs)
   if (!isShow) {

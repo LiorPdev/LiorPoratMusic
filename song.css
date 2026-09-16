@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@600;700;800;900&display=swap');
+
 body {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   font-size: 18px;
@@ -264,14 +266,20 @@ pre {
   }
 }
 
-/* ── Show Mode (Prompt Display: Maximum Screen Utilization & 4x Font) ─────── */
+/* ── Show Mode (Stage Prompter: Deep Black, Bold Typography, High Contrast) ─ */
 body.show-song {
   padding-top: 60px !important;
+  background: #000000 !important;
+  background-color: #000000 !important;
+  color: #ffffff !important;
 }
 
 body.show-song .song-topbar {
   height: 60px !important;
   min-height: 60px !important;
+  background: #000000 !important;
+  background-color: #000000 !important;
+  border-bottom: 1px solid #1c1c1c !important;
 }
 
 body.show-song .topbar-inner {
@@ -287,6 +295,8 @@ body.show-song .song-topbar .song-header {
 
 body.show-song .song-topbar .song-header .title {
   font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
 }
 
 body.show-song #youtube-play-btn {
@@ -298,22 +308,71 @@ body.show-song .wrap {
   margin: 0 !important;
   padding: 0 !important;
   box-sizing: border-box !important;
+  background: #000000 !important;
+  background-color: #000000 !important;
 }
 
 body.show-song pre {
   margin: 0 !important;
   border-radius: 0 !important;
-  font-size: 7em;
-  line-height: 1.3;
-  letter-spacing: 0.5px;
+  font-family: 'Noto Sans Hebrew', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
+  font-size: var(--song-font-size, 10em);
+  font-weight: 800 !important;
+  line-height: var(--song-line-height, 1.45) !important;
+  letter-spacing: 0.8px;
   padding: 8px 16px !important;
   box-sizing: border-box !important;
   width: 100% !important;
+  background: #000000 !important;
+  background-color: #000000 !important;
+  color: #FFE600 !important; /* צהוב במה זוהר וקריא */
+  text-shadow: 0 0 1px rgba(255, 230, 0, 0.4);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body.show-song .chord {
+  color: #FFFFFF !important; /* אקורדים בלבן מודגש מבודלים מהטקסט */
+  font-weight: 900 !important;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+body.show-song .view-toggle {
+  border-color: #333333 !important;
+  background: #111111 !important;
+}
+
+body.show-song .toggle-btn {
+  color: #777777 !important;
+  font-weight: 600 !important;
+}
+
+body.show-song .toggle-btn.active {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+body.show-song .close-btn {
+  color: #ffffff !important;
+  opacity: 0.85;
+}
+
+body.show-song .close-btn:hover {
+  opacity: 1;
+}
+
+body.show-song #scroll-play-btn {
+  color: #FFE600 !important;
+  border-color: #FFE600 !important;
+}
+
+body.show-song .credits {
+  display: none !important;
 }
 
 @media (max-width: 768px) {
   body.show-song pre {
-    font-size: clamp(36px, 9vw, 7em);
+    font-size: var(--song-font-size, clamp(45px, 12vw, 10em));
     padding: 6px 10px !important;
   }
 }
