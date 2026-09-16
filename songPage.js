@@ -21,9 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const topbarInner = document.createElement('div');
   topbarInner.className = 'topbar-inner';
 
+  const isShow = Boolean(cfg.hideFooter || window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/'));
+  if (isShow) {
+    document.body.classList.add('show-song');
+  }
+
   // Close button (×)
   const closeBtn = document.createElement('a');
-  closeBtn.href = '../songs.html'; // fallback
+  closeBtn.href = isShow ? '../show.html' : '../songs.html'; // fallback
   closeBtn.className = 'close-btn';
   closeBtn.setAttribute('aria-label', 'חזרה');
   closeBtn.textContent = '×';
@@ -81,14 +86,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Auto-scroll state variables (declared early to avoid TDZ errors on load) ──
   let scrollRafId = null;
-  let scrollSpeed = cfg.scrollSpeed ?? 0.1;
+  let scrollSpeed = (cfg.scrollSpeed ?? 0.1) * (isShow ? 2 : 1);
   let scrollAccum = 0;
   let pauseUntil = 0;
   let pausePositions = [];
   let nextPauseIdx = 0;
 
+  // Auto-scroll Play/Stop button – available for all views (lyrics & chords)
+  let playBtn;
+  if (lyricsText || chordsText) {
+    playBtn = document.createElement('button');
+    playBtn.id = 'scroll-play-btn';
+    playBtn.setAttribute('aria-label', 'הפעל גלילה אוטומטית');
+    playBtn.innerHTML = '<i class="fa-solid fa-angles-down"></i>';
+  }
+
   // מילים / אקורדים toggle
-  let playBtn; // declared here so auto-scroll section can reference it
   if (lyricsText && chordsText) {
     const toggle = document.createElement('div');
     toggle.className = 'view-toggle';
@@ -110,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle.appendChild(btnChords);
     h1.appendChild(toggle);
 
-    // YouTube Play/Stop button
+    // YouTube Play/Stop button (omitted for Show songs)
     let ytPlayBtn;
     let ytIframe = null;
     let ytPlaying = false;
@@ -123,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ytPlayBtn.classList.toggle('active', playing);
     };
 
-    if (cfg.youtubeId) {
+    if (cfg.youtubeId && !isShow) {
       ytPlayBtn = document.createElement('button');
       ytPlayBtn.id = 'youtube-play-btn';
       ytPlayBtn.setAttribute('aria-label', 'נגן שיר מיוטיוב');
@@ -152,12 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Play/Stop button – after the toggle (and YouTube button)
-    playBtn = document.createElement('button');
-    playBtn.id = 'scroll-play-btn';
-    playBtn.setAttribute('aria-label', 'הפעל גלילה אוטומטית');
-    playBtn.innerHTML = '<i class="fa-solid fa-angles-down"></i>';
-    h1.appendChild(playBtn);
+    if (playBtn) {
+      h1.appendChild(playBtn);
+    }
 
     const updateView = (showChords) => {
       pre.innerHTML = highlightChords(showChords ? chordsText : lyricsText);
@@ -167,13 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.location.hash !== hash) history.replaceState(null, '', hash);
       // hide credits in chords view
       if (cr) cr.style.display = showChords ? 'none' : '';
-      if (playBtn) playBtn.style.display = showChords ? '' : 'none';
-      if (!showChords && typeof stopScroll === 'function') stopScroll();
+      if (playBtn) playBtn.style.display = '';
     };
 
     btnLyrics.addEventListener('click', () => updateView(false));
     btnChords.addEventListener('click', () => updateView(true));
     updateView(window.location.hash === '#chords');
+  } else if (playBtn) {
+    h1.appendChild(playBtn);
   }
 
   // Assemble topbar: [ title+toggle+play ]   [ × ]
@@ -187,60 +198,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
   main.appendChild(cr);
 
-  // listen icons
-  const icons = document.createElement('span');
-  icons.className = 'icons';
-  icons.appendChild(document.createTextNode('האזינו לשיר '));
+  // listen icons and footer action buttons (omitted for Show songs)
+  if (!isShow) {
+    const icons = document.createElement('span');
+    icons.className = 'icons';
+    icons.appendChild(document.createTextNode('האזינו לשיר '));
 
-  const mkIcon = (href, cls, label) => {
-    if (!href) return null;
-    const a = document.createElement('a');
-    a.href = href;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.className = 'song-icon';
-    a.setAttribute('aria-label', label);
-    const i = document.createElement('i');
-    i.className = cls;
-    a.appendChild(i);
-    return a;
-  };
+    const mkIcon = (href, cls, label) => {
+      if (!href) return null;
+      const a = document.createElement('a');
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.className = 'song-icon';
+      a.setAttribute('aria-label', label);
+      const i = document.createElement('i');
+      i.className = cls;
+      a.appendChild(i);
+      return a;
+    };
 
-  [mkIcon(urls.spotify, 'fa-brands fa-spotify', 'Spotify'),
-  mkIcon(urls.apple, 'fa-brands fa-apple', 'Apple Music'),
-  mkIcon(urls.youtube, 'fa-brands fa-youtube', 'YouTube')
-  ].forEach(x => x && icons.appendChild(x));
-  main.appendChild(icons);
+    [mkIcon(urls.spotify, 'fa-brands fa-spotify', 'Spotify'),
+    mkIcon(urls.apple, 'fa-brands fa-apple', 'Apple Music'),
+    mkIcon(urls.youtube, 'fa-brands fa-youtube', 'YouTube')
+    ].forEach(x => x && icons.appendChild(x));
+    main.appendChild(icons);
 
-  const spacer1 = document.createElement('div');
-  spacer1.style.height = '20px';
-  main.appendChild(spacer1);
+    const spacer1 = document.createElement('div');
+    spacer1.style.height = '20px';
+    main.appendChild(spacer1);
 
-  const actionRow = document.createElement('div');
-  actionRow.style.cssText = 'display:flex;gap:36px;align-items:center;flex-wrap:wrap;';
+    const actionRow = document.createElement('div');
+    actionRow.style.cssText = 'display:flex;gap:36px;align-items:center;flex-wrap:wrap;';
 
-  const share = document.createElement('a');
-  share.href = '#';
-  share.className = 'share-link';
-  share.id = 'shareBtn';
-  share.setAttribute('aria-label', 'שתף עמוד זה');
-  share.innerHTML = '<i class="fa-solid fa-share-nodes"></i> שיתוף';
-  actionRow.appendChild(share);
+    const share = document.createElement('a');
+    share.href = '#';
+    share.className = 'share-link';
+    share.id = 'shareBtn';
+    share.setAttribute('aria-label', 'שתף עמוד זה');
+    share.innerHTML = '<i class="fa-solid fa-share-nodes"></i> שיתוף';
+    actionRow.appendChild(share);
 
-  const printBtn = document.createElement('a');
-  printBtn.href = '#';
-  printBtn.className = 'share-link';
-  printBtn.id = 'printBtn';
-  printBtn.setAttribute('aria-label', 'הדפס עמוד זה');
-  printBtn.innerHTML = '<i class="fa-solid fa-print"></i> הדפסה';
-  printBtn.addEventListener('click', (e) => { e.preventDefault(); window.print(); });
-  actionRow.appendChild(printBtn);
+    const printBtn = document.createElement('a');
+    printBtn.href = '#';
+    printBtn.className = 'share-link';
+    printBtn.id = 'printBtn';
+    printBtn.setAttribute('aria-label', 'הדפס עמוד זה');
+    printBtn.innerHTML = '<i class="fa-solid fa-print"></i> הדפסה';
+    printBtn.addEventListener('click', (e) => { e.preventDefault(); window.print(); });
+    actionRow.appendChild(printBtn);
 
-  main.appendChild(actionRow);
+    main.appendChild(actionRow);
 
-  const spacer2 = document.createElement('div');
-  spacer2.style.height = '20px';
-  main.appendChild(spacer2);
+    const spacer2 = document.createElement('div');
+    spacer2.style.height = '20px';
+    main.appendChild(spacer2);
+  }
 
   // ── Auto-scroll ────────────────────────────────────────────────────────────
 

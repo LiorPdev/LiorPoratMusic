@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>שירים להופעה – ליאור פורת</title>
+  <meta name="description" content="רשימת שירים ומילים להופעה של ליאור פורת.">
+  <link rel="canonical" href="https://liorporat.com/show.html">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="Lior Porat Music">
+  <meta property="og:title" content="שירים להופעה – ליאור פורת">
+  <meta property="og:description" content="רשימת שירים ומילים להופעה של ליאור פורת כולל אקורדים">
+  <meta property="og:locale" content="he_IL">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="שירים להופעה – ליאור פורת">
+  <meta property="og:url" content="https://liorporat.com/show.html">
+  <meta property="og:image" content="https://liorporat.com/Media/og.webp">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="שירים להופעה – ליאור פורת">
+  <meta name="twitter:description" content="רשימת שירים ומילים להופעה של ליאור פורת כולל אקורדים">
+  <meta name="twitter:image" content="https://liorporat.com/Media/og.webp">
+
+  <link rel="stylesheet" href="styles.css?v=1.0.4" />
+  <link rel="stylesheet" href="songs.css?v=1.0.4" />
+  <link rel="apple-touch-icon" href="Media/Logo1.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    .song-topbar .songs-title {
+      flex: 1;
+    }
+
+    .topbar-inner {
+      max-width: 1100px;
+    }
+
+    .songs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 1100px;
+      margin: 16px auto;
+      padding: 0 16px;
+    }
+
+    .song-item {
+      padding: 16px 14px;
+      margin-bottom: 0;
+      border-radius: 14px;
+      min-height: 74px;
+      box-sizing: border-box;
+    }
+
+    .song-item a {
+      gap: 12px;
+    }
+
+    .song-thumb {
+      width: 54px;
+      height: 54px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .song-name {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 768px) {
+      .songs {
+        gap: 8px;
+        padding: 0 10px;
+      }
+
+      .song-item {
+        padding: 12px 10px;
+        min-height: 64px;
+      }
+
+      .song-item a {
+        gap: 8px;
+      }
+
+      .song-thumb {
+        width: 44px;
+        height: 44px;
+      }
+
+      .song-name {
+        font-size: 14.5px;
+        line-height: 1.25;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .songs {
+        gap: 6px;
+        padding: 0 6px;
+      }
+
+      .song-item {
+        padding: 10px 8px;
+        min-height: 56px;
+        border-radius: 10px;
+      }
+
+      .song-item a {
+        gap: 6px;
+      }
+
+      .song-thumb {
+        width: 38px;
+        height: 38px;
+        border-radius: 6px;
+      }
+
+      .song-name {
+        font-size: 12.5px;
+        line-height: 1.25;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="song-topbar">
+    <div class="topbar-inner">
+      <h2 class="songs-title">שירים להופעה</h2>
+      <a href="index.html" class="close-btn" aria-label="חזרה">×</a>
+    </div>
+  </div>
+
+  <h1 class="visually-hidden">שירים להופעה של ליאור פורת</h1>
+
+  <main class="songs" id="songs"></main>
+
+
+  <script>
+    const songs = [
+      { name: "בלוז לשבת", file: "בלוז לשבת" },
+      { name: "בלוז לחילוני", file: "בלוז לחילוני" },
+      { name: "להיות ישראלי", file: "להיות ישראלי" },
+      { name: "לוח וגיר", file: "לוח וגיר" },
+      { name: "לאון השען", file: "לאון השען" },
+      { name: "בדד", file: "בדד" },
+      { name: "תל אביבי", file: "תל אביבי" },
+      { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
+      { name: "כל כך לחוץ", file: "כל כך לחוץ" },
+      { name: "צל עץ תמר", file: "צל עץ תמר" },
+      { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
+      { name: "תקוע באדום", file: "תקוע באדום" },
+      { name: "בלוז לנפטר", file: "בלוז לנפטר" },
+      { name: "אסיר 1376", file: "אסיר 1376" },
+      { name: "ניפגש שוב בקרוב", file: "ניפגש שוב בקרוב" },
+      { name: "הרשימה", file: "הרשימה" }
+    ];
+
+    const el = document.getElementById('songs');
+
+    songs.forEach(song => {
+      const row = document.createElement('div');
+      row.className = 'song-item';
+
+      const a = document.createElement('a');
+      const songFileName = song.file || song.name;
+      a.href = `Show/${songFileName}.html`;
+
+      const img = document.createElement('img');
+      img.src = `Media/songs/${songFileName}.webp`;
+      img.alt = song.name;
+      img.className = 'song-thumb';
+      img.onerror = function () {
+        this.src = 'Media/Logo1.png';
+      };
+
+      const spanName = document.createElement('span');
+      spanName.className = 'song-name';
+      spanName.textContent = song.name;
+
+      a.appendChild(img);
+      a.appendChild(spanName);
+      row.appendChild(a);
+      el.appendChild(row);
+    });
+  </script>
+  <script src="script.js?v=1.0.4"></script>
+</body>
+
+</html>

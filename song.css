@@ -264,6 +264,60 @@ pre {
   }
 }
 
+/* ── Show Mode (Prompt Display: Maximum Screen Utilization & 4x Font) ─────── */
+body.show-song {
+  padding-top: 60px !important;
+}
+
+body.show-song .song-topbar {
+  height: 60px !important;
+  min-height: 60px !important;
+}
+
+body.show-song .topbar-inner {
+  max-width: 100% !important;
+  padding: 0 16px !important;
+  align-items: center !important;
+}
+
+body.show-song .song-topbar .song-header {
+  flex-wrap: nowrap !important;
+  gap: 10px !important;
+}
+
+body.show-song .song-topbar .song-header .title {
+  font-size: 20px !important;
+}
+
+body.show-song #youtube-play-btn {
+  display: none !important;
+}
+
+body.show-song .wrap {
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+body.show-song pre {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  font-size: 4em; /* פי 4 */
+  line-height: 1.35;
+  letter-spacing: 0.5px;
+  padding: 8px 16px !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+@media (max-width: 768px) {
+  body.show-song pre {
+    font-size: clamp(32px, 8vw, 4em);
+    padding: 6px 10px !important;
+  }
+}
+
 @media print {
   body {
     background: white !important;
