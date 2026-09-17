@@ -222,6 +222,11 @@ pre {
 .chord {
   font-weight: bold;
   color: #ffffff;
+  font-size: 0.55em;
+}
+
+.chorus {
+  color: #ffffff;
 }
 
 .scroll-pause-marker {
@@ -310,6 +315,7 @@ body.show-song .wrap {
   box-sizing: border-box !important;
   background: #000000 !important;
   background-color: #000000 !important;
+  overflow-x: hidden !important;
 }
 
 body.show-song pre {
@@ -323,18 +329,28 @@ body.show-song pre {
   padding: 8px 16px !important;
   box-sizing: border-box !important;
   width: 100% !important;
+  overflow-x: hidden !important;
   background: #000000 !important;
   background-color: #000000 !important;
-  color: #FFE600 !important; /* צהוב במה זוהר וקריא */
+  color: #FFE600 !important;
+  /* צהוב במה זוהר וקריא */
   text-shadow: 0 0 1px rgba(255, 230, 0, 0.4);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body.show-song .chord {
-  color: #FFFFFF !important; /* אקורדים בלבן מודגש מבודלים מהטקסט */
+  color: #FFFFFF !important;
+  /* אקורדים בלבן מודגש מבודלים מהטקסט */
   font-weight: 900 !important;
+  font-size: 0.8em !important;
   text-shadow: 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+body.show-song .chorus {
+  color: #FFFF77 !important;
+  /* פזמון בצהוב בהיר מובדל מהבתים */
+  text-shadow: 0 0 1px rgba(255, 255, 119, 0.4);
 }
 
 body.show-song .view-toggle {

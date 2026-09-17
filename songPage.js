@@ -69,15 +69,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const highlightChords = (text) =>
     text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>')
-      .replace(/♫/g, '<span class="scroll-pause-marker">♫</span>');
+      .split('\n')
+      .map(line => {
+        const isChorus = /^(\t| {2,})/.test(line);
+        const formatted = line
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>')
+          .replace(/♫/g, '<span class="scroll-pause-marker">♫</span>');
+        return isChorus && line.trim() ? `<span class="chorus">${formatted}</span>` : formatted;
+      })
+      .join('\n');
 
   // Content <pre>
   const pre = document.createElement('pre');
-  if (cfg.fontSize) {
+  const isAutoFont = cfg.fontSize === 'auto' || (isShow && (!cfg.fontSize || cfg.fontSize === 'auto'));
+
+  if (cfg.fontSize && cfg.fontSize !== 'auto') {
     const fs = typeof cfg.fontSize === 'number' ? `${cfg.fontSize}em` : cfg.fontSize;
     pre.style.setProperty('font-size', fs, 'important');
     document.documentElement.style.setProperty('--song-font-size', fs);
@@ -89,6 +98,55 @@ document.addEventListener('DOMContentLoaded', () => {
   if (lyricsText || chordsText) {
     pre.innerHTML = highlightChords(lyricsText || chordsText);
   }
+
+  const fitSongFontSize = () => {
+    if (!isAutoFont || !pre.isConnected) return;
+
+    // Measure the widest line using an off-screen clone with identical styling
+    const measurer = document.createElement('div');
+    const computed = window.getComputedStyle(pre);
+    measurer.style.cssText = `
+      position: absolute !important;
+      top: -99999px !important;
+      left: -99999px !important;
+      visibility: hidden !important;
+      white-space: pre !important;
+      width: max-content !important;
+      max-width: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+      font-family: ${computed.fontFamily} !important;
+      font-weight: ${computed.fontWeight} !important;
+      letter-spacing: ${computed.letterSpacing} !important;
+      font-size: 100px !important;
+      line-height: normal !important;
+    `;
+    measurer.innerHTML = pre.innerHTML;
+    document.body.appendChild(measurer);
+
+    const measurerWidth = measurer.getBoundingClientRect().width;
+    measurer.remove();
+
+    if (measurerWidth <= 0) return;
+
+    // Available content width inside pre
+    const paddingLeft = parseFloat(computed.paddingLeft) || 16;
+    const paddingRight = parseFloat(computed.paddingRight) || 16;
+    const availableWidth = Math.max(100, (pre.clientWidth || window.innerWidth) - paddingLeft - paddingRight - 8);
+
+    // Calculate proportional font size
+    let targetPx = 100 * (availableWidth / measurerWidth);
+
+    // Limits
+    const minPx = typeof cfg.minFontSize === 'number' ? cfg.minFontSize : 22;
+    const maxPx = typeof cfg.maxFontSize === 'number' ? cfg.maxFontSize : 140;
+    targetPx = Math.max(minPx, Math.min(maxPx, targetPx));
+
+    const fsStr = `${Math.round(targetPx * 10) / 10}px`;
+    pre.style.setProperty('font-size', fsStr, 'important');
+    document.documentElement.style.setProperty('--song-font-size', fsStr);
+  };
 
   // credits – declared early so updateView can show/hide it
   const cr = document.createElement('div');
@@ -193,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // hide credits in chords view
       if (cr) cr.style.display = showChords ? 'none' : '';
       if (playBtn) playBtn.style.display = '';
+      if (isAutoFont) fitSongFontSize();
     };
 
     btnLyrics.addEventListener('click', () => updateView(false));
@@ -210,6 +269,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Content goes into main (below the topbar)
   main.appendChild(pre);
+
+  if (isAutoFont) {
+    fitSongFontSize();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(fitSongFontSize);
+    }
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(fitSongFontSize);
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(fitSongFontSize, 100);
+    });
+  }
 
   if (!isShow) {
     main.appendChild(cr);
