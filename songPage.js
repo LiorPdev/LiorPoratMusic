@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // remove any legacy duplicated markup if exists
-  [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn,.song-topbar,.show-floating-controls,.show-next-btn')].forEach(n => n.remove());
-  document.querySelectorAll('.song-topbar, .show-floating-controls, .show-next-btn').forEach(n => n.remove());
+  [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn,.song-topbar,.show-floating-controls,.show-speed-controls,.show-next-btn,.show-prev-btn')].forEach(n => n.remove());
+  document.querySelectorAll('.song-topbar, .show-floating-controls, .show-speed-controls, .show-next-btn, .show-prev-btn').forEach(n => n.remove());
 
   // ── Fixed top bar ────────────────────────────────────────────────────────
   const topbar = document.createElement('div');
@@ -96,7 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const isChorus = /^(\t| {2,})/.test(line);
-      let formatted = line
+      const displayLine = isChorus ? line.replace(/^(\t| {2,})/, '') : line;
+      let formatted = displayLine
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -178,7 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let targetPx = 100 * (availableWidth / measurerWidth);
 
     // Limits
-    const minPx = typeof cfg.minFontSize === 'number' ? cfg.minFontSize : 22;
+    const isMobile = window.innerWidth <= 500;
+    const defaultMin = isMobile ? 15 : 22;
+    const minPx = typeof cfg.minFontSize === 'number' ? cfg.minFontSize : defaultMin;
     const maxPx = typeof cfg.maxFontSize === 'number' ? cfg.maxFontSize : 140;
     targetPx = Math.max(minPx, Math.min(maxPx, targetPx));
 
@@ -460,9 +463,8 @@ document.addEventListener('DOMContentLoaded', () => {
         nextBtn.addEventListener('click', (e) => e.preventDefault());
       }
 
-      navControls.appendChild(nextBtn);
-      navControls.appendChild(prevBtn);
-      document.body.appendChild(navControls);
+      document.body.appendChild(nextBtn);
+      document.body.appendChild(prevBtn);
     }
   } else {
     // Assemble standard topbar: [ title+toggle+play ]   [ × ]
@@ -478,8 +480,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (isAutoFont) {
     fitSongFontSize();
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(fitSongFontSize);
+      document.fonts.ready.then(() => {
+        fitSongFontSize();
+      });
     }
+    setTimeout(fitSongFontSize, 200);
+    setTimeout(fitSongFontSize, 600);
     let resizeTimer;
     window.addEventListener('resize', () => {
       cancelAnimationFrame(resizeTimer);
@@ -487,6 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     window.addEventListener('orientationchange', () => {
       setTimeout(fitSongFontSize, 100);
+      setTimeout(fitSongFontSize, 400);
     });
   }
 
