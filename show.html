@@ -31,99 +31,180 @@
   <link rel="apple-touch-icon" href="Media/Logo1.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
-    .song-topbar .songs-title {
-      flex: 1;
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+      background: #0b0e14;
+      font-family: inherit;
+    }
+
+    body {
+      padding-top: 56px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .song-topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      z-index: 999;
+      background: rgba(11, 14, 20, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .topbar-inner {
-      max-width: 1100px;
+      max-width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0 20px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .song-topbar .songs-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .close-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      font-size: 20px;
+      line-height: 1;
+      opacity: 0.85;
+      transition: opacity 0.2s, transform 0.2s, border-color 0.2s;
+    }
+
+    .close-btn:hover {
+      opacity: 1;
+      border-color: #ffffff;
+      transform: scale(1.1);
     }
 
     .songs {
+      flex: 1;
+      width: 100%;
+      max-width: 100%;
+      height: calc(100dvh - 56px);
+      margin: 0;
+      padding: clamp(8px, 1.2vh, 16px) clamp(10px, 1.5vw, 22px);
+      box-sizing: border-box;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      max-width: 1100px;
-      margin: 16px auto;
-      padding: 0 16px;
+      gap: clamp(8px, 1.2vh, 14px);
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      overflow: hidden;
+    }
+
+    /* Portrait / vertical screens: 2 columns x 8 rows */
+    @media (max-aspect-ratio: 1/1) {
+      .songs {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+      }
     }
 
     .song-item {
-      padding: 16px 14px;
-      margin-bottom: 0;
-      border-radius: 14px;
-      min-height: 74px;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      border-radius: 12px;
+      background: #151a26;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .song-item:hover {
+      background: #202738;
+      border-color: rgba(99, 102, 241, 0.45);
+      transform: scale(1.015);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
     }
 
     .song-item a {
-      gap: 12px;
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: clamp(10px, 1.2vw, 20px);
+      padding: 0 clamp(10px, 1.4vw, 20px);
+      text-decoration: none;
+      color: #ffffff;
+      min-width: 0;
     }
 
     .song-thumb {
-      width: 54px;
-      height: 54px;
+      height: 72%;
+      max-height: 74px;
+      min-height: 36px;
+      aspect-ratio: 1;
+      width: auto;
       border-radius: 8px;
+      object-fit: cover;
       flex-shrink: 0;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+    }
+
+    .song-thumb.song-thumb-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1e2638;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: clamp(22px, 3.2vh, 32px);
+      line-height: 1;
+      box-sizing: border-box;
+      user-select: none;
     }
 
     .song-name {
-      font-size: 18px;
-      font-weight: 600;
-      line-height: 1.35;
-    }
-
-    @media (max-width: 768px) {
-      .songs {
-        gap: 8px;
-        padding: 0 10px;
-      }
-
-      .song-item {
-        padding: 12px 10px;
-        min-height: 64px;
-      }
-
-      .song-item a {
-        gap: 8px;
-      }
-
-      .song-thumb {
-        width: 44px;
-        height: 44px;
-      }
-
-      .song-name {
-        font-size: 14.5px;
-        line-height: 1.25;
-      }
+      font-size: var(--song-font-size, 20px);
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+      flex: 1;
+      min-width: 0;
     }
 
     @media (max-width: 480px) {
       .songs {
+        padding: 6px 8px;
         gap: 6px;
-        padding: 0 6px;
-      }
-
-      .song-item {
-        padding: 10px 8px;
-        min-height: 56px;
-        border-radius: 10px;
       }
 
       .song-item a {
-        gap: 6px;
-      }
-
-      .song-thumb {
-        width: 38px;
-        height: 38px;
-        border-radius: 6px;
-      }
-
-      .song-name {
-        font-size: 12.5px;
-        line-height: 1.25;
+        padding: 0 8px;
+        gap: 8px;
       }
     }
   </style>
@@ -133,14 +214,13 @@
   <div class="song-topbar">
     <div class="topbar-inner">
       <h2 class="songs-title">שירים להופעה</h2>
-      <a href="index.html" class="close-btn" aria-label="חזרה">×</a>
+      <a href="index.html" class="close-btn" aria-label="חזרה"><i class="fa-solid fa-xmark"></i></a>
     </div>
   </div>
 
   <h1 class="visually-hidden">שירים להופעה של ליאור פורת</h1>
 
   <main class="songs" id="songs"></main>
-
 
   <script>
     const songs = [
@@ -177,7 +257,13 @@
       img.alt = song.name;
       img.className = 'song-thumb';
       img.onerror = function () {
-        this.src = 'Media/Logo1.png';
+        const placeholder = document.createElement('div');
+        placeholder.className = 'song-thumb song-thumb-placeholder';
+        placeholder.setAttribute('aria-hidden', 'true');
+        placeholder.textContent = '🎵';
+        if (this.parentNode) {
+          this.parentNode.replaceChild(placeholder, this);
+        }
       };
 
       const spanName = document.createElement('span');
@@ -188,6 +274,58 @@
       a.appendChild(spanName);
       row.appendChild(a);
       el.appendChild(row);
+    });
+
+    function fitSongFontSize() {
+      const names = document.querySelectorAll('.song-name');
+      if (!names.length) return;
+
+      const firstCard = document.querySelector('.song-item');
+      if (!firstCard) return;
+
+      const cardRect = firstCard.getBoundingClientRect();
+      const cardHeight = cardRect.height;
+      if (cardHeight <= 0) return;
+
+      const maxAllowedByHeight = Math.floor(cardHeight * 0.45);
+      let minFs = 12;
+      let maxFs = Math.max(minFs, Math.min(maxAllowedByHeight, 42));
+      let bestFs = minFs;
+
+      const root = document.documentElement;
+
+      while (minFs <= maxFs) {
+        const testFs = Math.floor((minFs + maxFs) / 2);
+        root.style.setProperty('--song-font-size', `${testFs}px`);
+
+        let fits = true;
+        for (let i = 0; i < names.length; i++) {
+          const el = names[i];
+          if (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > cardHeight) {
+            fits = false;
+            break;
+          }
+        }
+
+        if (fits) {
+          bestFs = testFs;
+          minFs = testFs + 1;
+        } else {
+          maxFs = testFs - 1;
+        }
+      }
+
+      root.style.setProperty('--song-font-size', `${bestFs}px`);
+    }
+
+    fitSongFontSize();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(fitSongFontSize);
+    }
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(fitSongFontSize);
     });
   </script>
   <script src="script.js?v=1.0.9"></script>
