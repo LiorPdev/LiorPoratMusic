@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // remove any legacy duplicated markup if exists
-  [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn,.song-topbar')].forEach(n => n.remove());
-  document.querySelectorAll('.song-topbar').forEach(n => n.remove());
+  [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn,.song-topbar,.show-floating-controls,.show-next-btn')].forEach(n => n.remove());
+  document.querySelectorAll('.song-topbar, .show-floating-controls, .show-next-btn').forEach(n => n.remove());
 
   // ── Fixed top bar ────────────────────────────────────────────────────────
   const topbar = document.createElement('div');
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   closeBtn.href = isShow ? '../show.html' : '../songs.html'; // fallback
   closeBtn.className = 'close-btn';
   closeBtn.setAttribute('aria-label', 'חזרה');
-  closeBtn.textContent = '×';
+  closeBtn.innerHTML = isShow ? '<i class="fa-solid fa-xmark"></i>' : '×';
 
   try {
     const ref = document.referrer ? new URL(document.referrer) : null;
@@ -67,20 +67,58 @@ document.addEventListener('DOMContentLoaded', () => {
     lyricsText = '';
   }
 
-  const highlightChords = (text) =>
-    text
-      .split('\n')
-      .map(line => {
-        const isChorus = /^(\t| {2,})/.test(line);
-        const formatted = line
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>')
-          .replace(/♫/g, '<span class="scroll-pause-marker">♫</span>');
-        return isChorus && line.trim() ? `<span class="chorus">${formatted}</span>` : formatted;
-      })
-      .join('\n');
+  const highlightChords = (text) => {
+    const rawLines = text.split('\n');
+    const resultLines = [];
+    let pendingSeconds = null;
+
+    for (let i = 0; i < rawLines.length; i++) {
+      let line = rawLines[i];
+      const timeMatch = line.match(/[<\[](\d{1,2}):(\d{2})[>\]]/);
+      let lineSeconds = null;
+
+      if (timeMatch) {
+        lineSeconds = parseInt(timeMatch[1], 10) * 60 + parseInt(timeMatch[2], 10);
+        line = line.replace(timeMatch[0], '');
+      }
+
+      // If the line was solely a timestamp (and is now empty)
+      if (lineSeconds !== null && line.trim() === '') {
+        pendingSeconds = lineSeconds;
+        continue;
+      }
+
+      // If this line is empty and we have a pending timestamp for the next section,
+      // preserve the blank line and keep pendingSeconds for the upcoming text
+      if (pendingSeconds !== null && line.trim() === '') {
+        resultLines.push('');
+        continue;
+      }
+
+      const isChorus = /^(\t| {2,})/.test(line);
+      let formatted = line
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>')
+        .replace(/♫/g, '<span class="scroll-pause-marker">♫</span>');
+
+      const secToAttach = pendingSeconds !== null ? pendingSeconds : lineSeconds;
+      if (secToAttach !== null) {
+        const anchor = `<span class="scroll-time-anchor" data-seconds="${secToAttach}" style="display:inline-block;width:0;height:0;overflow:hidden;vertical-align:top;pointer-events:none;"></span>`;
+        formatted = anchor + formatted;
+        pendingSeconds = null;
+      }
+
+      resultLines.push(isChorus && line.trim() ? `<span class="chorus">${formatted}</span>` : formatted);
+    }
+
+    if (pendingSeconds !== null) {
+      resultLines.push(`<span class="scroll-time-anchor" data-seconds="${pendingSeconds}" style="display:inline-block;width:0;height:0;overflow:hidden;vertical-align:top;pointer-events:none;"></span>`);
+    }
+
+    return resultLines.join('\n');
+  };
 
   // Content <pre>
   const pre = document.createElement('pre');
@@ -95,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pre.style.setProperty('line-height', cfg.lineHeight, 'important');
     document.documentElement.style.setProperty('--song-line-height', cfg.lineHeight);
   }
+  pre.style.paddingBottom = '60vh';
   if (lyricsText || chordsText) {
     pre.innerHTML = highlightChords(lyricsText || chordsText);
   }
@@ -164,6 +203,81 @@ document.addEventListener('DOMContentLoaded', () => {
   let pauseUntil = 0;
   let pausePositions = [];
   let nextPauseIdx = 0;
+
+  // Timed scroll state
+  let currentElapsedSec = 0;
+  let lastTargetY = 0;
+  let activeKeyframes = null;
+
+  // Speed modifier & controls (defaults to cfg.speedModifier or 0)
+  const parseSpeedModifier = (val) => {
+    if (val == null) return 0;
+    if (typeof val === 'number') {
+      if (Math.abs(val) >= 1) return val / 100;
+      return val;
+    }
+    if (typeof val === 'string') {
+      const num = parseFloat(val.replace('%', ''));
+      if (!isNaN(num)) {
+        if (val.includes('%') || Math.abs(num) >= 1) return num / 100;
+        return num;
+      }
+    }
+    return 0;
+  };
+
+  let speedModifier = parseSpeedModifier(cfg.speedModifier);
+  let speedMultiplier = Math.max(0.4, Math.min(2.5, Math.round((1.0 + speedModifier) * 100) / 100));
+
+  let speedBadge = null;
+  const updateSpeedDisplay = () => {
+    if (!speedBadge) return;
+    const pct = Math.round(speedMultiplier * 100);
+    speedBadge.textContent = `${pct}%`;
+    const diff = Math.round(speedModifier * 100);
+    const diffStr = diff > 0 ? `+${diff}%` : (diff < 0 ? `${diff}%` : '0%');
+    speedBadge.setAttribute('title', `מהירות: ${pct}% (${diffStr}) - לחץ לאיפוס`);
+  };
+
+  const changeSpeed = (delta) => {
+    speedModifier = Math.round((speedModifier + delta) * 100) / 100;
+    speedMultiplier = Math.max(0.4, Math.min(2.5, Math.round((1.0 + speedModifier) * 100) / 100));
+    updateSpeedDisplay();
+  };
+
+  const resetSpeed = () => {
+    speedModifier = parseSpeedModifier(cfg.speedModifier);
+    speedMultiplier = Math.max(0.4, Math.min(2.5, Math.round((1.0 + speedModifier) * 100) / 100));
+    updateSpeedDisplay();
+  };
+
+  const btnMinus = document.createElement('button');
+  btnMinus.className = 'speed-btn speed-minus';
+  btnMinus.setAttribute('aria-label', 'האט מהירות ב-10%');
+  btnMinus.title = 'האט ב-10%';
+  btnMinus.innerHTML = '<i class="fa-solid fa-minus"></i>';
+  btnMinus.addEventListener('click', (e) => {
+    e.stopPropagation();
+    changeSpeed(-0.10);
+  });
+
+  speedBadge = document.createElement('span');
+  speedBadge.className = 'speed-badge';
+  speedBadge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetSpeed();
+  });
+  updateSpeedDisplay();
+
+  const btnPlus = document.createElement('button');
+  btnPlus.className = 'speed-btn speed-plus';
+  btnPlus.setAttribute('aria-label', 'הגבר מהירות ב-10%');
+  btnPlus.title = 'הגבר ב-10%';
+  btnPlus.innerHTML = '<i class="fa-solid fa-plus"></i>';
+  btnPlus.addEventListener('click', (e) => {
+    e.stopPropagation();
+    changeSpeed(0.10);
+  });
 
   // Auto-scroll Play/Stop button – available for all views (lyrics & chords)
   let playBtn;
@@ -238,11 +352,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    if (playBtn) {
+    if (playBtn && !isShow) {
       h1.appendChild(playBtn);
     }
 
     const updateView = (showChords) => {
+      if (scrollRafId) stopScroll();
+      currentElapsedSec = 0;
+      lastTargetY = 0;
+      activeKeyframes = null;
       pre.innerHTML = highlightChords(showChords ? chordsText : lyricsText);
       btnLyrics.classList.toggle('active', !showChords);
       btnChords.classList.toggle('active', showChords);
@@ -257,15 +375,102 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLyrics.addEventListener('click', () => updateView(false));
     btnChords.addEventListener('click', () => updateView(true));
     updateView(window.location.hash === '#chords');
-  } else if (playBtn) {
+  } else if (playBtn && !isShow) {
     h1.appendChild(playBtn);
   }
 
-  // Assemble topbar: [ title+toggle+play ]   [ × ]
-  topbarInner.appendChild(h1);
-  topbarInner.appendChild(closeBtn);
-  topbar.appendChild(topbarInner);
-  document.body.prepend(topbar);
+  const SHOW_SONGS = [
+    { name: "בלוז לשבת", file: "בלוז לשבת" },
+    { name: "בלוז לחילוני", file: "בלוז לחילוני" },
+    { name: "להיות ישראלי", file: "להיות ישראלי" },
+    { name: "לוח וגיר", file: "לוח וגיר" },
+    { name: "לאון השען", file: "לאון השען" },
+    { name: "בדד", file: "בדד" },
+    { name: "תל אביבי", file: "תל אביבי" },
+    { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
+    { name: "כל כך לחוץ", file: "כל כך לחוץ" },
+    { name: "צל עץ תמר", file: "צל עץ תמר" },
+    { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
+    { name: "תקוע באדום", file: "תקוע באדום" },
+    { name: "בלוז לנפטר", file: "בלוז לנפטר" },
+    { name: "אסיר 1376", file: "אסיר 1376" },
+    { name: "ניפגש שוב בקרוב", file: "ניפגש שוב בקרוב" },
+    { name: "הרשימה", file: "הרשימה" }
+  ];
+
+  if (isShow) {
+    const floatingControls = document.createElement('div');
+    floatingControls.className = 'show-floating-controls';
+    floatingControls.appendChild(closeBtn);
+    if (playBtn) {
+      floatingControls.appendChild(playBtn);
+    }
+    document.body.prepend(floatingControls);
+
+    // Middle-left vertical speed controls: [+] [speedBadge] [-]
+    const speedControls = document.createElement('div');
+    speedControls.className = 'show-speed-controls';
+    speedControls.appendChild(btnPlus);
+    speedControls.appendChild(speedBadge);
+    speedControls.appendChild(btnMinus);
+    document.body.appendChild(speedControls);
+
+    // Show navigation buttons (bottom-left): Prev (->) and Next (<-)
+    const rawPath = decodeURIComponent(window.location.pathname).replace(/\\/g, '/');
+    const curFile = rawPath.split('/').pop().replace(/\.html$/i, '').trim();
+    const curTitle = document.title.trim();
+
+    let idx = SHOW_SONGS.findIndex(s => s.file === curFile || s.name === curFile || s.name === curTitle || s.file === curTitle);
+    if (idx === -1) {
+      idx = SHOW_SONGS.findIndex(s => curTitle.includes(s.name) || curTitle.includes(s.file));
+    }
+    if (idx !== -1) {
+      const navControls = document.createElement('div');
+      navControls.className = 'show-nav-controls';
+
+      // Prev song button (back)
+      const prevBtn = document.createElement('a');
+      prevBtn.className = 'show-nav-btn show-prev-btn';
+      prevBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
+      if (idx > 0) {
+        const prevSong = SHOW_SONGS[idx - 1];
+        prevBtn.href = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
+        prevBtn.setAttribute('aria-label', `לשיר הקודם: ${prevSong.name}`);
+        prevBtn.title = `השיר הקודם: ${prevSong.name}`;
+      } else {
+        prevBtn.classList.add('disabled');
+        prevBtn.setAttribute('aria-disabled', 'true');
+        prevBtn.title = 'תחילת הרשימה (אין שיר קודם)';
+        prevBtn.addEventListener('click', (e) => e.preventDefault());
+      }
+
+      // Next song button (forward)
+      const nextBtn = document.createElement('a');
+      nextBtn.className = 'show-nav-btn show-next-btn';
+      nextBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+      if (idx < SHOW_SONGS.length - 1) {
+        const nextSong = SHOW_SONGS[idx + 1];
+        nextBtn.href = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
+        nextBtn.setAttribute('aria-label', `לשיר הבא: ${nextSong.name}`);
+        nextBtn.title = `השיר הבא: ${nextSong.name}`;
+      } else {
+        nextBtn.classList.add('disabled');
+        nextBtn.setAttribute('aria-disabled', 'true');
+        nextBtn.title = 'סוף הרשימה (אין שיר נוסף)';
+        nextBtn.addEventListener('click', (e) => e.preventDefault());
+      }
+
+      navControls.appendChild(nextBtn);
+      navControls.appendChild(prevBtn);
+      document.body.appendChild(navControls);
+    }
+  } else {
+    // Assemble standard topbar: [ title+toggle+play ]   [ × ]
+    topbarInner.appendChild(h1);
+    topbarInner.appendChild(closeBtn);
+    topbar.appendChild(topbarInner);
+    document.body.prepend(topbar);
+  }
 
   // Content goes into main (below the topbar)
   main.appendChild(pre);
@@ -355,65 +560,173 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.classList.toggle('active', playing);
   }
 
+  function getKeyframes() {
+    const topBar = document.querySelector('.song-topbar');
+    const topBarHt = topBar ? topBar.offsetHeight : 0;
+    const anchorEls = [...pre.querySelectorAll('.scroll-time-anchor')];
+    if (anchorEls.length === 0) return null;
+
+    // Viewport height available below topbar
+    const viewportHeight = window.innerHeight - topBarHt;
+    // Position the active line higher up (~25% down the available reading area)
+    const offsetRatio = typeof cfg.scrollTargetRatio === 'number' ? cfg.scrollTargetRatio : 0.3;
+    const targetOffsetFromTop = topBarHt + (viewportHeight * offsetRatio);
+
+    const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+
+    let kfs = anchorEls.map(el => {
+      const secs = parseFloat(el.getAttribute('data-seconds'));
+      const rect = el.getBoundingClientRect();
+      const rawTargetY = rect.top + window.scrollY - targetOffsetFromTop;
+      const targetY = Math.max(0, Math.min(maxScroll, Math.round(rawTargetY)));
+      return { seconds: secs, targetY };
+    }).sort((a, b) => a.seconds - b.seconds);
+
+    const uniqueKfs = [];
+    kfs.forEach(kf => {
+      if (!uniqueKfs.length || uniqueKfs[uniqueKfs.length - 1].seconds !== kf.seconds) {
+        uniqueKfs.push(kf);
+      }
+    });
+    kfs = uniqueKfs;
+
+    if (kfs[0].seconds > 0) {
+      kfs.unshift({ seconds: 0, targetY: 0 });
+    }
+
+    return kfs;
+  }
+
   function startScroll() {
     if (scrollRafId) return;
 
-    // Recalculate pause positions based on current view (lyrics or chords)
-    const topBar = document.querySelector('.song-topbar');
-    const topBarHt = topBar ? topBar.offsetHeight : 60;
-    const markers = document.querySelectorAll('.scroll-pause-marker');
+    activeKeyframes = getKeyframes();
 
-    // Group markers by their vertical position (roughly same line)
-    const grouped = {};
-    [...markers].forEach(m => {
-      const pos = Math.round(m.getBoundingClientRect().top + window.scrollY - topBarHt);
-      // Use a small threshold (5px) to group markers on the same line
-      const key = Object.keys(grouped).find(k => Math.abs(k - pos) < 5) || pos;
-      grouped[key] = (grouped[key] || 0) + 1;
-    });
+    // ── CASE 1: Untimed song (legacy scrollSpeed fallback) ──
+    if (!activeKeyframes) {
+      const topBar = document.querySelector('.song-topbar');
+      const topBarHt = topBar ? topBar.offsetHeight : 0;
+      const markers = document.querySelectorAll('.scroll-pause-marker');
 
-    pausePositions = Object.entries(grouped)
-      .map(([pos, count]) => ({ pos: Number(pos), duration: count * 2000 }))
-      .filter(p => p.pos > window.scrollY)
-      .sort((a, b) => a.pos - b.pos);
+      const grouped = {};
+      [...markers].forEach(m => {
+        const pos = Math.round(m.getBoundingClientRect().top + window.scrollY - topBarHt);
+        const key = Object.keys(grouped).find(k => Math.abs(k - pos) < 5) || pos;
+        grouped[key] = (grouped[key] || 0) + 1;
+      });
 
-    nextPauseIdx = 0;
-    scrollAccum = 0;
-    pauseUntil = 0;
+      pausePositions = Object.entries(grouped)
+        .map(([pos, count]) => ({ pos: Number(pos), duration: count * 2000 }))
+        .filter(p => p.pos > window.scrollY)
+        .sort((a, b) => a.pos - b.pos);
 
-    setPlaying(true);
-    const step = () => {
-      if (Date.now() < pauseUntil) {
-        scrollRafId = requestAnimationFrame(step);
-        return;
-      }
+      nextPauseIdx = 0;
+      scrollAccum = 0;
+      pauseUntil = 0;
 
-      scrollAccum += scrollSpeed;
-      const px = Math.floor(scrollAccum);
-      if (px > 0) {
-        window.scrollBy(0, px);
-        scrollAccum -= px;
+      setPlaying(true);
+      const stepLegacy = () => {
+        if (Date.now() < pauseUntil) {
+          scrollRafId = requestAnimationFrame(stepLegacy);
+          return;
+        }
 
-        // Check if we hit a pause position
-        if (nextPauseIdx < pausePositions.length && window.scrollY >= pausePositions[nextPauseIdx].pos) {
-          pauseUntil = Date.now() + pausePositions[nextPauseIdx].duration;
-          while (nextPauseIdx < pausePositions.length && window.scrollY >= pausePositions[nextPauseIdx].pos) {
-            nextPauseIdx++;
+        scrollAccum += scrollSpeed * speedMultiplier;
+        const px = Math.floor(scrollAccum);
+        if (px > 0) {
+          window.scrollBy(0, px);
+          scrollAccum -= px;
+
+          if (nextPauseIdx < pausePositions.length && window.scrollY >= pausePositions[nextPauseIdx].pos) {
+            pauseUntil = Date.now() + pausePositions[nextPauseIdx].duration;
+            while (nextPauseIdx < pausePositions.length && window.scrollY >= pausePositions[nextPauseIdx].pos) {
+              nextPauseIdx++;
+            }
           }
         }
+
+        const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 2;
+        if (atBottom) { scrollRafId = null; setPlaying(false); }
+        else { scrollRafId = requestAnimationFrame(stepLegacy); }
+      };
+      scrollRafId = requestAnimationFrame(stepLegacy);
+      return;
+    }
+
+    // ── CASE 2: Timed song (Continuous dynamic scroll based on keyframes) ──
+    const currentY = window.scrollY;
+    const lastKf = activeKeyframes[activeKeyframes.length - 1];
+
+    // Check if user reached end or manually scrolled away while paused
+    if ((currentY >= lastKf.targetY - 10 || currentElapsedSec >= lastKf.seconds) && lastKf.targetY > 0) {
+      currentElapsedSec = 0;
+      window.scrollTo(0, 0);
+      lastTargetY = 0;
+    } else if (Math.abs(currentY - lastTargetY) > 20) {
+      if (currentY <= activeKeyframes[0].targetY) {
+        currentElapsedSec = activeKeyframes[0].seconds;
+      } else if (currentY >= lastKf.targetY) {
+        currentElapsedSec = lastKf.seconds;
+      } else {
+        let idx = 0;
+        while (idx < activeKeyframes.length - 1 && activeKeyframes[idx + 1].targetY <= currentY) {
+          idx++;
+        }
+        const k1 = activeKeyframes[idx];
+        const k2 = activeKeyframes[idx + 1];
+        const spanY = k2.targetY - k1.targetY;
+        const prog = spanY > 0 ? (currentY - k1.targetY) / spanY : 0;
+        currentElapsedSec = k1.seconds + prog * (k2.seconds - k1.seconds);
+      }
+    }
+
+    let lastFrameTime = performance.now();
+    setPlaying(true);
+
+    const stepTimed = (now) => {
+      const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
+      lastFrameTime = now;
+      currentElapsedSec += dt * speedMultiplier;
+
+      const elapsed = currentElapsedSec;
+      const firstKf = activeKeyframes[0];
+      const lastKf = activeKeyframes[activeKeyframes.length - 1];
+
+      let targetY = 0;
+      if (elapsed <= firstKf.seconds) {
+        targetY = firstKf.targetY;
+      } else if (elapsed >= lastKf.seconds) {
+        targetY = lastKf.targetY;
+        window.scrollTo(0, targetY);
+        lastTargetY = targetY;
+        stopScroll();
+        return;
+      } else {
+        let i = 0;
+        while (i < activeKeyframes.length - 1 && activeKeyframes[i + 1].seconds <= elapsed) {
+          i++;
+        }
+        const k1 = activeKeyframes[i];
+        const k2 = activeKeyframes[i + 1];
+        const duration = k2.seconds - k1.seconds;
+        const progress = duration > 0 ? (elapsed - k1.seconds) / duration : 1;
+        targetY = k1.targetY + (k2.targetY - k1.targetY) * progress;
       }
 
-      const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 2;
-      if (atBottom) { scrollRafId = null; setPlaying(false); }
-      else { scrollRafId = requestAnimationFrame(step); }
+      window.scrollTo(0, targetY);
+      lastTargetY = targetY;
+
+      scrollRafId = requestAnimationFrame(stepTimed);
     };
-    scrollRafId = requestAnimationFrame(step);
+
+    scrollRafId = requestAnimationFrame(stepTimed);
   }
 
   function stopScroll() {
     if (!scrollRafId) return;
     cancelAnimationFrame(scrollRafId);
     scrollRafId = null;
+    lastTargetY = window.scrollY;
     setPlaying(false);
   }
 
@@ -426,8 +739,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (playBtn && playBtn.style.display === 'none') return;
     const tag = e.target.tagName;
     if (['A', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'].includes(tag)) return;
-    if (e.target.closest('a, button')) return;
+    if (e.target.closest('a, button, .speed-badge')) return;
     scrollRafId ? stopScroll() : startScroll();
+  });
+
+  // Spacebar to toggle scroll (Play / Pause)
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
+      const tag = (e.target && e.target.tagName) || '';
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || (e.target && e.target.isContentEditable)) {
+        return;
+      }
+      e.preventDefault();
+      scrollRafId ? stopScroll() : startScroll();
+    } else if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
+      e.preventDefault();
+      changeSpeed(0.10);
+    } else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') {
+      e.preventDefault();
+      changeSpeed(-0.10);
+    }
+  });
+
+  // User manual scroll gestures immediately pause auto-scroll
+  window.addEventListener('wheel', () => {
+    if (scrollRafId) stopScroll();
+  }, { passive: true });
+
+  window.addEventListener('touchmove', () => {
+    if (scrollRafId) stopScroll();
+  }, { passive: true });
+
+  window.addEventListener('resize', () => {
+    if (activeKeyframes) activeKeyframes = getKeyframes();
   });
   // ──────────────────────────────────────────────────────────────────────────
 

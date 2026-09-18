@@ -368,18 +368,239 @@ body.show-song .toggle-btn.active {
   font-weight: 700 !important;
 }
 
-body.show-song .close-btn {
+body.show-song {
+  padding-top: 10px !important;
+}
+
+body.show-song .wrap {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+body.show-song .song-topbar {
+  display: none !important;
+}
+
+.show-floating-controls {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  direction: ltr;
+}
+
+.show-floating-controls .close-btn {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  margin: 0;
+  border-radius: 50%;
+  border: 1px solid #ffffff !important;
   color: #ffffff !important;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.85;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.show-floating-controls .close-btn i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.show-floating-controls .close-btn:hover {
+  opacity: 1;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  transform: scale(1.1);
+}
+
+.show-floating-controls #scroll-play-btn {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  margin: 0;
+  border-radius: 50%;
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s;
   opacity: 0.85;
 }
 
-body.show-song .close-btn:hover {
+.show-floating-controls #scroll-play-btn:hover,
+.show-floating-controls #scroll-play-btn.active {
   opacity: 1;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  transform: scale(1.1);
 }
 
-body.show-song #scroll-play-btn {
-  color: #FFE600 !important;
-  border-color: #FFE600 !important;
+/* ── Middle-left vertical speed controls ── */
+.show-speed-controls {
+  position: fixed;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  direction: ltr;
+}
+
+.show-speed-controls .speed-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  border-radius: 50%;
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+  background: rgba(15, 20, 30, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.85;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.show-speed-controls .speed-btn:hover {
+  opacity: 1;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background: rgba(30, 40, 60, 0.85);
+  transform: scale(1.1);
+}
+
+.show-speed-controls .speed-badge {
+  position: relative;
+  font-size: 16px;
+  font-family: inherit;
+  color: #ffffff;
+  opacity: 0.9;
+  min-width: 52px;
+  height: 36px;
+  text-align: center;
+  user-select: none;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 20, 30, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, opacity 0.2s, border-color 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.show-speed-controls .speed-badge:hover {
+  opacity: 1;
+  background: rgba(30, 40, 60, 0.85);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Bottom-left show navigation controls (Next & Prev) ── */
+.show-nav-controls {
+  position: fixed;
+  bottom: 22px;
+  left: 18px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  direction: ltr;
+}
+
+.show-nav-btn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  margin: 0;
+  border-radius: 50%;
+  border: 1px solid #ffffff !important;
+  color: #ffffff !important;
+  background: rgba(15, 20, 30, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.85;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.show-nav-btn i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.show-nav-btn:hover {
+  opacity: 1;
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background: rgba(30, 40, 60, 0.85);
+  transform: scale(1.1);
+}
+
+.show-nav-btn.disabled {
+  opacity: 0.22 !important;
+  cursor: default !important;
+  pointer-events: none !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(15, 20, 30, 0.3) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Expanded invisible touch hit target (+8px on all sides) for effortless tapping */
+.show-floating-controls .close-btn::after,
+.show-floating-controls #scroll-play-btn::after,
+.show-speed-controls .speed-btn::after,
+.show-speed-controls .speed-badge::after,
+.show-nav-btn::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  bottom: -8px;
+  left: -8px;
+  border-radius: inherit;
 }
 
 body.show-song .credits {
