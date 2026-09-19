@@ -226,7 +226,7 @@ pre {
 }
 
 .chorus {
-  color: #ffffff;
+  color: #00ff88;
 }
 
 .scroll-pause-marker {
@@ -324,9 +324,9 @@ body.show-song pre {
   font-family: 'Noto Sans Hebrew', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
   font-size: var(--song-font-size, 10em);
   font-weight: 800 !important;
-  line-height: var(--song-line-height, 1.45) !important;
+  line-height: var(--song-line-height, 1.6) !important;
   letter-spacing: 0.8px;
-  padding: 8px 16px !important;
+  padding: 8px 16px 60px 16px !important;
   box-sizing: border-box !important;
   width: 100% !important;
   overflow-x: hidden !important;
@@ -348,9 +348,8 @@ body.show-song .chord {
 }
 
 body.show-song .chorus {
-  color: #FFFF77 !important;
-  /* פזמון בצהוב בהיר מובדל מהבתים */
-  text-shadow: 0 0 1px rgba(255, 255, 119, 0.4);
+  color: #00ff88 !important;
+  text-shadow: 0 0 1px rgba(0, 255, 136, 0.4);
 }
 
 body.show-song .view-toggle {
@@ -505,12 +504,32 @@ body.show-song .song-topbar {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s, transform 0.2s;
+  transition: color 0.2s, opacity 0.2s, transform 0.2s;
 }
 
 .show-speed-controls .speed-badge:hover {
   opacity: 1;
   transform: scale(1.1);
+}
+
+@keyframes speedBadgeBlink {
+
+  0%,
+  100% {
+    color: #b0b0b0;
+    opacity: 0.95;
+  }
+
+  50% {
+    color: #505050;
+    opacity: 0.25;
+  }
+}
+
+.show-speed-controls .speed-badge.active {
+  color: #a0a0a0 !important;
+  animation: speedBadgeBlink 4s infinite ease-in-out;
+  text-shadow: none !important;
 }
 
 /* ── Show navigation buttons (Next on bottom-left, Back on bottom-right) ── */
@@ -566,6 +585,15 @@ body.show-song .song-topbar {
   transform: none !important;
 }
 
+.show-next-btn.auto-next-active {
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  color: #00ff88 !important;
+  opacity: 1 !important;
+  animation: none !important;
+}
+
 /* Expanded invisible touch hit target (+8px on all sides) for effortless tapping */
 .show-floating-controls .close-btn::after,
 .show-floating-controls #scroll-play-btn::after,
@@ -589,9 +617,9 @@ body.show-song .credits {
   body.show-song pre {
     font-size: var(--song-font-size, 20px);
     padding-top: 6px !important;
-    padding-bottom: 60vh !important;
+    padding-bottom: 60px !important;
     padding-right: 6px !important;
-    padding-left: 36px !important;
+    padding-left: 10px !important;
   }
 }
 

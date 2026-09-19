@@ -28,24 +28,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Close button (×)
   const closeBtn = document.createElement('a');
-  closeBtn.href = isShow ? '../show.html' : '../songs.html'; // fallback
+  closeBtn.href = isShow ? '../show.html' : '../songs.html';
   closeBtn.className = 'close-btn';
-  closeBtn.setAttribute('aria-label', 'חזרה');
+  closeBtn.setAttribute('aria-label', isShow ? 'חזרה למופע' : 'חזרה');
   closeBtn.innerHTML = isShow ? '<i class="fa-solid fa-xmark"></i>' : '×';
 
-  try {
-    const ref = document.referrer ? new URL(document.referrer) : null;
-    if (ref && ref.origin === location.origin && ref.href !== location.href) {
-      closeBtn.href = ref.href;
-    }
-  } catch (_) { /* ignore */ }
+  if (!isShow) {
+    try {
+      const ref = document.referrer ? new URL(document.referrer) : null;
+      if (ref && ref.origin === location.origin && ref.href !== location.href) {
+        closeBtn.href = ref.href;
+      }
+    } catch (_) { /* ignore */ }
 
-  closeBtn.addEventListener('click', (e) => {
-    if (window.history.length > 1) {
-      e.preventDefault();
-      window.history.back();
-    }
-  });
+    closeBtn.addEventListener('click', (e) => {
+      if (window.history.length > 1) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+  }
 
   // Title
   const h1 = document.createElement('h1');
@@ -114,8 +116,19 @@ document.addEventListener('DOMContentLoaded', () => {
       resultLines.push(isChorus && line.trim() ? `<span class="chorus">${formatted}</span>` : formatted);
     }
 
+    // Strip any trailing empty lines from the end of the song
+    while (resultLines.length > 0 && resultLines[resultLines.length - 1].trim() === '') {
+      resultLines.pop();
+    }
+
     if (pendingSeconds !== null) {
-      resultLines.push(`<span class="scroll-time-anchor" data-seconds="${pendingSeconds}" style="display:inline-block;width:0;height:0;overflow:hidden;vertical-align:top;pointer-events:none;"></span>`);
+      const anchor = `<span class="scroll-time-anchor" data-seconds="${pendingSeconds}" style="display:inline-block;width:0;height:0;overflow:hidden;vertical-align:top;pointer-events:none;"></span>`;
+      if (resultLines.length > 0) {
+        resultLines[resultLines.length - 1] += anchor;
+      } else {
+        resultLines.push(anchor);
+      }
+      pendingSeconds = null;
     }
 
     return resultLines.join('\n');
@@ -134,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pre.style.setProperty('line-height', cfg.lineHeight, 'important');
     document.documentElement.style.setProperty('--song-line-height', cfg.lineHeight);
   }
-  pre.style.paddingBottom = '60vh';
+  pre.style.paddingBottom = isShow ? '60px' : '40px';
   if (lyricsText || chordsText) {
     pre.innerHTML = highlightChords(lyricsText || chordsText);
   }
@@ -142,9 +155,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const fitSongFontSize = () => {
     if (!isAutoFont || !pre.isConnected) return;
 
-    // Measure the widest line using an off-screen clone with identical styling
-    const measurer = document.createElement('div');
+    // Available content width inside pre
     const computed = window.getComputedStyle(pre);
+    const paddingLeft = parseFloat(computed.paddingLeft) || 10;
+    const paddingRight = parseFloat(computed.paddingRight) || 6;
+    const availableWidth = Math.max(100, (pre.clientWidth || window.innerWidth) - paddingLeft - paddingRight - 8);
+
+    // Initial estimation using an off-screen clone with identical styling
+    const measurer = document.createElement('div');
     measurer.style.cssText = `
       position: absolute !important;
       top: -99999px !important;
@@ -159,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
       font-family: ${computed.fontFamily} !important;
       font-weight: ${computed.fontWeight} !important;
       letter-spacing: ${computed.letterSpacing} !important;
-      font-size: 100px !important;
+      font-size: 50px !important;
       line-height: normal !important;
     `;
     measurer.innerHTML = pre.innerHTML;
@@ -170,22 +188,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (measurerWidth <= 0) return;
 
-    // Available content width inside pre
-    const paddingLeft = parseFloat(computed.paddingLeft) || 16;
-    const paddingRight = parseFloat(computed.paddingRight) || 16;
-    const availableWidth = Math.max(100, (pre.clientWidth || window.innerWidth) - paddingLeft - paddingRight - 8);
+    let targetPx = 50 * (availableWidth / measurerWidth);
 
-    // Calculate proportional font size
-    let targetPx = 100 * (availableWidth / measurerWidth);
+    // Fine-tune against actual pre rendering (compensates for fixed letter-spacing, kerning & subpixel rounding)
+    pre.style.setProperty('font-size', `${Math.round(targetPx * 10) / 10}px`, 'important');
+    const oldWs = pre.style.whiteSpace;
+    pre.style.setProperty('white-space', 'pre', 'important');
+
+    const actualTextWidth = pre.scrollWidth - paddingLeft - paddingRight;
+    if (actualTextWidth > availableWidth) {
+      targetPx = targetPx * (availableWidth / actualTextWidth);
+    }
+    pre.style.whiteSpace = oldWs;
 
     // Limits
     const isMobile = window.innerWidth <= 500;
-    const defaultMin = isMobile ? 15 : 22;
+    const defaultMin = isMobile ? 14 : 20;
     const minPx = typeof cfg.minFontSize === 'number' ? cfg.minFontSize : defaultMin;
     const maxPx = typeof cfg.maxFontSize === 'number' ? cfg.maxFontSize : 140;
     targetPx = Math.max(minPx, Math.min(maxPx, targetPx));
 
-    const fsStr = `${Math.round(targetPx * 10) / 10}px`;
+    // Round down to 1 decimal place to guarantee no subpixel overflow
+    targetPx = Math.floor(targetPx * 10) / 10;
+
+    const fsStr = `${targetPx}px`;
     pre.style.setProperty('font-size', fsStr, 'important');
     document.documentElement.style.setProperty('--song-font-size', fsStr);
   };
@@ -382,6 +408,50 @@ document.addEventListener('DOMContentLoaded', () => {
     h1.appendChild(playBtn);
   }
 
+  let nextSongUrl = null;
+  let autoNextTimer = null;
+  let autoNextInterval = null;
+  let showNextBtn = null;
+
+  function onSongComplete() {
+    if (isShow && nextSongUrl) {
+      cancelAutoNext();
+      if (showNextBtn) {
+        showNextBtn.classList.add('auto-next-active');
+        let remaining = 10;
+        showNextBtn.textContent = remaining;
+        autoNextInterval = setInterval(() => {
+          remaining -= 1;
+          if (remaining > 0) {
+            showNextBtn.textContent = remaining;
+          } else {
+            cancelAutoNext();
+            window.location.href = nextSongUrl;
+          }
+        }, 1000);
+      } else {
+        autoNextTimer = setTimeout(() => {
+          window.location.href = nextSongUrl;
+        }, 10000);
+      }
+    }
+  }
+
+  function cancelAutoNext() {
+    if (autoNextInterval) {
+      clearInterval(autoNextInterval);
+      autoNextInterval = null;
+    }
+    if (autoNextTimer) {
+      clearTimeout(autoNextTimer);
+      autoNextTimer = null;
+    }
+    if (showNextBtn) {
+      showNextBtn.classList.remove('auto-next-active');
+      showNextBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+    }
+  }
+
   const SHOW_SONGS = [
     { name: "בלוז לשבת", file: "בלוז לשבת" },
     { name: "בלוז לחילוני", file: "בלוז לחילוני" },
@@ -405,9 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const floatingControls = document.createElement('div');
     floatingControls.className = 'show-floating-controls';
     floatingControls.appendChild(closeBtn);
-    if (playBtn) {
-      floatingControls.appendChild(playBtn);
-    }
     document.body.prepend(floatingControls);
 
     // Middle-left vertical speed controls: [+] [speedBadge] [-]
@@ -449,11 +516,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Next song button (forward)
       const nextBtn = document.createElement('a');
+      showNextBtn = nextBtn;
       nextBtn.className = 'show-nav-btn show-next-btn';
       nextBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
       if (idx < SHOW_SONGS.length - 1) {
         const nextSong = SHOW_SONGS[idx + 1];
-        nextBtn.href = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
+        nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
+        nextBtn.href = nextSongUrl;
         nextBtn.setAttribute('aria-label', `לשיר הבא: ${nextSong.name}`);
         nextBtn.title = `השיר הבא: ${nextSong.name}`;
       } else {
@@ -561,10 +630,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Auto-scroll ────────────────────────────────────────────────────────────
 
   function setPlaying(playing) {
-    if (!playBtn) return;
-    playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-angles-down"></i>';
-    playBtn.setAttribute('aria-label', playing ? 'עצור גלילה' : 'הפעל גלילה אוטומטית');
-    playBtn.classList.toggle('active', playing);
+    if (playBtn) {
+      playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-angles-down"></i>';
+      playBtn.setAttribute('aria-label', playing ? 'עצור גלילה' : 'הפעל גלילה אוטומטית');
+      playBtn.classList.toggle('active', playing);
+    }
+    if (speedBadge) {
+      speedBadge.classList.toggle('active', playing);
+    }
   }
 
   function getKeyframes() {
@@ -606,6 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function startScroll() {
     if (scrollRafId) return;
+    cancelAutoNext();
 
     activeKeyframes = getKeyframes();
 
@@ -653,7 +727,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 2;
-        if (atBottom) { scrollRafId = null; setPlaying(false); }
+        if (atBottom) { 
+          scrollRafId = null; 
+          setPlaying(false); 
+          onSongComplete();
+        }
         else { scrollRafId = requestAnimationFrame(stepLegacy); }
       };
       scrollRafId = requestAnimationFrame(stepLegacy);
@@ -707,6 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo(0, targetY);
         lastTargetY = targetY;
         stopScroll();
+        onSongComplete();
         return;
       } else {
         let i = 0;
@@ -743,6 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Tap anywhere (not on interactive elements) to toggle scroll
   document.addEventListener('click', (e) => {
+    cancelAutoNext();
     if (playBtn && playBtn.style.display === 'none') return;
     const tag = e.target.tagName;
     if (['A', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'].includes(tag)) return;
@@ -758,6 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       e.preventDefault();
+      cancelAutoNext();
       scrollRafId ? stopScroll() : startScroll();
     } else if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
       e.preventDefault();
@@ -770,10 +851,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // User manual scroll gestures immediately pause auto-scroll
   window.addEventListener('wheel', () => {
+    cancelAutoNext();
     if (scrollRafId) stopScroll();
   }, { passive: true });
 
   window.addEventListener('touchmove', () => {
+    cancelAutoNext();
     if (scrollRafId) stopScroll();
   }, { passive: true });
 
