@@ -8,9 +8,13 @@
   <meta name="description"
     content="להקת הקונטרול פריקס בערב בלוז ורוק ישראלי כמו שלא שמעתם אף פעם! מוצ״ש 10.10.26, הוד השרון.">
   <meta name="theme-color" content="#12101A">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="version" content="2.1.0">
 
-  <link rel="icon" type="image/png" href="../Media/main/favicon.png" />
-  <link rel="apple-touch-icon" href="../Media/main/logo.png" />
+  <link rel="icon" type="image/png" href="../Media/main/favicon.png?v=2.1.0" />
+  <link rel="apple-touch-icon" href="../Media/main/logo.png?v=2.1.0" />
 
   <meta property="og:site_name" content="הקונטרול פריקס">
   <meta property="og:locale" content="he_IL">
@@ -416,6 +420,36 @@
       align-items: center;
     }
 
+    .coupon-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin: 12px 0 0;
+      font-family: var(--util);
+      font-size: .88rem;
+      color: #585043;
+      line-height: 1.4;
+    }
+
+    .coupon-hint svg {
+      flex: none;
+      stroke: var(--red);
+    }
+
+    .copy .coupon-hint {
+      color: rgba(251, 246, 236, 0.78);
+      margin-top: 12px;
+    }
+
+    .copy .coupon-hint svg {
+      stroke: var(--mint);
+    }
+
+    .close-row .coupon-hint {
+      flex-basis: 100%;
+      margin-top: -8px;
+    }
+
     .action-links {
       display: flex;
       flex-wrap: wrap;
@@ -697,6 +731,12 @@
         padding: 12px 14px;
       }
 
+      .coupon-hint {
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+      }
+
       .bar-txt span {
         display: none
       }
@@ -868,6 +908,10 @@
             סגנון מוזיקלי שדי נדיר לשמוע בעברית, עם אנרגיה סוחפת, המון נשמה והומור.<br>
           </p>
           <a class="cta cta-lg" id="heroCta" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת כרטיסים</a>
+          <p class="coupon-hint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>
+            <span>יש לכם קופון הנחה? הזנת הקוד מתבצעת במסך התשלום</span>
+          </p>
         </div>
         <div class="cue">
           <button class="cuebtn" id="cueBtn" type="button">גלילה</button>
@@ -882,6 +926,10 @@
           <div class="cta-row">
             <a class="cta cta-lg" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת כרטיסים</a>
           </div>
+          <p class="coupon-hint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>
+            <span>יש לכם קופון הנחה? הזנת הקוד מתבצעת במסך התשלום</span>
+          </p>
           <div class="action-links">
             <a class="action-pill"
               href="https://www.google.com/maps/search/?api=1&amp;query=%D7%91%D7%90%D7%91%D7%99+%D7%91%D7%A8+%D7%94%D7%A0%D7%92%D7%A8+8+%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F"
@@ -956,6 +1004,10 @@
           <a class="share"
             href="https://wa.me/?text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F%2C%20%D7%9E%D7%95%D7%A6%D7%B4%D7%A9%2010.10%20%D7%91-21%3A30"
             target="_blank" rel="noopener" data-share>שלחו לחבר</a>
+          <p class="coupon-hint">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>
+            <span>יש לכם קופון הנחה? הזנת הקוד מתבצעת במסך התשלום</span>
+          </p>
           <address>
             <b>באבי בר</b>, הנגר 8, הוד השרון<br>
             מוצאי שבת 10.10.2026, דלתות 20:00<br>
