@@ -504,6 +504,15 @@ body.show-song .toggle-btn.active {
   gap: 12px;
 }
 
+.show-menu-section-label {
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+  text-align: right;
+  padding: 0 4px;
+  letter-spacing: 0.03em;
+}
+
 .show-menu-speed-group {
   display: flex;
   align-items: center;
@@ -707,7 +716,7 @@ body.show-song .credits {
     padding-top: 6px !important;
     padding-bottom: 105px !important;
     padding-right: 6px !important;
-    padding-left: 10px !important;
+    padding-left: 6px !important;
   }
 }
 

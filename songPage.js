@@ -631,6 +631,11 @@ document.addEventListener('DOMContentLoaded', () => {
     speedBadge.setAttribute('title', 'לחץ לאיפוס מהירות ל-100%');
     speedBadge.setAttribute('aria-label', 'איפוס מהירות ל-100%');
 
+    const speedLabel = document.createElement('div');
+    speedLabel.className = 'show-menu-section-label';
+    speedLabel.textContent = 'מהירות גלילה';
+    speedSection.appendChild(speedLabel);
+
     speedGroup.appendChild(btnMinus);
     speedGroup.appendChild(speedBadge);
     speedGroup.appendChild(btnPlus);
@@ -648,41 +653,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (idx !== -1) {
-      const navSection = document.createElement('div');
-      navSection.className = 'show-menu-section';
-
-      const navGrid = document.createElement('div');
-      navGrid.className = 'show-menu-nav-grid';
-
-      // Next song button (primary)
+      // Set URLs for swipe navigation (no buttons in menu)
       if (idx < SHOW_SONGS.length - 1) {
         const nextSong = SHOW_SONGS[idx + 1];
         nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
-        const nextBtn = document.createElement('a');
-        nextBtn.className = 'show-menu-nav-btn show-menu-next-btn';
-        nextBtn.href = nextSongUrl;
-        nextBtn.innerHTML = `<span>השיר הבא: <strong>${nextSong.name}</strong></span> <i class="fa-solid fa-arrow-left"></i>`;
-        navGrid.appendChild(nextBtn);
-      } else {
-        const endNotice = document.createElement('div');
-        endNotice.className = 'show-menu-end-notice';
-        endNotice.textContent = 'סוף רשימת המופע';
-        navGrid.appendChild(endNotice);
       }
-
-      // Prev song button
       if (idx > 0) {
         const prevSong = SHOW_SONGS[idx - 1];
         prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
-        const prevBtn = document.createElement('a');
-        prevBtn.className = 'show-menu-nav-btn show-menu-prev-btn';
-        prevBtn.href = prevSongUrl;
-        prevBtn.innerHTML = `<span>השיר הקודם: ${prevSong.name}</span> <i class="fa-solid fa-arrow-right"></i>`;
-        navGrid.appendChild(prevBtn);
       }
-
-      navSection.appendChild(navGrid);
-      menuCard.appendChild(navSection);
     }
 
     // Return to show songs list
