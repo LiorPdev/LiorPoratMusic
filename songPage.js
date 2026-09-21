@@ -475,8 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let nextSongUrl = null;
   let prevSongUrl = null;
-  let nextSongName = null;
-  let prevSongName = null;
   let autoNextInterval = null;
   let autoStartInterval = null;
   let songHasStarted = false;
@@ -659,7 +657,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Next song button (primary)
       if (idx < SHOW_SONGS.length - 1) {
         const nextSong = SHOW_SONGS[idx + 1];
-        nextSongName = nextSong.name;
         nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
         const nextBtn = document.createElement('a');
         nextBtn.className = 'show-menu-nav-btn show-menu-next-btn';
@@ -676,7 +673,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Prev song button
       if (idx > 0) {
         const prevSong = SHOW_SONGS[idx - 1];
-        prevSongName = prevSong.name;
         prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
         const prevBtn = document.createElement('a');
         prevBtn.className = 'show-menu-nav-btn show-menu-prev-btn';
@@ -1047,25 +1043,11 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.addEventListener('click', handleUserToggleScroll);
   }
 
-  // ── Song navigation helpers with visual feedback ──
-  function showNavToast(text, isNext) {
-    let toast = document.querySelector('.show-swipe-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'show-swipe-toast';
-      document.body.appendChild(toast);
-    }
-    toast.innerHTML = isNext
-      ? `<span>${text}</span> <i class="fa-solid fa-arrow-left"></i>`
-      : `<i class="fa-solid fa-arrow-right"></i> <span>${text}</span>`;
-    toast.classList.add('visible');
-  }
-
+  // ── Song navigation helpers ──
   function goToNextSong() {
     if (!nextSongUrl) return;
     cancelAutoNext();
     cancelOpeningCountdown();
-    showNavToast(nextSongName ? `השיר הבא: ${nextSongName}` : 'השיר הבא', true);
     window.location.href = nextSongUrl;
   }
 
@@ -1073,7 +1055,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!prevSongUrl) return;
     cancelAutoNext();
     cancelOpeningCountdown();
-    showNavToast(prevSongName ? `השיר הקודם: ${prevSongName}` : 'השיר הקודם', false);
     window.location.href = prevSongUrl;
   }
 
