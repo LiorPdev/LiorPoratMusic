@@ -475,6 +475,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let nextSongUrl = null;
   let prevSongUrl = null;
+  let nextSongName = null;
+  let prevSongName = null;
   let autoNextInterval = null;
   let autoStartInterval = null;
   let songHasStarted = false;
@@ -657,6 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Next song button (primary)
       if (idx < SHOW_SONGS.length - 1) {
         const nextSong = SHOW_SONGS[idx + 1];
+        nextSongName = nextSong.name;
         nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
         const nextBtn = document.createElement('a');
         nextBtn.className = 'show-menu-nav-btn show-menu-next-btn';
@@ -673,6 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Prev song button
       if (idx > 0) {
         const prevSong = SHOW_SONGS[idx - 1];
+        prevSongName = prevSong.name;
         prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
         const prevBtn = document.createElement('a');
         prevBtn.className = 'show-menu-nav-btn show-menu-prev-btn';
@@ -1043,8 +1047,84 @@ document.addEventListener('DOMContentLoaded', () => {
     playBtn.addEventListener('click', handleUserToggleScroll);
   }
 
+  // ── Song navigation helpers with visual feedback ──
+  function showNavToast(text, isNext) {
+    let toast = document.querySelector('.show-swipe-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'show-swipe-toast';
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = isNext
+      ? `<span>${text}</span> <i class="fa-solid fa-arrow-left"></i>`
+      : `<i class="fa-solid fa-arrow-right"></i> <span>${text}</span>`;
+    toast.classList.add('visible');
+  }
+
+  function goToNextSong() {
+    if (!nextSongUrl) return;
+    cancelAutoNext();
+    cancelOpeningCountdown();
+    showNavToast(nextSongName ? `השיר הבא: ${nextSongName}` : 'השיר הבא', true);
+    window.location.href = nextSongUrl;
+  }
+
+  function goToPrevSong() {
+    if (!prevSongUrl) return;
+    cancelAutoNext();
+    cancelOpeningCountdown();
+    showNavToast(prevSongName ? `השיר הקודם: ${prevSongName}` : 'השיר הקודם', false);
+    window.location.href = prevSongUrl;
+  }
+
+  // ── Swipe gestures for mobile song navigation ──
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchStartTime = 0;
+  let isSwipeGesture = false;
+
+  window.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchStartTime = performance.now();
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', (e) => {
+    if (e.changedTouches && e.changedTouches.length === 1) {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const dx = touchEndX - touchStartX;
+      const dy = touchEndY - touchStartY;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+      const dt = performance.now() - touchStartTime;
+
+      const isMenuOpen = document.querySelector('.show-menu-overlay.open');
+      if (isMenuOpen) return;
+      if (e.target && e.target.closest('button, a, input, select, .show-menu-trigger, .speed-btn, .speed-badge')) return;
+
+      // Horizontal swipe criteria:
+      // Minimum 45px swipe, clearly horizontal (absDx > absDy * 1.3), under 600ms
+      if (absDx >= 45 && absDx > absDy * 1.3 && dt < 600) {
+        isSwipeGesture = true;
+        setTimeout(() => { isSwipeGesture = false; }, 350);
+
+        if (dx < 0 && nextSongUrl) {
+          // Swipe left (👈) -> Next song in RTL
+          goToNextSong();
+        } else if (dx > 0 && prevSongUrl) {
+          // Swipe right (👉) -> Previous song in RTL
+          goToPrevSong();
+        }
+      }
+    }
+  }, { passive: true });
+
   // Tap anywhere (not on interactive elements) to toggle scroll
   document.addEventListener('click', (e) => {
+    if (isSwipeGesture) return;
     if (playBtn && playBtn.style.display === 'none') return;
     const tag = e.target.tagName;
     if (['A', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'].includes(tag)) return;
@@ -1062,16 +1142,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'ArrowLeft') {
       if (nextSongUrl) {
         e.preventDefault();
-        cancelAutoNext();
-        cancelOpeningCountdown();
-        window.location.href = nextSongUrl;
+        goToNextSong();
       }
     } else if (e.key === 'ArrowRight') {
       if (prevSongUrl) {
         e.preventDefault();
-        cancelAutoNext();
-        cancelOpeningCountdown();
-        window.location.href = prevSongUrl;
+        goToPrevSong();
       }
     } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
       e.preventDefault();
