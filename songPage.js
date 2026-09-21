@@ -1087,10 +1087,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target && e.target.closest('button, a, input, select, .show-menu-trigger, .speed-btn, .speed-badge')) return;
 
       // Horizontal swipe criteria:
-      // Minimum 45px swipe, clearly horizontal (absDx > absDy * 1.3), under 600ms
-      if (absDx >= 45 && absDx > absDy * 1.3 && dt < 600) {
+      // Minimum 50px horizontal, must be more horizontal than vertical, under 700ms
+      if (absDx >= 50 && absDx > absDy && dt < 700) {
         isSwipeGesture = true;
-        setTimeout(() => { isSwipeGesture = false; }, 350);
+        setTimeout(() => { isSwipeGesture = false; }, 400);
 
         if (dx < 0 && nextSongUrl) {
           // Swipe left (👈) -> Next song in RTL
