@@ -1086,17 +1086,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isMenuOpen) return;
       if (e.target && e.target.closest('button, a, input, select, .show-menu-trigger, .speed-btn, .speed-badge')) return;
 
-      // Horizontal swipe criteria:
-      // Minimum 50px horizontal, must be more horizontal than vertical, under 700ms
-      if (absDx >= 50 && absDx > absDy && dt < 700) {
+      // Block click after any significant gesture (vertical scroll flick or horizontal swipe)
+      const isSignificantMove = (absDx >= 50 || absDy >= 30) && dt < 700;
+      if (isSignificantMove) {
         isSwipeGesture = true;
         setTimeout(() => { isSwipeGesture = false; }, 400);
+      }
 
+      // Horizontal swipe: navigate between songs
+      if (absDx >= 50 && absDx > absDy && dt < 700) {
         if (dx > 0 && nextSongUrl) {
-          // Swipe right -> Next song
           goToNextSong();
         } else if (dx < 0 && prevSongUrl) {
-          // Swipe left -> Previous song
           goToPrevSong();
         }
       }
