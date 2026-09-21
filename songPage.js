@@ -1092,11 +1092,11 @@ document.addEventListener('DOMContentLoaded', () => {
         isSwipeGesture = true;
         setTimeout(() => { isSwipeGesture = false; }, 400);
 
-        if (dx < 0 && nextSongUrl) {
-          // Swipe left (👈) -> Next song in RTL
+        if (dx > 0 && nextSongUrl) {
+          // Swipe right -> Next song
           goToNextSong();
-        } else if (dx > 0 && prevSongUrl) {
-          // Swipe right (👉) -> Previous song in RTL
+        } else if (dx < 0 && prevSongUrl) {
+          // Swipe left -> Previous song
           goToPrevSong();
         }
       }

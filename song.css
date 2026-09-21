@@ -285,11 +285,17 @@ pre {
 }
 
 /* ── Show Mode (Stage Prompter: Deep Black, Bold Typography, High Contrast) ─ */
+@keyframes showSongFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 body.show-song {
   padding-top: 0 !important;
   background: #000000 !important;
   background-color: #000000 !important;
   color: #ffffff !important;
+  animation: showSongFadeIn 0.35s ease-in-out;
 }
 
 body.show-song .wrap {
