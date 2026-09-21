@@ -1,0 +1,7 @@
+# GitHub Pages Configuration
+# Folders and files listed in exclude will NOT be deployed to the live website (returns 404)
+exclude:
+  - Archive
+  - _archive
+  - "*.js"
+  - version.json

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>שירים להופעה – ליאור פורת</title>
   <meta name="description" content="רשימת שירים ומילים להופעה של ליאור פורת.">
-  <link rel="canonical" href="https://liorporat.com/show.html">
+  <link rel="canonical" href="https://liorporat.com/show/">
   <meta name="robots" content="index, follow">
 
   <!-- Open Graph -->
@@ -17,18 +17,19 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="שירים להופעה – ליאור פורת">
-  <meta property="og:url" content="https://liorporat.com/show.html">
-  <meta property="og:image" content="https://liorporat.com/Media/og.webp">
+  <meta property="og:url" content="https://liorporat.com/show/">
+  <meta property="og:image" content="https://liorporat.com/Media/main/og.webp">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="שירים להופעה – ליאור פורת">
   <meta name="twitter:description" content="רשימת שירים ומילים להופעה של ליאור פורת כולל אקורדים">
-  <meta name="twitter:image" content="https://liorporat.com/Media/og.webp">
+  <meta name="twitter:image" content="https://liorporat.com/Media/main/og.webp">
 
-  <link rel="stylesheet" href="styles.css?v=1.1.8" />
-  <link rel="stylesheet" href="songs.css?v=1.1.8" />
-  <link rel="apple-touch-icon" href="Media/Logo1.png" />
+  <link rel="stylesheet" href="../styles.css?v=1.4.3" />
+  <link rel="stylesheet" href="../songs.css?v=1.4.3" />
+  <link rel="icon" type="image/png" href="../Media/main/favicon.png" />
+  <link rel="apple-touch-icon" href="../Media/main/logo.png" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     html,
@@ -207,14 +208,348 @@
         gap: 8px;
       }
     }
+
+    /* ── Settings Button & Title Group ── */
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .settings-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 17px;
+      line-height: 1;
+      padding: 0;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s, color 0.2s;
+    }
+
+    .settings-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: #ffffff;
+      color: #ffffff;
+      transform: scale(1.08) rotate(30deg);
+    }
+
+    /* ── Settings Modal ── */
+    .settings-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      box-sizing: border-box;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .settings-modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .settings-modal {
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      background: #141822;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: translateY(20px) scale(0.96);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .settings-modal-overlay.active .settings-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-header h3 i {
+      color: #a5b0c4;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: #a5b0c4;
+      font-size: 26px;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: color 0.2s, background 0.2s;
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-body {
+      padding: 18px 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Live Preview Screen */
+    .preview-box {
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-family: 'Noto Sans Hebrew', -apple-system, sans-serif;
+    }
+
+    .preview-label {
+      font-size: 11px;
+      color: #8892b0;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 2px;
+    }
+
+    .preview-screen {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .prev-verse {
+      font-weight: 800;
+      font-size: 17px;
+      line-height: 1.3;
+      transition: color 0.15s;
+    }
+
+    .prev-chord {
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: 2px;
+      transition: color 0.15s;
+    }
+
+    .prev-chorus {
+      font-weight: 800;
+      font-size: 17px;
+      line-height: 1.3;
+      transition: color 0.15s, text-shadow 0.15s;
+    }
+
+    .prev-sub {
+      font-weight: 400;
+      font-size: 12px;
+      line-height: 1.3;
+      transition: color 0.15s;
+    }
+
+    /* Color Swatches Grid */
+    .color-options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .color-option-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .color-row-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .color-swatches {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .swatch-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+      position: relative;
+    }
+
+    .swatch-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .swatch-btn.selected {
+      border-color: #ffffff;
+      transform: scale(1.15);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+    }
+
+    .custom-picker-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, red, yellow, lime, aqua, blue, magenta, red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+      transition: transform 0.15s;
+    }
+
+    .custom-picker-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .custom-picker-btn input[type="color"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+    }
+
+    .modal-footer {
+      padding: 14px 22px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .btn-save {
+      background: #ffffff;
+      color: #0b0e14;
+      border: none;
+      padding: 10px 24px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, color 0.2s;
+    }
+
+    .btn-save:hover {
+      background: #e2e8f0;
+      color: #000000;
+      transform: scale(1.03);
+    }
+
+    .btn-reset {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    /* Quick Toast */
+    .save-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #ffffff;
+      color: #0b0e14;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 10px 22px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      z-index: 10001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+    }
+
+    .save-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 
 <body>
   <div class="song-topbar">
     <div class="topbar-inner">
-      <h2 class="songs-title">שירים להופעה</h2>
-      <a href="index.html" class="close-btn" aria-label="חזרה"><i class="fa-solid fa-xmark"></i></a>
+      <div class="title-group">
+        <button id="showSettingsBtn" class="settings-btn" aria-label="הגדרות צבעי הופעה" title="הגדרות צבעי הופעה">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+        <h2 class="songs-title">שירים להופעה</h2>
+      </div>
+      <a href="../index.html" class="close-btn" aria-label="חזרה"><i class="fa-solid fa-xmark"></i></a>
     </div>
   </div>
 
@@ -250,10 +585,10 @@
 
       const a = document.createElement('a');
       const songFileName = song.file || song.name;
-      a.href = `Show/${songFileName}.html`;
+      a.href = `${songFileName}.html`;
 
       const img = document.createElement('img');
-      img.src = `Media/songs/${songFileName}.webp`;
+      img.src = `../Media/songs/${songFileName}.webp`;
       img.alt = song.name;
       img.className = 'song-thumb';
       img.onerror = function () {
@@ -328,7 +663,237 @@
       resizeTimer = requestAnimationFrame(fitSongFontSize);
     });
   </script>
-  <script src="script.js?v=1.1.8"></script>
+
+  <!-- Color Settings Modal -->
+  <div id="colorSettingsModal" class="settings-modal-overlay" aria-hidden="true">
+    <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+      <div class="modal-header">
+        <h3 id="settingsModalTitle"><i class="fa-solid fa-palette"></i> צבעי במה להופעה</h3>
+        <button id="closeSettingsModal" class="modal-close-btn" aria-label="סגור">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Live Preview Screen -->
+        <div class="preview-box">
+          <div class="preview-label">תצוגה מקדימה לבמה (על רקע שחור)</div>
+          <div class="preview-screen">
+            <div class="prev-verse" id="prevVerse">להיות ישראלי זה להגיד יהיה בסדר (בית)</div>
+            <div class="prev-chorus" id="prevChorus">לו רק היית קצת פחות המורה שלי (פזמון)</div>
+            <div class="prev-sub" id="prevSub">זה לבכות שיקר פה ואז לצאת לנופש (שורות שאני לא שר)</div>
+            <div class="prev-chord" id="prevChord">[C] [G] [Am] [F]</div>
+          </div>
+        </div>
+
+        <div class="color-options-grid">
+          <!-- 1. טקסט בית -->
+          <div class="color-option-row">
+            <div class="color-row-title">
+              <span>טקסט בית</span>
+            </div>
+            <div class="color-swatches" data-type="verse">
+              <button type="button" class="swatch-btn" data-color="#FFE600" style="background:#FFE600;" title="צהוב במה"></button>
+              <button type="button" class="swatch-btn" data-color="#FFFFFF" style="background:#FFFFFF;" title="לבן בוהק"></button>
+              <button type="button" class="swatch-btn" data-color="#24FF00" style="background:#24FF00;" title="ירוק ניאון"></button>
+              <button type="button" class="swatch-btn" data-color="#00FFFF" style="background:#00FFFF;" title="ציאן"></button>
+              <button type="button" class="swatch-btn" data-color="#FFD54F" style="background:#FFD54F;" title="זהב בהיר"></button>
+              <label class="custom-picker-btn" title="צבע מותאם אישית">
+                <input type="color" id="pickerVerse" value="#FFE600">
+              </label>
+            </div>
+          </div>
+
+          <!-- 2. פזמון -->
+          <div class="color-option-row">
+            <div class="color-row-title">
+              <span>פזמון</span>
+            </div>
+            <div class="color-swatches" data-type="chorus">
+              <button type="button" class="swatch-btn" data-color="#24FF00" style="background:#24FF00;" title="ירוק ניאון"></button>
+              <button type="button" class="swatch-btn" data-color="#00FFFF" style="background:#00FFFF;" title="ציאן חשמלי"></button>
+              <button type="button" class="swatch-btn" data-color="#FFE600" style="background:#FFE600;" title="צהוב במה"></button>
+              <button type="button" class="swatch-btn" data-color="#FF9100" style="background:#FF9100;" title="כתום זוהר"></button>
+              <button type="button" class="swatch-btn" data-color="#FFFFFF" style="background:#FFFFFF;" title="לבן"></button>
+              <label class="custom-picker-btn" title="צבע מותאם אישית">
+                <input type="color" id="pickerChorus" value="#24FF00">
+              </label>
+            </div>
+          </div>
+
+          <!-- 3. שורות שאני לא שר -->
+          <div class="color-option-row">
+            <div class="color-row-title">
+              <span>שורות שאני לא שר</span>
+            </div>
+            <div class="color-swatches" data-type="sub">
+              <button type="button" class="swatch-btn" data-color="#A5B0C4" style="background:#A5B0C4;" title="אפור כסוף"></button>
+              <button type="button" class="swatch-btn" data-color="#FFE600" style="background:#FFE600;" title="צהוב"></button>
+              <button type="button" class="swatch-btn" data-color="#FFFFFF" style="background:#FFFFFF;" title="לבן"></button>
+              <button type="button" class="swatch-btn" data-color="#00FFFF" style="background:#00FFFF;" title="ציאן"></button>
+              <button type="button" class="swatch-btn" data-color="#24FF00" style="background:#24FF00;" title="ירוק ניאון"></button>
+              <label class="custom-picker-btn" title="צבע מותאם אישית">
+                <input type="color" id="pickerSub" value="#A5B0C4">
+              </label>
+            </div>
+          </div>
+
+          <!-- 4. אקורדים -->
+          <div class="color-option-row">
+            <div class="color-row-title">
+              <span>אקורדים</span>
+            </div>
+            <div class="color-swatches" data-type="chord">
+              <button type="button" class="swatch-btn" data-color="#FFFFFF" style="background:#FFFFFF;" title="לבן מודגש"></button>
+              <button type="button" class="swatch-btn" data-color="#FF9800" style="background:#FF9800;" title="כתום"></button>
+              <button type="button" class="swatch-btn" data-color="#00FFFF" style="background:#00FFFF;" title="ציאן"></button>
+              <button type="button" class="swatch-btn" data-color="#FFE600" style="background:#FFE600;" title="צהוב"></button>
+              <button type="button" class="swatch-btn" data-color="#24FF00" style="background:#24FF00;" title="ירוק ניאון"></button>
+              <label class="custom-picker-btn" title="צבע מותאם אישית">
+                <input type="color" id="pickerChord" value="#FFFFFF">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" id="resetColorsBtn" class="btn-reset">איפוס לברירת מחדל</button>
+        <button type="button" id="saveColorsBtn" class="btn-save">שמור הגדרות</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="saveToast" class="save-toast">הגדרות הצבעים נשמרו בהצלחה!</div>
+
+  <script>
+    // ── Stage Colors Settings Logic ──
+    const DEFAULT_COLORS = {
+      verse: '#FFE600',
+      chorus: '#24FF00',
+      sub: '#A5B0C4',
+      chord: '#FFFFFF'
+    };
+
+    let stageColors = { ...DEFAULT_COLORS };
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('stage_colors') || '{}');
+      if (saved.sub === '#FFE600') {
+        saved.sub = '#A5B0C4';
+        localStorage.setItem('stage_colors', JSON.stringify({ ...DEFAULT_COLORS, ...saved }));
+      }
+      stageColors = { ...DEFAULT_COLORS, ...saved };
+    } catch (e) {}
+
+    const colorModal = document.getElementById('colorSettingsModal');
+    const openSettingsBtn = document.getElementById('showSettingsBtn');
+    const closeSettingsBtn = document.getElementById('closeSettingsModal');
+    const saveColorsBtn = document.getElementById('saveColorsBtn');
+    const resetColorsBtn = document.getElementById('resetColorsBtn');
+    const saveToast = document.getElementById('saveToast');
+
+    const prevVerse = document.getElementById('prevVerse');
+    const prevChorus = document.getElementById('prevChorus');
+    const prevSub = document.getElementById('prevSub');
+    const prevChord = document.getElementById('prevChord');
+
+    const colorPickers = {
+      verse: document.getElementById('pickerVerse'),
+      chorus: document.getElementById('pickerChorus'),
+      sub: document.getElementById('pickerSub'),
+      chord: document.getElementById('pickerChord')
+    };
+
+    function updatePreviewScreen() {
+      if (prevVerse) prevVerse.style.color = stageColors.verse;
+      if (prevChorus) {
+        prevChorus.style.color = stageColors.chorus;
+        prevChorus.style.textShadow = `0 0 2px ${stageColors.chorus}99`;
+      }
+      if (prevSub) prevSub.style.color = stageColors.sub;
+      if (prevChord) prevChord.style.color = stageColors.chord;
+
+      ['verse', 'chorus', 'sub', 'chord'].forEach(type => {
+        const val = stageColors[type];
+        if (colorPickers[type] && val && val.startsWith('#')) {
+          colorPickers[type].value = val.length === 7 ? val : '#ffffff';
+        }
+
+        const swatches = document.querySelectorAll(`.color-swatches[data-type="${type}"] .swatch-btn`);
+        swatches.forEach(btn => {
+          if (btn.dataset.color.toLowerCase() === (val || '').toLowerCase()) {
+            btn.classList.add('selected');
+          } else {
+            btn.classList.remove('selected');
+          }
+        });
+      });
+    }
+
+    function openColorModal() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('stage_colors') || '{}');
+        stageColors = { ...DEFAULT_COLORS, ...saved };
+      } catch (e) {}
+      updatePreviewScreen();
+      colorModal.classList.add('active');
+      colorModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeColorModal() {
+      colorModal.classList.remove('active');
+      colorModal.setAttribute('aria-hidden', 'true');
+    }
+
+    if (openSettingsBtn) openSettingsBtn.addEventListener('click', openColorModal);
+    if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeColorModal);
+
+    colorModal.addEventListener('click', (e) => {
+      if (e.target === colorModal) closeColorModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && colorModal.classList.contains('active')) {
+        closeColorModal();
+      }
+    });
+
+    // Swatch clicks
+    document.querySelectorAll('.color-swatches .swatch-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const type = btn.closest('.color-swatches').dataset.type;
+        const color = btn.dataset.color;
+        stageColors[type] = color;
+        updatePreviewScreen();
+      });
+    });
+
+    // Custom Color picker inputs
+    ['verse', 'chorus', 'sub', 'chord'].forEach(type => {
+      if (colorPickers[type]) {
+        colorPickers[type].addEventListener('input', (e) => {
+          stageColors[type] = e.target.value;
+          updatePreviewScreen();
+        });
+      }
+    });
+
+    // Save Settings
+    saveColorsBtn.addEventListener('click', () => {
+      try {
+        localStorage.setItem('stage_colors', JSON.stringify(stageColors));
+      } catch (e) {}
+      closeColorModal();
+      saveToast.classList.add('show');
+      setTimeout(() => saveToast.classList.remove('show'), 2400);
+    });
+
+    // Reset Defaults
+    resetColorsBtn.addEventListener('click', () => {
+      stageColors = { ...DEFAULT_COLORS };
+      updatePreviewScreen();
+    });
+  </script>
+  <script src="../script.js?v=1.4.3"></script>
 </body>
 
 </html>

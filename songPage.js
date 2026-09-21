@@ -1,3 +1,20 @@
+// Immediately apply stage colors from localStorage if in show mode
+(function applyStageColors() {
+  try {
+    const isShow = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+    if (isShow) {
+      const saved = JSON.parse(localStorage.getItem('stage_colors') || '{}');
+      if (saved.verse) document.documentElement.style.setProperty('--show-text-color', saved.verse);
+      if (saved.chorus) {
+        document.documentElement.style.setProperty('--show-chorus-color', saved.chorus);
+        document.documentElement.style.setProperty('--show-chorus-glow', saved.chorus + '99');
+      }
+      if (saved.sub) document.documentElement.style.setProperty('--show-sub-color', saved.sub);
+      if (saved.chord) document.documentElement.style.setProperty('--show-chord-color', saved.chord);
+    }
+  } catch (e) {}
+})();
+
 // Build the repeated song page chrome from window.SONG and the lyrics block
 document.addEventListener('DOMContentLoaded', () => {
   const main = document.querySelector('main.wrap') || document.body;
@@ -10,9 +27,23 @@ document.addEventListener('DOMContentLoaded', () => {
     youtube: cfg.youtubeId ? `https://www.youtube.com/watch?v=${cfg.youtubeId}` : null
   };
 
-  // remove any legacy duplicated markup if exists
-  [...main.querySelectorAll('h1,.icons,.share-link,.back-link,.credits,pre,.close-btn,.song-topbar,.show-floating-controls,.show-speed-controls,.show-next-btn,.show-prev-btn')].forEach(n => n.remove());
-  document.querySelectorAll('.song-topbar, .show-floating-controls, .show-speed-controls, .show-next-btn, .show-prev-btn').forEach(n => n.remove());
+  const isShow = Boolean(cfg.hideFooter || window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/'));
+  if (isShow) {
+    document.body.classList.add('show-song');
+    try {
+      const saved = JSON.parse(localStorage.getItem('stage_colors') || '{}');
+      if (saved.verse) document.documentElement.style.setProperty('--show-text-color', saved.verse);
+      if (saved.chorus) {
+        document.documentElement.style.setProperty('--show-chorus-color', saved.chorus);
+        document.documentElement.style.setProperty('--show-chorus-glow', saved.chorus + '99');
+      }
+      if (saved.sub) document.documentElement.style.setProperty('--show-sub-color', saved.sub);
+      if (saved.chord) document.documentElement.style.setProperty('--show-chord-color', saved.chord);
+    } catch (e) {}
+  }
+
+  // Remove any legacy duplicated markup if exists
+  document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-menu-trigger, .show-menu-overlay, .show-countdown-toast, .show-karaoke-countdown').forEach(n => n.remove());
 
   // ── Fixed top bar ────────────────────────────────────────────────────────
   const topbar = document.createElement('div');
@@ -21,19 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const topbarInner = document.createElement('div');
   topbarInner.className = 'topbar-inner';
 
-  const isShow = Boolean(cfg.hideFooter || window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/'));
-  if (isShow) {
-    document.body.classList.add('show-song');
-  }
-
-  // Close button (×)
-  const closeBtn = document.createElement('a');
-  closeBtn.href = isShow ? '../show.html' : '../songs.html';
-  closeBtn.className = 'close-btn';
-  closeBtn.setAttribute('aria-label', isShow ? 'חזרה למופע' : 'חזרה');
-  closeBtn.innerHTML = isShow ? '<i class="fa-solid fa-xmark"></i>' : '×';
-
+  // Close button (×) - only needed for standard song pages
+  let closeBtn = null;
   if (!isShow) {
+    closeBtn = document.createElement('a');
+    closeBtn.href = './';
+    closeBtn.className = 'close-btn';
+    closeBtn.setAttribute('aria-label', 'חזרה');
+    closeBtn.innerHTML = '×';
     try {
       const ref = document.referrer ? new URL(document.referrer) : null;
       if (ref && ref.origin === location.origin && ref.href !== location.href) {
@@ -97,8 +123,13 @@ document.addEventListener('DOMContentLoaded', () => {
         continue;
       }
 
-      const isChorus = /^(\t| {2,})/.test(line);
-      const displayLine = isChorus ? line.replace(/^(\t| {2,})/, '') : line;
+      const isSubLine = /^(\t{2,}|\t {2,}| {2,}\t| {4,})/.test(line);
+      const isChorus = !isSubLine && /^(\t| {2,})/.test(line);
+      const displayLine = isSubLine
+        ? line.replace(/^(\t{2,}|\t {2,}| {2,}\t| {4,})/, '')
+        : (isChorus ? line.replace(/^(\t| {2,})/, '') : line);
+      const isChordsOnly = /\[[^\]]+\]/.test(displayLine) && !/[\u0590-\u05FF]/.test(displayLine);
+
       let formatted = displayLine
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -113,7 +144,17 @@ document.addEventListener('DOMContentLoaded', () => {
         pendingSeconds = null;
       }
 
-      resultLines.push(isChorus && line.trim() ? `<span class="chorus">${formatted}</span>` : formatted);
+      if (isChordsOnly) {
+        formatted = `<span class="chords-line" dir="ltr">${formatted}</span>`;
+      }
+
+      if (isSubLine && line.trim()) {
+        resultLines.push(`<span class="sub-line">${formatted}</span>`);
+      } else if (isChorus && line.trim()) {
+        resultLines.push(`<span class="chorus">${formatted}</span>`);
+      } else {
+        resultLines.push(formatted);
+      }
     }
 
     // Strip any trailing empty lines from the end of the song
@@ -131,7 +172,30 @@ document.addEventListener('DOMContentLoaded', () => {
       pendingSeconds = null;
     }
 
-    return resultLines.join('\n');
+    let finalHtml = '';
+    let afterBlock = false;
+    for (let i = 0; i < resultLines.length; i++) {
+      const lineContent = resultLines[i];
+      const isBlock = lineContent.includes('class="chords-line"');
+
+      if (i > 0) {
+        if (afterBlock) {
+          // A block element already provides 1 visual line break upon closing.
+          // To preserve the exact number of empty lines from the source,
+          // we omit exactly one redundant '\n' immediately following any block element.
+          afterBlock = false;
+        } else {
+          finalHtml += '\n';
+        }
+      }
+
+      finalHtml += lineContent;
+      if (isBlock) {
+        afterBlock = true;
+      }
+    }
+
+    return finalHtml;
   };
 
   // Content <pre>
@@ -147,7 +211,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pre.style.setProperty('line-height', cfg.lineHeight, 'important');
     document.documentElement.style.setProperty('--song-line-height', cfg.lineHeight);
   }
-  pre.style.paddingBottom = isShow ? '60px' : '40px';
+  if (!isShow) {
+    pre.style.paddingBottom = '40px';
+  }
   if (lyricsText || chordsText) {
     pre.innerHTML = highlightChords(lyricsText || chordsText);
   }
@@ -339,52 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
     toggle.appendChild(btnChords);
     h1.appendChild(toggle);
 
-    // YouTube Play/Stop button (omitted for Show songs)
-    let ytPlayBtn;
-    let ytIframe = null;
-    let ytPlaying = false;
-
-    const setYtPlaying = (playing) => {
-      if (!ytPlayBtn) return;
-      ytPlaying = playing;
-      ytPlayBtn.textContent = playing ? '■' : '▶';
-      ytPlayBtn.setAttribute('aria-label', playing ? 'עצור שיר' : 'נגן שיר מיוטיוב');
-      ytPlayBtn.classList.toggle('active', playing);
-    };
-
-    if (cfg.youtubeId && !isShow) {
-      ytPlayBtn = document.createElement('button');
-      ytPlayBtn.id = 'youtube-play-btn';
-      ytPlayBtn.setAttribute('aria-label', 'נגן שיר מיוטיוב');
-      ytPlayBtn.textContent = '▶';
-      h1.appendChild(ytPlayBtn);
-
-      ytPlayBtn.addEventListener('click', () => {
-        if (ytPlaying) {
-          if (ytIframe) {
-            ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-          }
-          setYtPlaying(false);
-        } else {
-          if (!ytIframe) {
-            ytIframe = document.createElement('iframe');
-            ytIframe.id = 'youtube-player';
-            ytIframe.style.display = 'none';
-            ytIframe.setAttribute('allow', 'autoplay');
-            ytIframe.src = `https://www.youtube.com/embed/${cfg.youtubeId}?enablejsapi=1&autoplay=1`;
-            document.body.appendChild(ytIframe);
-          } else {
-            ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-          }
-          setYtPlaying(true);
-        }
-      });
-    }
-
-    if (playBtn && !isShow) {
-      h1.appendChild(playBtn);
-    }
-
     const updateView = (showChords) => {
       if (scrollRafId) stopScroll();
       currentElapsedSec = 0;
@@ -404,36 +424,133 @@ document.addEventListener('DOMContentLoaded', () => {
     btnLyrics.addEventListener('click', () => updateView(false));
     btnChords.addEventListener('click', () => updateView(true));
     updateView(window.location.hash === '#chords');
-  } else if (playBtn && !isShow) {
+  }
+
+  // YouTube Play/Stop button (available for any song with youtubeId in regular mode)
+  if (cfg.youtubeId && !isShow) {
+    let ytPlayBtn;
+    let ytIframe = null;
+    let ytPlaying = false;
+
+    const setYtPlaying = (playing) => {
+      if (!ytPlayBtn) return;
+      ytPlaying = playing;
+      ytPlayBtn.textContent = playing ? '■' : '▶';
+      ytPlayBtn.setAttribute('aria-label', playing ? 'עצור שיר' : 'נגן שיר מיוטיוב');
+      ytPlayBtn.classList.toggle('active', playing);
+    };
+
+    ytPlayBtn = document.createElement('button');
+    ytPlayBtn.id = 'youtube-play-btn';
+    ytPlayBtn.setAttribute('aria-label', 'נגן שיר מיוטיוב');
+    ytPlayBtn.textContent = '▶';
+    h1.appendChild(ytPlayBtn);
+
+    ytPlayBtn.addEventListener('click', () => {
+      if (ytPlaying) {
+        if (ytIframe) {
+          ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        }
+        setYtPlaying(false);
+      } else {
+        if (!ytIframe) {
+          ytIframe = document.createElement('iframe');
+          ytIframe.id = 'youtube-player';
+          ytIframe.style.display = 'none';
+          ytIframe.setAttribute('allow', 'autoplay');
+          ytIframe.src = `https://www.youtube.com/embed/${cfg.youtubeId}?enablejsapi=1&autoplay=1`;
+          document.body.appendChild(ytIframe);
+        } else {
+          ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        }
+        setYtPlaying(true);
+      }
+    });
+  }
+
+  // Attach auto-scroll play button to standard topbar
+  if (playBtn && !isShow) {
     h1.appendChild(playBtn);
   }
 
   let nextSongUrl = null;
-  let autoNextTimer = null;
+  let prevSongUrl = null;
   let autoNextInterval = null;
-  let showNextBtn = null;
+  let autoStartInterval = null;
+  let songHasStarted = false;
+  let showMenuTrigger = null;
+
+  function cancelOpeningCountdown() {
+    if (autoStartInterval) {
+      clearInterval(autoStartInterval);
+      autoStartInterval = null;
+    }
+    const kEl = document.querySelector('.show-karaoke-countdown');
+    if (kEl) {
+      kEl.remove();
+    }
+  }
+
+  function startSongOpeningCountdown() {
+    if (!isShow) return;
+    cancelOpeningCountdown();
+    cancelAutoNext();
+
+    let kEl = document.querySelector('.show-karaoke-countdown');
+    if (!kEl) {
+      kEl = document.createElement('div');
+      kEl.className = 'show-karaoke-countdown';
+      document.body.appendChild(kEl);
+    }
+    let remaining = 5;
+    const renderKaraokeNumber = () => {
+      kEl.textContent = remaining;
+      kEl.style.animation = 'none';
+      void kEl.offsetWidth; // trigger reflow for tick animation
+      kEl.style.animation = 'karaokeTick 0.9s ease-out forwards';
+    };
+    renderKaraokeNumber();
+
+    autoStartInterval = setInterval(() => {
+      remaining -= 1;
+      if (remaining > 0) {
+        renderKaraokeNumber();
+      } else {
+        cancelOpeningCountdown();
+        startScroll();
+      }
+    }, 1000);
+  }
 
   function onSongComplete() {
     if (isShow && nextSongUrl) {
       cancelAutoNext();
-      if (showNextBtn) {
-        showNextBtn.classList.add('auto-next-active');
-        let remaining = 10;
-        showNextBtn.textContent = remaining;
-        autoNextInterval = setInterval(() => {
-          remaining -= 1;
-          if (remaining > 0) {
-            showNextBtn.textContent = remaining;
-          } else {
-            cancelAutoNext();
-            window.location.href = nextSongUrl;
-          }
-        }, 1000);
-      } else {
-        autoNextTimer = setTimeout(() => {
-          window.location.href = nextSongUrl;
-        }, 10000);
+      cancelOpeningCountdown();
+
+      let kEl = document.querySelector('.show-karaoke-countdown');
+      if (!kEl) {
+        kEl = document.createElement('div');
+        kEl.className = 'show-karaoke-countdown';
+        document.body.appendChild(kEl);
       }
+      let remaining = 5;
+      const renderNextKaraoke = () => {
+        kEl.textContent = remaining;
+        kEl.style.animation = 'none';
+        void kEl.offsetWidth;
+        kEl.style.animation = 'karaokeTick 0.9s ease-out forwards';
+      };
+      renderNextKaraoke();
+
+      autoNextInterval = setInterval(() => {
+        remaining -= 1;
+        if (remaining > 0) {
+          renderNextKaraoke();
+        } else {
+          cancelAutoNext();
+          window.location.href = nextSongUrl;
+        }
+      }, 1000);
     }
   }
 
@@ -442,13 +559,9 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(autoNextInterval);
       autoNextInterval = null;
     }
-    if (autoNextTimer) {
-      clearTimeout(autoNextTimer);
-      autoNextTimer = null;
-    }
-    if (showNextBtn) {
-      showNextBtn.classList.remove('auto-next-active');
-      showNextBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+    const kEl = document.querySelector('.show-karaoke-countdown');
+    if (kEl) {
+      kEl.remove();
     }
   }
 
@@ -472,20 +585,59 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   if (isShow) {
-    const floatingControls = document.createElement('div');
-    floatingControls.className = 'show-floating-controls';
-    floatingControls.appendChild(closeBtn);
-    document.body.prepend(floatingControls);
+    // ── Single Floating Menu Trigger Button ──
+    const menuTrigger = document.createElement('button');
+    showMenuTrigger = menuTrigger;
+    menuTrigger.className = 'show-menu-trigger';
+    menuTrigger.setAttribute('aria-label', 'תפריט מופע');
+    menuTrigger.innerHTML = '<i class="fa-solid fa-bars"></i>';
+    document.body.prepend(menuTrigger);
 
-    // Middle-left vertical speed controls: [+] [speedBadge] [-]
-    const speedControls = document.createElement('div');
-    speedControls.className = 'show-speed-controls';
-    speedControls.appendChild(btnPlus);
-    speedControls.appendChild(speedBadge);
-    speedControls.appendChild(btnMinus);
-    document.body.appendChild(speedControls);
+    // ── Menu Modal Overlay & Card ──
+    const menuOverlay = document.createElement('div');
+    menuOverlay.className = 'show-menu-overlay';
 
-    // Show navigation buttons (bottom-left): Prev (->) and Next (<-)
+    const menuCard = document.createElement('div');
+    menuCard.className = 'show-menu-card';
+
+    // Header: Song Title + Close '×'
+    const menuHeader = document.createElement('div');
+    menuHeader.className = 'show-menu-header';
+
+    const songTitleEl = document.createElement('div');
+    songTitleEl.className = 'show-menu-song-title';
+    songTitleEl.textContent = title;
+
+    const menuCloseBtn = document.createElement('button');
+    menuCloseBtn.className = 'show-menu-close-btn';
+    menuCloseBtn.setAttribute('aria-label', 'סגור תפריט');
+    menuCloseBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+
+    menuHeader.appendChild(songTitleEl);
+    menuHeader.appendChild(menuCloseBtn);
+    menuCard.appendChild(menuHeader);
+
+    // ── Section 1: Speed controls (Minus / Reset-100% / Plus) ──
+    const speedSection = document.createElement('div');
+    speedSection.className = 'show-menu-section';
+
+    const speedGroup = document.createElement('div');
+    speedGroup.className = 'show-menu-speed-group';
+    btnMinus.className = 'show-menu-speed-btn';
+    btnMinus.setAttribute('aria-label', 'האט מהירות');
+    btnPlus.className = 'show-menu-speed-btn';
+    btnPlus.setAttribute('aria-label', 'הגבר מהירות');
+    speedBadge.className = 'show-menu-speed-badge';
+    speedBadge.setAttribute('title', 'לחץ לאיפוס מהירות ל-100%');
+    speedBadge.setAttribute('aria-label', 'איפוס מהירות ל-100%');
+
+    speedGroup.appendChild(btnMinus);
+    speedGroup.appendChild(speedBadge);
+    speedGroup.appendChild(btnPlus);
+    speedSection.appendChild(speedGroup);
+    menuCard.appendChild(speedSection);
+
+    // ── Section 2: Song Navigation (Next / Prev) ──
     const rawPath = decodeURIComponent(window.location.pathname).replace(/\\/g, '/');
     const curFile = rawPath.split('/').pop().replace(/\.html$/i, '').trim();
     const curTitle = document.title.trim();
@@ -494,47 +646,90 @@ document.addEventListener('DOMContentLoaded', () => {
     if (idx === -1) {
       idx = SHOW_SONGS.findIndex(s => curTitle.includes(s.name) || curTitle.includes(s.file));
     }
+
     if (idx !== -1) {
-      const navControls = document.createElement('div');
-      navControls.className = 'show-nav-controls';
+      const navSection = document.createElement('div');
+      navSection.className = 'show-menu-section';
 
-      // Prev song button (back)
-      const prevBtn = document.createElement('a');
-      prevBtn.className = 'show-nav-btn show-prev-btn';
-      prevBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i>';
-      if (idx > 0) {
-        const prevSong = SHOW_SONGS[idx - 1];
-        prevBtn.href = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
-        prevBtn.setAttribute('aria-label', `לשיר הקודם: ${prevSong.name}`);
-        prevBtn.title = `השיר הקודם: ${prevSong.name}`;
-      } else {
-        prevBtn.classList.add('disabled');
-        prevBtn.setAttribute('aria-disabled', 'true');
-        prevBtn.title = 'תחילת הרשימה (אין שיר קודם)';
-        prevBtn.addEventListener('click', (e) => e.preventDefault());
-      }
+      const navGrid = document.createElement('div');
+      navGrid.className = 'show-menu-nav-grid';
 
-      // Next song button (forward)
-      const nextBtn = document.createElement('a');
-      showNextBtn = nextBtn;
-      nextBtn.className = 'show-nav-btn show-next-btn';
-      nextBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+      // Next song button (primary)
       if (idx < SHOW_SONGS.length - 1) {
         const nextSong = SHOW_SONGS[idx + 1];
         nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
+        const nextBtn = document.createElement('a');
+        nextBtn.className = 'show-menu-nav-btn show-menu-next-btn';
         nextBtn.href = nextSongUrl;
-        nextBtn.setAttribute('aria-label', `לשיר הבא: ${nextSong.name}`);
-        nextBtn.title = `השיר הבא: ${nextSong.name}`;
+        nextBtn.innerHTML = `<span>השיר הבא: <strong>${nextSong.name}</strong></span> <i class="fa-solid fa-arrow-left"></i>`;
+        navGrid.appendChild(nextBtn);
       } else {
-        nextBtn.classList.add('disabled');
-        nextBtn.setAttribute('aria-disabled', 'true');
-        nextBtn.title = 'סוף הרשימה (אין שיר נוסף)';
-        nextBtn.addEventListener('click', (e) => e.preventDefault());
+        const endNotice = document.createElement('div');
+        endNotice.className = 'show-menu-end-notice';
+        endNotice.textContent = 'סוף רשימת המופע';
+        navGrid.appendChild(endNotice);
       }
 
-      document.body.appendChild(nextBtn);
-      document.body.appendChild(prevBtn);
+      // Prev song button
+      if (idx > 0) {
+        const prevSong = SHOW_SONGS[idx - 1];
+        prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
+        const prevBtn = document.createElement('a');
+        prevBtn.className = 'show-menu-nav-btn show-menu-prev-btn';
+        prevBtn.href = prevSongUrl;
+        prevBtn.innerHTML = `<span>השיר הקודם: ${prevSong.name}</span> <i class="fa-solid fa-arrow-right"></i>`;
+        navGrid.appendChild(prevBtn);
+      }
+
+      navSection.appendChild(navGrid);
+      menuCard.appendChild(navSection);
     }
+
+    // Return to show songs list
+    const listBtn = document.createElement('a');
+    listBtn.href = './';
+    listBtn.className = 'show-menu-list-btn';
+    listBtn.innerHTML = '<i class="fa-solid fa-list-ul"></i> <span>רשימת שירי המופע</span>';
+    menuCard.appendChild(listBtn);
+
+    menuOverlay.appendChild(menuCard);
+    document.body.appendChild(menuOverlay);
+
+    // Toggle menu
+    const openMenu = () => {
+      menuOverlay.classList.add('open');
+      document.body.classList.add('show-menu-opened');
+    };
+    const closeMenu = () => {
+      menuOverlay.classList.remove('open');
+      document.body.classList.remove('show-menu-opened');
+    };
+
+    menuTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (menuOverlay.classList.contains('open')) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    menuCloseBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeMenu();
+    });
+
+    menuOverlay.addEventListener('click', (e) => {
+      if (e.target === menuOverlay) {
+        closeMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menuOverlay.classList.contains('open')) {
+        closeMenu();
+      }
+    });
   } else {
     // Assemble standard topbar: [ title+toggle+play ]   [ × ]
     topbarInner.appendChild(h1);
@@ -631,12 +826,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setPlaying(playing) {
     if (playBtn) {
-      playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-angles-down"></i>';
+      if (isShow) {
+        playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i> השהה גלילה' : '<i class="fa-solid fa-angles-down"></i> הפעל גלילה';
+      } else {
+        playBtn.innerHTML = playing ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-angles-down"></i>';
+      }
       playBtn.setAttribute('aria-label', playing ? 'עצור גלילה' : 'הפעל גלילה אוטומטית');
       playBtn.classList.toggle('active', playing);
     }
     if (speedBadge) {
       speedBadge.classList.toggle('active', playing);
+    }
+    if (showMenuTrigger) {
+      showMenuTrigger.classList.toggle('scrolling', playing);
     }
   }
 
@@ -680,6 +882,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function startScroll() {
     if (scrollRafId) return;
     cancelAutoNext();
+    cancelOpeningCountdown();
+    songHasStarted = true;
 
     activeKeyframes = getKeyframes();
 
@@ -816,30 +1020,62 @@ document.addEventListener('DOMContentLoaded', () => {
     setPlaying(false);
   }
 
+  function handleUserToggleScroll() {
+    if (autoNextInterval && nextSongUrl) {
+      cancelAutoNext();
+      window.location.href = nextSongUrl;
+      return;
+    }
+    cancelAutoNext();
+    if (scrollRafId) {
+      stopScroll();
+    } else if (autoStartInterval) {
+      cancelOpeningCountdown();
+      startScroll();
+    } else if (isShow && !songHasStarted && window.scrollY <= 40) {
+      startSongOpeningCountdown();
+    } else {
+      startScroll();
+    }
+  }
+
   if (playBtn) {
-    playBtn.addEventListener('click', () => scrollRafId ? stopScroll() : startScroll());
+    playBtn.addEventListener('click', handleUserToggleScroll);
   }
 
   // Tap anywhere (not on interactive elements) to toggle scroll
   document.addEventListener('click', (e) => {
-    cancelAutoNext();
     if (playBtn && playBtn.style.display === 'none') return;
     const tag = e.target.tagName;
     if (['A', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'].includes(tag)) return;
     if (e.target.closest('a, button, .speed-badge')) return;
-    scrollRafId ? stopScroll() : startScroll();
+    handleUserToggleScroll();
   });
 
-  // Spacebar to toggle scroll (Play / Pause)
+  // Keyboard controls
   window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
-      const tag = (e.target && e.target.tagName) || '';
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || (e.target && e.target.isContentEditable)) {
-        return;
+    const tag = (e.target && e.target.tagName) || '';
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || (e.target && e.target.isContentEditable)) {
+      return;
+    }
+
+    if (e.key === 'ArrowLeft') {
+      if (nextSongUrl) {
+        e.preventDefault();
+        cancelAutoNext();
+        cancelOpeningCountdown();
+        window.location.href = nextSongUrl;
       }
+    } else if (e.key === 'ArrowRight') {
+      if (prevSongUrl) {
+        e.preventDefault();
+        cancelAutoNext();
+        cancelOpeningCountdown();
+        window.location.href = prevSongUrl;
+      }
+    } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
       e.preventDefault();
-      cancelAutoNext();
-      scrollRafId ? stopScroll() : startScroll();
+      handleUserToggleScroll();
     } else if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
       e.preventDefault();
       changeSpeed(0.10);
@@ -852,11 +1088,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // User manual scroll gestures immediately pause auto-scroll
   window.addEventListener('wheel', () => {
     cancelAutoNext();
+    cancelOpeningCountdown();
     if (scrollRafId) stopScroll();
   }, { passive: true });
 
   window.addEventListener('touchmove', () => {
     cancelAutoNext();
+    cancelOpeningCountdown();
     if (scrollRafId) stopScroll();
   }, { passive: true });
 

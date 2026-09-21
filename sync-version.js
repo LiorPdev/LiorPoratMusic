@@ -11,7 +11,7 @@ function processDirectory(dir, isSongsDir = false) {
         const filePath = path.join(dir, file);
         const stats = fs.statSync(filePath);
 
-        if (stats.isDirectory() && (file === 'songs' || file === 'Show')) {
+        if (stats.isDirectory() && (file === 'songs' || file === 'show' || file === 'ctrlfreaks' || file === 'playlists')) {
             processDirectory(filePath, true);
         } else if (file.endsWith('.html')) {
             let content = fs.readFileSync(filePath, 'utf8');

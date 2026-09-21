@@ -6,8 +6,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>מילים לשירים</title>
   <meta name="description" content="מילים לשירים של ליאור פורת.">
-  <link rel="canonical" href="https://liorporat.com/songs.html">
+  <link rel="canonical" href="https://liorporat.com/songs/">
   <meta name="robots" content="index, follow">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="../Media/main/favicon.png" />
+  <link rel="apple-touch-icon" href="../Media/main/logo.png" />
 
   <!-- Open Graph -->
   <meta property="og:site_name" content="Lior Porat Music">
@@ -17,18 +21,17 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="מילים לשירים – ליאור פורת">
-  <meta property="og:url" content="https://liorporat.com/songs.html">
-  <meta property="og:image" content="https://liorporat.com/Media/og.webp">
+  <meta property="og:url" content="https://liorporat.com/songs/">
+  <meta property="og:image" content="https://liorporat.com/Media/main/og.webp">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="מילים לשירים – ליאור פורת">
   <meta name="twitter:description" content="כל המילים של השירים במקום אחד כולל תמונות">
-  <meta name="twitter:image" content="https://liorporat.com/Media/og.webp">
+  <meta name="twitter:image" content="https://liorporat.com/Media/main/og.webp">
 
-  <link rel="stylesheet" href="styles.css?v=1.1.8" />
-  <link rel="stylesheet" href="songs.css?v=1.1.8" />
-  <link rel="apple-touch-icon" href="Media/Logo1.png" />
+  <link rel="stylesheet" href="../styles.css?v=1.4.3" />
+  <link rel="stylesheet" href="../songs.css?v=1.4.3" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 </head>
 
@@ -42,7 +45,7 @@
           <option value="">הכל</option>
         </select>
       </div>
-      <a href="index.html" class="close-btn" aria-label="חזרה">×</a>
+      <a href="../index.html" class="close-btn" aria-label="חזרה">×</a>
     </div>
   </div>
 
@@ -52,7 +55,7 @@
 
   <div style="height:20px;"></div>
   <div class="back-link">
-    <a href="index.html">חזרה לדף הראשי</a>
+    <a href="../index.html">חזרה לדף הראשי</a>
     <div style="height:20px;"></div>
     <a href="#" class="share-link" id="shareBtn" aria-label="שתף עמוד זה">
       <i class="fa-solid fa-share-nodes"></i>
@@ -149,10 +152,10 @@
         row.className = 'song-item';
 
         const a = document.createElement('a');
-        a.href = `songs/${song.name}.html`;
+        a.href = `${song.name}.html`;
 
         const img = document.createElement('img');
-        img.src = `Media/songs/${song.name}.webp`;
+        img.src = `../Media/songs/${song.name}.webp`;
         img.alt = song.name;
         img.className = 'song-thumb';
 
@@ -187,7 +190,7 @@
       renderSongs();
     });
   </script>
-  <script src="script.js?v=1.1.8"></script>
+  <script src="../script.js?v=1.4.3"></script>
 </body>
 
 </html>

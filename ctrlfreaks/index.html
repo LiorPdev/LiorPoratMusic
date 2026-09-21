@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הקונטרול פריקס - בבניה | Lior Porat</title>
+  <meta name="description" content="עמוד להקת הקונטרול פריקס נמצא כרגע בבניה. מוזמנים להאזין לשירים בספוטיפיי, אפל מיוזיק ויוטיוב." />
+  <link rel="canonical" href="https://liorporat.com/ctrlfreaks/" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="../Media/main/favicon.png" />
+  <link rel="apple-touch-icon" href="../Media/main/logo.png" />
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="הקונטרול פריקס" />
+  <meta property="og:title" content="הקונטרול פריקס - בבניה" />
+  <meta property="og:description" content="עמוד להקת הקונטרול פריקס נמצא כרגע בבניה. שירים ותכנים חדשים בקרוב!" />
+  <meta property="og:locale" content="he_IL" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://liorporat.com/ctrlfreaks/" />
+  <meta property="og:image" content="https://liorporat.com/Media/ctrlfreaks/ogCtrlF.webp" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="הקונטרול פריקס" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="הקונטרול פריקס - בבניה" />
+  <meta name="twitter:description" content="עמוד להקת הקונטרול פריקס נמצא כרגע בבניה. שירים ותכנים חדשים בקרוב!" />
+  <meta name="twitter:image" content="https://liorporat.com/Media/ctrlfreaks/ogCtrlF.webp" />
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- Base Styles -->
+  <link rel="stylesheet" href="../styles.css?v=1.4.3" />
+
+  <style>
+    :root {
+      --bg-dark: #0f1015;
+      --card-bg: rgba(26, 27, 36, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-glow: rgba(234, 179, 8, 0.15);
+      --accent-color: #facc15;
+      --text-muted: #94a3b8;
+    }
+
+    body {
+      font-family: 'Heebo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at 50% 20%, #1e1e28 0%, #0d0d12 70%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 30px 20px;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glow */
+    .ambient-glow {
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 350px;
+      background: radial-gradient(ellipse, rgba(234, 179, 8, 0.12), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(40px);
+    }
+
+    .main-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 540px;
+      margin: auto;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-sizing: border-box;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Construction Badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 18px;
+      border-radius: 9999px;
+      background: rgba(234, 179, 8, 0.12);
+      border: 1px solid rgba(234, 179, 8, 0.35);
+      color: var(--accent-color);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 24px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-color);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-color);
+      position: relative;
+    }
+
+    .pulse-dot::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(234, 179, 8, 0.4);
+      animation: pulse 1.8s infinite ease-out;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.6);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+
+    /* Band Image */
+    .image-wrapper {
+      position: relative;
+      margin-bottom: 24px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .image-wrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .image-wrapper:hover img {
+      transform: scale(1.03);
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    .construction-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent-color);
+      margin: 0 0 12px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .description {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-muted);
+      margin: 0 0 28px 0;
+      max-width: 380px;
+    }
+
+    /* Streaming Platforms Section */
+    .listen-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      margin-bottom: 14px;
+      font-weight: 600;
+    }
+
+    .streaming-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 28px;
+    }
+
+    .stream-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      cursor: pointer;
+    }
+
+    .stream-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .stream-spotify {
+      background: #1DB954;
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(29, 185, 84, 0.25);
+    }
+    .stream-spotify:hover {
+      background: #1ed760;
+      box-shadow: 0 6px 20px rgba(29, 185, 84, 0.4);
+    }
+
+    .stream-apple {
+      background: #ffffff;
+      color: #000000;
+      box-shadow: 0 4px 15px rgba(255, 255, 255, 0.15);
+    }
+    .stream-apple:hover {
+      background: #f1f5f9;
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.25);
+    }
+
+    .stream-youtube {
+      background: #ff0000;
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.25);
+    }
+    .stream-youtube:hover {
+      background: #e60000;
+      box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+    }
+
+    .stream-btn i {
+      font-size: 1.25em;
+    }
+
+    /* Actions Footer */
+    .card-footer {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 6px;
+    }
+
+    .home-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #e2e8f0;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .home-link:hover {
+      color: #ffffff;
+      transform: translateX(-3px);
+    }
+
+    .share-btn-round {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      text-decoration: none;
+      font-size: 15px;
+      transition: all 0.2s ease;
+    }
+
+    .share-btn-round:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--accent-color);
+      transform: scale(1.08);
+    }
+
+    @media (max-width: 480px) {
+      .main-card {
+        padding: 30px 20px;
+        border-radius: 20px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+      .construction-title {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ambient-glow"></div>
+
+  <main class="main-card">
+    <!-- Status Indicator -->
+    <div class="status-badge">
+      <span class="pulse-dot"></span>
+      <span>העמוד בבניה</span>
+    </div>
+
+    <!-- Band Artwork -->
+    <div class="image-wrapper">
+      <img src="../Media/ctrlfreaks/ctrlFreaks.webp" alt="להקת הקונטרול פריקס" width="420" height="236" />
+    </div>
+
+    <!-- Title & Description -->
+    <h1>הקונטרול פריקס</h1>
+    <div class="construction-title">
+      <i class="fa-solid fa-person-digging"></i>
+      <span>בבניה</span>
+    </div>
+    <p class="description">
+      אנחנו מכינים עבורכם דף להקה חדש ועדכני עם שירים, תכנים והפתעות נוספות. בקרוב נהיה באוויר!
+    </p>
+
+    <!-- Streaming Links -->
+    <div class="listen-title">בינתיים, מוזמנים להאזין:</div>
+    <div class="streaming-buttons">
+      <a
+        href="https://open.spotify.com/playlist/2ZRVrL4Dl2jRsaZiY7H7A7?si=ed121104e1084f6f&nd=1&dlsi=e61756193a984afc"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="stream-btn stream-spotify"
+        aria-label="Spotify"
+      >
+        <i class="fa-brands fa-spotify"></i>
+        <span>Spotify</span>
+      </a>
+
+      <a
+        href="https://music.apple.com/il/playlist/%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C-%D7%A4%D7%A8%D7%99%D7%A7%D7%A1/pl.u-76oNNrNFvgADvM?at=1001lwQy&ct=FFM_2e03fd2d5c3c2d48e8d10f610a68d328&ls=1"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="stream-btn stream-apple"
+        aria-label="Apple Music"
+      >
+        <i class="fa-brands fa-apple"></i>
+        <span>Apple Music</span>
+      </a>
+
+      <a
+        href="https://www.youtube.com/playlist?list=PLvhgqKkiOXz_CAUOJvDolcpHLODy6h7qr"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="stream-btn stream-youtube"
+        aria-label="YouTube"
+      >
+        <i class="fa-brands fa-youtube"></i>
+        <span>YouTube</span>
+      </a>
+    </div>
+
+    <!-- Navigation & Share Footer -->
+    <footer class="card-footer">
+      <a href="../index.html" class="home-link">
+        <i class="fa-solid fa-arrow-right"></i>
+        <span>חזרה לדף הראשי</span>
+      </a>
+
+      <a href="#" class="share-btn-round" id="shareBtn" aria-label="שתף עמוד זה" title="שיתוף">
+        <i class="fa-solid fa-share-nodes"></i>
+      </a>
+    </footer>
+  </main>
+
+  <script src="../script.js?v=1.4.3"></script>
+</body>
+</html>

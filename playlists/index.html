@@ -6,15 +6,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>פלייליסטים ישראליים איכותיים</title>
   <meta name="description" content="פלייליסטים איכותיים להאזנה בספוטיפיי בלוז רוק וגרוב" />
-  <link rel="canonical" href="https://liorporat.com/playlists.html" />
+  <link rel="canonical" href="https://liorporat.com/playlists/" />
   <meta name="robots" content="index, follow" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="../Media/main/favicon.png" />
+  <link rel="apple-touch-icon" href="../Media/main/logo.png" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="פלייליסטים ישראליים איכותיים" />
   <meta property="og:description" content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי" />
-  <meta property="og:url" content="https://liorporat.com/playlists.html" />
-  <meta property="og:image" content="https://liorporat.com/Media/playlist/og.webp" />
+  <meta property="og:url" content="https://liorporat.com/playlists/" />
+  <meta property="og:image" content="https://liorporat.com/Media/playlists/og.webp" />
   <meta property="og:site_name" content="Lior Porat Music" />
   <meta property="og:locale" content="he_IL" />
   <meta property="og:image:width" content="1200" />
@@ -25,11 +29,11 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="פלייליסטים ישראליים איכותיים" />
   <meta name="twitter:description" content="אוסף פלייליסטים מומלצים להאזנה בספוטיפיי" />
-  <meta name="twitter:image" content="https://liorporat.com/Media/playlist/og.webp" />
+  <meta name="twitter:image" content="https://liorporat.com/Media/playlists/og.webp" />
 
   <link rel="preconnect" href="https://open.spotify.com" />
   <link rel="preconnect" href="https://i.scdn.co" />
-  <link rel="stylesheet" href="playlists.css?v=1.1.8" />
+  <link rel="stylesheet" href="playlists.css?v=1.4.3" />
   <script type="text/javascript">
     (function (c, l, a, r, i, t, y) {
       c[a] =
@@ -71,22 +75,12 @@
 
   <main class="container">
     <section class="grid" id="list"></section>
-
-    <!--
-    <section class="song-week-section">
-      <h2 class="song-week-title">שיר השבוע</h2>
-      <div class="card song-week-card"
-        data-open-track="https://open.spotify.com/track/5FPWbbSV2sjktJqNKDRygK?si=81c9f22f7b6f4a49">
-        <div class="description">לאון השען</div>
-        <div class="thumb">
-          <img class="img" alt="לאון השען" src="Media/playlist/SongWeek.webp" loading="lazy" width="512" height="512">
-        </div>
-        <div class="body">
-          <a class="btn" href="#">האזנה בספוטיפיי</a>
-        </div>
-      </div>
-    </section>
-    -->
+    <div style="text-align: center; margin-top: 36px; margin-bottom: 20px;">
+      <a href="../index.html" style="color: #a5b0c4; text-decoration: none; font-size: 16px; display: inline-flex; align-items: center; gap: 8px; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='#a5b0c4'">
+        <span>חזרה לדף הראשי</span>
+        <span aria-hidden="true">←</span>
+      </a>
+    </div>
   </main>
 
   <script>
@@ -94,55 +88,55 @@
       {
         name: "Drive",
         url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl",
-        image: "Media/playlist/drive.webp",
+        image: "../Media/playlists/drive.webp",
         description: "פלייליסט לאוטו/לחג/כל מצב רוח",
       },
       {
         name: "Quiet",
         url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU",
-        image: "Media/playlist/quiet.webp",
+        image: "../Media/playlists/quiet.webp",
         description: "ישראלי שקט ברקע",
       },
       {
         name: "Radio - Heb",
         url: "https://open.spotify.com/playlist/5T7r6CHJZd5ifrkjbhKHJR",
-        image: "Media/playlist/Radio IL Playlist.webp",
+        image: "../Media/playlists/Radio IL Playlist.webp",
         description: "מה שמושמע עכשיו ברדיו | ישראלי",
       },
       {
         name: "Indie",
         url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
-        image: "Media/playlist/Indie.webp",
+        image: "../Media/playlists/Indie.webp",
         description: "פולק/אינדי ישראלי רגוע",
       },
       {
         name: "Blues",
         url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
-        image: "Media/playlist/blues.webp",
+        image: "../Media/playlists/blues.webp",
         description: "בלוז ישראלי לנשמה",
       },
       {
         name: "Rock",
         url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK",
-        image: "Media/playlist/rock.webp",
+        image: "../Media/playlists/rock.webp",
         description: "לאוהבי רוק ישראלי קצבי",
       },
       {
         name: "Funky",
         url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb",
-        image: "Media/playlist/groove.webp",
+        image: "../Media/playlists/groove.webp",
         description: "קצב טוב, פאנקי/גרוב שמח ומקפיץ",
       },
       {
         name: "Words",
         url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq",
-        image: "Media/playlist/words.webp",
+        image: "../Media/playlists/words.webp",
         description: "המילים עושות את השיר",
       },
       {
         name: "Radio - Heb/Eng",
         url: "https://open.spotify.com/playlist/7EMf0tuEIQHBPj3ol56LyV",
-        image: "Media/playlist/Radio All Playlist.webp",
+        image: "../Media/playlists/Radio All Playlist.webp",
         description: "מה שמושמע עכשיו ברדיו | ישראלי/לועזי",
       },
     ];
@@ -164,36 +158,6 @@
 
       if (isAndroid) {
         const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
-          web
-        )};end`;
-        location.href = intent;
-        return;
-      }
-      if (isIOS) {
-        const t = Date.now();
-        location.href = uri;
-        setTimeout(() => {
-          if (Date.now() - t < 1500) location.href = web;
-        }, 1200);
-        return;
-      }
-      location.href = web;
-    }
-
-    function openTrackInApp(trackUrl) {
-      if (typeof fbq === 'function') {
-        fbq('track', 'Contact', { content_name: trackUrl });
-      }
-
-      const id = (trackUrl.match(/track\/([a-zA-Z0-9]+)/) || [, ""])[1];
-      const web = trackUrl;
-      const uri = `spotify://track/${id}`;
-      const ua = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(ua);
-      const isIOS = /iPhone|iPad|iPod/i.test(ua);
-
-      if (isAndroid) {
-        const intent = `intent://track/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
           web
         )};end`;
         location.href = intent;
@@ -255,13 +219,6 @@
         btn.addEventListener("click", (e) => {
           e.preventDefault();
           openInApp(btn.getAttribute("data-open-app"));
-        });
-      });
-
-      document.querySelectorAll("[data-open-track]").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          openTrackInApp(btn.getAttribute("data-open-track"));
         });
       });
     })();
