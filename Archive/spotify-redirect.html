@@ -133,18 +133,10 @@
       function openInApp(playlistUrl) {
         const id = toId(playlistUrl);
         const web = playlistUrl;
-        const uri = `spotify://playlist/${id}`;
+        const uri = `spotify:playlist:${id}`;
         const ua = navigator.userAgent || "";
-        const isAndroid = /Android/i.test(ua);
         const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-        if (isAndroid) {
-          const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
-            web
-          )};end`;
-          location.href = intent;
-          return;
-        }
         if (isIOS) {
           const t = Date.now();
           location.href = uri;
@@ -153,6 +145,8 @@
           }, 1200);
           return;
         }
+
+        // אנדרואיד + מחשב: HTTPS ישיר (ספוטיפיי App Link)
         location.href = web;
       }
 

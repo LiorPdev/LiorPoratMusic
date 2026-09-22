@@ -151,19 +151,13 @@
 
       const id = toId(playlistUrl);
       const web = playlistUrl;
-      const uri = `spotify://playlist/${id}`;
+      const uri = `spotify:playlist:${id}`;
       const ua = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(ua);
       const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-      if (isAndroid) {
-        const intent = `intent://playlist/${id}#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(
-          web
-        )};end`;
-        location.href = intent;
-        return;
-      }
       if (isIOS) {
+        // iOS: נסה לפתוח את האפליקציה דרך spotify: URI
+        // אם האפליקציה לא מותקנת, fallback ל-HTTPS אחרי 1.2 שניות
         const t = Date.now();
         location.href = uri;
         setTimeout(() => {
@@ -171,6 +165,10 @@
         }, 1200);
         return;
       }
+
+      // אנדרואיד + מחשב: קישור HTTPS ישיר
+      // באנדרואיד - ספוטיפיי רשומה כ-App Link ל-open.spotify.com
+      // ותפתח אוטומטית אם מותקנת, אחרת ייפתח הדפדפן
       location.href = web;
     }
 
