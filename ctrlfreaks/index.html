@@ -52,7 +52,7 @@
     })(window, document, "clarity", "script", "tqmhdyey6p");
   </script>
 
-  <link rel="stylesheet" href="ctrlfreaks.css?v=1.5.6">
+  <link rel="stylesheet" href="ctrlfreaks.css?v=1.6.1">
 </head>
 
 <body>
@@ -62,7 +62,8 @@
     <defs>
       <filter id="blues-grunge" x="-20%" y="-20%" width="140%" height="140%">
         <feTurbulence type="fractalNoise" baseFrequency="0.04 0.15" numOctaves="3" result="grain" />
-        <feDisplacementMap in="SourceGraphic" in2="grain" scale="2.8" xChannelSelector="R" yChannelSelector="G" result="roughened" />
+        <feDisplacementMap in="SourceGraphic" in2="grain" scale="2.8" xChannelSelector="R" yChannelSelector="G"
+          result="roughened" />
         <feTurbulence type="turbulence" baseFrequency="0.25" numOctaves="2" result="speckles" />
         <feColorMatrix in="speckles" type="matrix" values="
           0 0 0 0 0
@@ -74,7 +75,8 @@
     </defs>
   </svg>
 
-  <button id="soundToggle" class="sound-toggle is-muted" type="button" aria-label="הפעלת מוזיקת רקע" title="הפעלת מוזיקת רקע">
+  <button id="soundToggle" class="sound-toggle is-muted" type="button" aria-label="הפעלת מוזיקת רקע"
+    title="הפעלת מוזיקת רקע">
     <span class="sound-icon sound-icon-on" aria-hidden="true">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
         stroke-linecap="round" stroke-linejoin="round">
@@ -99,14 +101,40 @@
       <span id="dockAt" aria-hidden="true"></span>
       <div class="pin">
         <div class="frame">
-          <video autoplay muted loop playsinline preload="metadata" poster="../Media/ctrlfreaks/Images/video-poster.webp"
-            aria-hidden="true" tabindex="-1">
+          <video autoplay muted loop playsinline preload="metadata"
+            poster="../Media/ctrlfreaks/Images/video-poster.webp" aria-hidden="true" tabindex="-1">
             <source src="../Media/ctrlfreaks/Video/hero-loop.mp4" type="video/mp4">
           </video>
           <span class="dim"></span>
         </div>
         <div class="copy">
           <h1>הקונטרול פריקס</h1>
+          <div class="hero-streaming-icons">
+            <a href="https://open.spotify.com/playlist/2ZRVrL4Dl2jRsaZiY7H7A7?si=655e830e47b64420" target="_blank"
+              rel="noopener noreferrer" class="stream-icon-btn stream-spotify" aria-label="פלייליסט בספוטיפיי"
+              title="ספוטיפיי" data-playlist="spotify">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.674.466-1.026.25-2.812-1.718-6.353-2.107-10.523-1.155-.403.092-.804-.16-.896-.563-.092-.403.16-.804.563-.896 4.568-1.043 8.487-.604 11.632 1.338.353.216.466.674.25 1.026zm1.465-3.262c-.27.44-.848.578-1.287.308-3.22-1.979-8.128-2.552-11.936-1.396-.496.15-1.023-.135-1.173-.631-.15-.497.135-1.024.631-1.174 4.357-1.322 9.774-.682 13.457 1.583.44.27.578.847.308 1.31zm.126-3.41c-3.86-2.292-10.228-2.503-13.899-1.388-.593.18-1.222-.154-1.402-.746-.18-.593.154-1.222.746-1.402 4.225-1.282 11.26-1.036 15.698 1.597.534.317.708 1.01.392 1.544-.318.535-1.01.708-1.535.395z" />
+              </svg>
+            </a>
+            <a href="https://music.apple.com/il/playlist/%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C-%D7%A4%D7%A8%D7%99%D7%A7%D7%A1/pl.u-76oNNrNFvgADvM"
+              target="_blank" rel="noopener noreferrer" class="stream-icon-btn stream-apple"
+              aria-label="פלייליסט באפל מיוזיק" title="אפל מיוזיק" data-playlist="apple">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.88c.61-.74 1.02-1.77.91-2.8-.88.04-1.95.59-2.58 1.33-.55.64-1.04 1.69-.91 2.7.99.08 2-.51 2.58-1.23" />
+              </svg>
+            </a>
+            <a href="https://www.youtube.com/playlist?list=PLvhgqKkiOXz_CAUOJvDolcpHLODy6h7qr" target="_blank"
+              rel="noopener noreferrer" class="stream-icon-btn stream-youtube" aria-label="פלייליסט ביוטיוב"
+              title="יוטיוב" data-playlist="youtube">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+              </svg>
+            </a>
+          </div>
           <div class="hero-body">
             <p class="hero-desc"><strong>בלוז ישראלי</strong> כמו שלא שמעתם אף פעם!<br>
               הרכב של 5 מוזיקאים בערב של שירים מקוריים לצד קלאסיקות מוכרות, מלא באנרגיה סוחפת, נשמה, הומור
@@ -127,7 +155,9 @@
             <a class="cta cta-lg" id="heroCta" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת
               כרטיסים</a>
             <a class="coupon-hint" id="couponHint" href="https://babebar.co.il/event/con/#tribe-events-content">
-              <span><span id="twPart1">10 קופוני הנחה למזמינים הראשונים. </span><span id="twCursor1" class="tw-cursor" style="display:none">|</span><br class="mobile-br"><span id="twPart2">הזינו "BLUES" במסך התשלום.</span><span id="twCursor2" class="tw-cursor" style="display:none">|</span></span>
+              <span><span id="twPart1">10 קופוני הנחה למזמינים הראשונים. </span><span id="twCursor1" class="tw-cursor"
+                  style="display:none">|</span><br class="mobile-br"><span id="twPart2">הזינו "BLUES" במסך
+                  התשלום.</span><span id="twCursor2" class="tw-cursor" style="display:none">|</span></span>
             </a>
           </div>
         </div>
@@ -146,7 +176,8 @@
 
       <section class="sec">
         <div class="player" id="livePlayer">
-          <video id="liveVideo" controls preload="none" playsinline poster="../Media/ctrlfreaks/Images/video-poster.webp">
+          <video id="liveVideo" controls preload="none" playsinline
+            poster="../Media/ctrlfreaks/Images/video-poster.webp">
             <source src="../Media/ctrlfreaks/Video/live.mp4" type="video/mp4">
             הדפדפן שלך לא תומך בניגון וידאו.
           </video>
@@ -236,7 +267,7 @@
 
     <div class="bar" id="bar">
       <div class="bar-txt">
-        <b>באבי בר, הוד השרון</b>
+        <b>בלוז עם הקונטרול פריקס</b>
       </div>
       <a class="cta" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת כרטיסים</a>
     </div>
@@ -331,6 +362,14 @@
       for (var j = 0; j < shares.length; j++) {
         shares[j].addEventListener('click', function () {
           if (typeof window.fbq === 'function') { window.fbq('trackCustom', 'Share'); }
+        });
+      }
+      var playlists = document.querySelectorAll('[data-playlist]');
+      for (var p = 0; p < playlists.length; p++) {
+        playlists[p].addEventListener('click', function () {
+          if (typeof window.fbq === 'function') {
+            window.fbq('trackCustom', 'PlaylistClick', { platform: this.getAttribute('data-playlist') });
+          }
         });
       }
     })();
