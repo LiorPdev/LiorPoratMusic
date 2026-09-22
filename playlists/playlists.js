@@ -68,6 +68,7 @@ function openInApp(playlistUrl) {
   const uri = `spotify:playlist:${id}`;
   const ua = navigator.userAgent || "";
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
 
   if (isIOS) {
     // iOS: נסה לפתוח את האפליקציה דרך spotify: URI
@@ -80,9 +81,15 @@ function openInApp(playlistUrl) {
     return;
   }
 
-  // אנדרואיד + מחשב: קישור HTTPS ישיר
-  // באנדרואיד - ספוטיפיי רשומה כ-App Link ל-open.spotify.com
-  // ותפתח אוטומטית אם מותקנת, אחרת ייפתח הדפדפן
+  if (isAndroid) {
+    // אנדרואיד: שימוש ב-Android Intent של כרום לפתיחת אפליקציית ספוטיפיי ישירות,
+    // עם fallback מובנה לאתר אם האפליקציה לא מותקנת
+    const intentUrl = `intent://open.spotify.com/playlist/${id}#Intent;scheme=https;package=com.spotify.music;S.browser_fallback_url=${encodeURIComponent(web)};end`;
+    location.href = intentUrl;
+    return;
+  }
+
+  // מחשב: קישור HTTPS ישיר
   location.href = web;
 }
 
