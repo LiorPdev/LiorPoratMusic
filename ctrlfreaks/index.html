@@ -52,10 +52,27 @@
     })(window, document, "clarity", "script", "tqmhdyey6p");
   </script>
 
-  <link rel="stylesheet" href="ctrlfreaks.css?v=1.6.8">
+  <link rel="stylesheet" href="ctrlfreaks.css?v=1.8.0">
 </head>
 
 <body>
+
+  <!-- Blues Grunge SVG Filter for Woodblock / Stamp Texture -->
+  <svg style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;" aria-hidden="true">
+    <defs>
+      <filter id="blues-grunge" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04 0.15" numOctaves="3" result="grain" />
+        <feDisplacementMap in="SourceGraphic" in2="grain" scale="2.8" xChannelSelector="R" yChannelSelector="G" result="roughened" />
+        <feTurbulence type="turbulence" baseFrequency="0.25" numOctaves="2" result="speckles" />
+        <feColorMatrix in="speckles" type="matrix" values="
+          0 0 0 0 0
+          0 0 0 0 0
+          0 0 0 0 0
+          0 0 0 7 -3.3" result="gritMask" />
+        <feComposite in="roughened" in2="gritMask" operator="out" />
+      </filter>
+    </defs>
+  </svg>
 
   <button id="soundToggle" class="sound-toggle is-muted" type="button" aria-label="הפעלת מוזיקת רקע" title="הפעלת מוזיקת רקע">
     <span class="sound-icon sound-icon-on" aria-hidden="true">
@@ -128,11 +145,16 @@
     <div class="sheet">
 
       <section class="sec">
-        <div class="player">
-          <video controls preload="none" playsinline poster="../Media/ctrlfreaks/video-poster.webp">
+        <div class="player" id="livePlayer">
+          <video id="liveVideo" controls preload="none" playsinline poster="../Media/ctrlfreaks/video-poster.webp">
             <source src="../Media/ctrlfreaks/live.mp4" type="video/mp4">
             הדפדפן שלך לא תומך בניגון וידאו.
           </video>
+          <button class="player-play-btn" id="livePlayBtn" type="button" aria-label="הפעלת וידאו" title="הפעלת וידאו">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="6 3 20 12 6 21 6 3"></polygon>
+            </svg>
+          </button>
         </div>
       </section>
       <section class="sec">
@@ -424,16 +446,6 @@
         });
       }
 
-      function onFirstInteraction() {
-        if (!hasStarted && !userPaused) {
-          playAudio();
-        }
-        document.removeEventListener('click', onFirstInteraction);
-        document.removeEventListener('touchstart', onFirstInteraction);
-      }
-      document.addEventListener('click', onFirstInteraction, { passive: true });
-      document.addEventListener('touchstart', onFirstInteraction, { passive: true });
-
       if (liveVideo) {
         liveVideo.addEventListener('play', function () {
           if (!audio.paused) {
@@ -453,6 +465,24 @@
             wasPlayingBeforeLive = false;
           }
         });
+
+        var liveBtn = document.getElementById('livePlayBtn');
+        var livePlayerWrap = document.getElementById('livePlayer');
+        if (liveBtn && livePlayerWrap) {
+          liveBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            liveVideo.play();
+          });
+          liveVideo.addEventListener('play', function () {
+            livePlayerWrap.classList.add('is-playing');
+          });
+          liveVideo.addEventListener('pause', function () {
+            livePlayerWrap.classList.remove('is-playing');
+          });
+          liveVideo.addEventListener('ended', function () {
+            livePlayerWrap.classList.remove('is-playing');
+          });
+        }
       }
 
       document.addEventListener('visibilitychange', function () {
