@@ -55,6 +55,23 @@
     })(window, document, "clarity", "script", "tqmhdyey6p");
   </script>
 
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1031274286616398');
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1031274286616398&ev=PageView&noscript=1" /></noscript>
+  <!-- End Meta Pixel Code -->
+
   <link rel="stylesheet" href="ctrlfreaks.css?v=1.5.7">
 </head>
 
@@ -217,7 +234,7 @@
               <a class="cta cta-lg" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת כרטיסים</a>
             </div>
             <div class="action-links">
-              <a class="action-pill"
+              <a class="action-pill" data-navigate
                 href="https://www.google.com/maps/search/?api=1&amp;query=%D7%91%D7%90%D7%91%D7%99+%D7%91%D7%A8+%D7%94%D7%A0%D7%92%D7%A8+8+%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F"
                 target="_blank" rel="noopener">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -227,7 +244,7 @@
                 </svg>
                 <span>ניווט לבאבי בר</span>
               </a>
-              <a class="action-pill"
+              <a class="action-pill" data-calendar
                 href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8&amp;dates=20261010T183000Z/20261010T200000Z&amp;location=%D7%94%D7%A0%D7%92%D7%A8%208%2C%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&amp;details=%D7%93%D7%9C%D7%AA%D7%95%D7%AA%2020%3A00"
                 target="_blank" rel="noopener">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -354,25 +371,61 @@
       }
     })();
 
+    // Meta Pixel Custom & Standard Event Tracking
     (function () {
-      var ctas = document.querySelectorAll('a.cta');
-      for (var i = 0; i < ctas.length; i++) {
-        ctas[i].addEventListener('click', function () {
-          if (typeof window.fbq === 'function') { window.fbq('track', 'InitiateCheckout'); }
+      function safeFbq(type, eventName, params) {
+        if (typeof window.fbq === 'function') {
+          if (params) {
+            window.fbq(type, eventName, params);
+          } else {
+            window.fbq(type, eventName);
+          }
+        }
+      }
+
+      // 1. Ticket purchase clicks (InitiateCheckout)
+      var ticketLinks = document.querySelectorAll('a.cta, #couponHint, a[href*="babebar.co.il"]');
+      for (var i = 0; i < ticketLinks.length; i++) {
+        ticketLinks[i].addEventListener('click', function () {
+          safeFbq('track', 'InitiateCheckout', {
+            content_name: 'כרטיסים להקונטרול פריקס בבאבי בר',
+            content_category: 'Concert Ticket'
+          });
         });
       }
+
+      // 2. Share to friend (WhatsApp / Share API)
       var shares = document.querySelectorAll('[data-share]');
       for (var j = 0; j < shares.length; j++) {
         shares[j].addEventListener('click', function () {
-          if (typeof window.fbq === 'function') { window.fbq('trackCustom', 'Share'); }
+          safeFbq('trackCustom', 'Share', { method: 'WhatsApp' });
         });
       }
+
+      // 3. Add to Calendar (Schedule)
+      var calendarLinks = document.querySelectorAll('[data-calendar], a[href*="calendar.google.com"]');
+      for (var c = 0; c < calendarLinks.length; c++) {
+        calendarLinks[c].addEventListener('click', function () {
+          safeFbq('track', 'Schedule', { content_name: 'הקונטרול פריקס בבאבי בר' });
+          safeFbq('trackCustom', 'AddToCalendar');
+        });
+      }
+
+      // 4. Navigation to Venue (FindLocation)
+      var navLinks = document.querySelectorAll('[data-navigate], a[href*="maps.google.com"], a[href*="google.com/maps"]');
+      for (var n = 0; n < navLinks.length; n++) {
+        navLinks[n].addEventListener('click', function () {
+          safeFbq('track', 'FindLocation', { content_name: 'באבי בר הוד השרון' });
+          safeFbq('trackCustom', 'NavigateToVenue');
+        });
+      }
+
+      // 5. Playlist clicks (Spotify, Apple Music, YouTube)
       var playlists = document.querySelectorAll('[data-playlist]');
       for (var p = 0; p < playlists.length; p++) {
         playlists[p].addEventListener('click', function () {
-          if (typeof window.fbq === 'function') {
-            window.fbq('trackCustom', 'PlaylistClick', { platform: this.getAttribute('data-playlist') });
-          }
+          var platform = this.getAttribute('data-playlist') || 'unknown';
+          safeFbq('trackCustom', 'PlaylistClick', { platform: platform });
         });
       }
     })();
