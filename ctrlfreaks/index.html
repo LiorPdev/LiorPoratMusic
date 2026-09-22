@@ -52,10 +52,29 @@
     })(window, document, "clarity", "script", "tqmhdyey6p");
   </script>
 
-  <link rel="stylesheet" href="ctrlfreaks.css?v=1.5.5">
+  <link rel="stylesheet" href="ctrlfreaks.css?v=1.6.8">
 </head>
 
 <body>
+
+  <button id="soundToggle" class="sound-toggle is-muted" type="button" aria-label="הפעלת מוזיקת רקע" title="הפעלת מוזיקת רקע">
+    <span class="sound-icon sound-icon-on" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+      </svg>
+    </span>
+    <span class="sound-icon sound-icon-off" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <line x1="23" y1="9" x2="17" y2="15"></line>
+        <line x1="17" y1="9" x2="23" y2="15"></line>
+      </svg>
+    </span>
+  </button>
 
   <div class="page" dir="rtl" lang="he">
 
@@ -90,13 +109,18 @@
             </p>
             <a class="cta cta-lg" id="heroCta" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת
               כרטיסים</a>
-            <p class="coupon-hint">
-              <span>10 קופוני הנחה למזמינים הראשונים.<br class="mobile-br">הזינו "control" במסך התשלום.</span>
-            </p>
+            <a class="coupon-hint" id="couponHint" href="https://babebar.co.il/event/con/#tribe-events-content">
+              <span><span id="twPart1">10 קופוני הנחה למזמינים הראשונים. </span><span id="twCursor1" class="tw-cursor" style="display:none">|</span><br class="mobile-br"><span id="twPart2">הזינו "BLUES" במסך התשלום.</span><span id="twCursor2" class="tw-cursor" style="display:none">|</span></span>
+            </a>
           </div>
         </div>
         <div class="cue">
-          <button class="cuebtn" id="cueBtn" type="button">גלילה</button>
+          <button class="cuebtn" id="cueBtn" type="button" aria-label="גלול למטה" title="גלילה">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6"></path>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -104,56 +128,6 @@
     <div class="sheet">
 
       <section class="sec">
-        <div class="col">
-          <div class="cta-row">
-            <a class="cta cta-lg" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת כרטיסים</a>
-          </div>
-          <!-- <p class="coupon-hint">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>
-            <span>יש לכם קופון הנחה? הזנת הקוד מתבצעת במסך התשלום</span>
-          </p> -->
-          <div class="action-links">
-            <a class="action-pill"
-              href="https://www.google.com/maps/search/?api=1&amp;query=%D7%91%D7%90%D7%91%D7%99+%D7%91%D7%A8+%D7%94%D7%A0%D7%92%D7%A8+8+%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F"
-              target="_blank" rel="noopener">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              <span>ניווט לבאבי בר</span>
-            </a>
-            <a class="action-pill"
-              href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8&amp;dates=20261010T183000Z/20261010T200000Z&amp;location=%D7%94%D7%A0%D7%92%D7%A8%208%2C%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&amp;details=%D7%93%D7%9C%D7%AA%D7%95%D7%AA%2020%3A00"
-              target="_blank" rel="noopener">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>הוספה ליומן</span>
-            </a>
-            <a class="action-pill"
-              href="https://wa.me/?text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F%2C%20%D7%9E%D7%95%D7%A6%D7%B4%D7%A9%2010.10%20%D7%91-21%3A30"
-              target="_blank" rel="noopener" data-share>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-              </svg>
-              <span>שלחו לחבר</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section class="sec">
-        <h2>טעימה מההופעה</h2>
         <div class="player">
           <video controls preload="none" playsinline poster="../Media/ctrlfreaks/video-poster.webp">
             <source src="../Media/ctrlfreaks/live.mp4" type="video/mp4">
@@ -182,10 +156,48 @@
 
       <section class="sec">
         <div class="close-row">
-          <a class="cta cta-lg" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת כרטיסים</a>
-          <a class="share"
-            href="https://wa.me/?text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F%2C%20%D7%9E%D7%95%D7%A6%D7%B4%D7%A9%2010.10%20%D7%91-21%3A30"
-            target="_blank" rel="noopener" data-share>שלחו לחבר</a>
+          <div class="col">
+            <div class="cta-row">
+              <a class="cta cta-lg" href="https://babebar.co.il/event/con/#tribe-events-content">לרכישת כרטיסים</a>
+            </div>
+            <div class="action-links">
+              <a class="action-pill"
+                href="https://www.google.com/maps/search/?api=1&amp;query=%D7%91%D7%90%D7%91%D7%99+%D7%91%D7%A8+%D7%94%D7%A0%D7%92%D7%A8+8+%D7%94%D7%95%D7%93+%D7%94%D7%A9%D7%A8%D7%95%D7%9F"
+                target="_blank" rel="noopener">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>ניווט לבאבי בר</span>
+              </a>
+              <a class="action-pill"
+                href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8&amp;dates=20261010T183000Z/20261010T200000Z&amp;location=%D7%94%D7%A0%D7%92%D7%A8%208%2C%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&amp;details=%D7%93%D7%9C%D7%AA%D7%95%D7%AA%2020%3A00"
+                target="_blank" rel="noopener">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>הוספה ליומן</span>
+              </a>
+              <a class="action-pill"
+                href="https://wa.me/?text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F%2C%20%D7%9E%D7%95%D7%A6%D7%B4%D7%A9%2010.10%20%D7%91-21%3A30"
+                target="_blank" rel="noopener" data-share>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                </svg>
+                <span>שלחו לחבר</span>
+              </a>
+            </div>
+          </div>
           <!-- <p class="coupon-hint">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>
             <span>יש לכם קופון הנחה? הזנת הקוד מתבצעת במסך התשלום</span>
@@ -356,6 +368,156 @@
       } else {
         initPreloader();
       }
+    })();
+
+    (function () {
+      var audio = new Audio('../Media/ctrlfreaks/Sounds/Shabat%20Blues.mp3');
+      audio.loop = true;
+      audio.volume = 0.35;
+
+      var btn = document.getElementById('soundToggle');
+      var liveVideo = document.querySelector('.player video');
+      var userPaused = false;
+      var wasPlayingBeforeLive = false;
+      var hasStarted = false;
+
+      function updateUI(isPlaying) {
+        if (!btn) return;
+        btn.classList.toggle('is-playing', isPlaying);
+        btn.classList.toggle('is-muted', !isPlaying);
+        btn.setAttribute('aria-label', isPlaying ? 'השתקת מוזיקת רקע' : 'הפעלת מוזיקת רקע');
+        btn.setAttribute('title', isPlaying ? 'השתקת מוזיקת רקע' : 'הפעלת מוזיקת רקע');
+      }
+
+      function playAudio() {
+        var p = audio.play();
+        if (p && p.then) {
+          p.then(function () {
+            hasStarted = true;
+            userPaused = false;
+            updateUI(true);
+          }).catch(function () {
+            updateUI(false);
+          });
+        }
+      }
+
+      function pauseAudio() {
+        audio.pause();
+        updateUI(false);
+      }
+
+      function toggleAudio() {
+        if (audio.paused) {
+          userPaused = false;
+          playAudio();
+        } else {
+          userPaused = true;
+          pauseAudio();
+        }
+      }
+
+      if (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          toggleAudio();
+        });
+      }
+
+      function onFirstInteraction() {
+        if (!hasStarted && !userPaused) {
+          playAudio();
+        }
+        document.removeEventListener('click', onFirstInteraction);
+        document.removeEventListener('touchstart', onFirstInteraction);
+      }
+      document.addEventListener('click', onFirstInteraction, { passive: true });
+      document.addEventListener('touchstart', onFirstInteraction, { passive: true });
+
+      if (liveVideo) {
+        liveVideo.addEventListener('play', function () {
+          if (!audio.paused) {
+            wasPlayingBeforeLive = true;
+            pauseAudio();
+          }
+        });
+        liveVideo.addEventListener('pause', function () {
+          if (wasPlayingBeforeLive && !userPaused) {
+            playAudio();
+            wasPlayingBeforeLive = false;
+          }
+        });
+        liveVideo.addEventListener('ended', function () {
+          if (wasPlayingBeforeLive && !userPaused) {
+            playAudio();
+            wasPlayingBeforeLive = false;
+          }
+        });
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          if (!audio.paused) {
+            audio.pause();
+            audio._resumeOnVisible = true;
+          }
+        } else {
+          if (audio._resumeOnVisible && !userPaused) {
+            audio._resumeOnVisible = false;
+            playAudio();
+          }
+        }
+      });
+    })();
+
+    // Coupon hint typewriter effect
+    (function () {
+      var p1 = document.getElementById('twPart1');
+      var p2 = document.getElementById('twPart2');
+      var c1 = document.getElementById('twCursor1');
+      var c2 = document.getElementById('twCursor2');
+      if (!p1 || !p2 || !c1 || !c2) return;
+
+      var text1 = '10 קופוני הנחה למזמינים הראשונים. ';
+      var text2 = 'הזינו "BLUES" במסך התשלום.';
+
+      p1.textContent = '';
+      p2.textContent = '';
+      c1.style.display = 'inline-block';
+      c2.style.display = 'none';
+
+      function typeText(el, text, speed, done) {
+        var i = 0;
+        function tick() {
+          if (i < text.length) {
+            el.textContent += text.charAt(i);
+            i++;
+            var delay = speed;
+            if (text.charAt(i - 1) === '.') delay = speed * 3.5;
+            setTimeout(tick, delay);
+          } else if (done) {
+            done();
+          }
+        }
+        tick();
+      }
+
+      setTimeout(function () {
+        typeText(p1, text1, 40, function () {
+          setTimeout(function () {
+            c1.style.display = 'none';
+            c2.style.display = 'inline-block';
+            typeText(p2, text2, 40, function () {
+              setTimeout(function () {
+                c2.classList.add('fade-out');
+                setTimeout(function () {
+                  c2.style.display = 'none';
+                }, 850);
+              }, 3500);
+            });
+          }, 200);
+        });
+      }, 650);
     })();
   </script>
 </body>
