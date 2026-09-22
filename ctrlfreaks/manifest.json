@@ -1,0 +1,27 @@
+{
+  "name": "הקונטרול פריקס",
+  "short_name": "CtrlFreaks",
+  "description": "להקת הקונטרול פריקס בערב בלוז ורוק ישראלי",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#12101A",
+  "theme_color": "#12101A",
+  "icons": [
+    {
+      "src": "../Media/ctrlfreaks/Images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../Media/ctrlfreaks/Images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "../Media/ctrlfreaks/Images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "Lior Porat - ליאור פורת",
+  "short_name": "LiorPorat",
+  "description": "האתר הרשמי של ליאור פורת - מוזיקה, שירים, מילים ואקורדים",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#181818",
+  "theme_color": "#181818",
+  "icons": [
+    {
+      "src": "Media/main/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "Media/main/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "Media/main/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
