@@ -57,14 +57,17 @@
 
   <!-- Meta Pixel Code -->
   <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', '1031274286616398');
     fbq('track', 'PageView');
   </script>
@@ -156,7 +159,7 @@
             </a>
           </div>
           <div class="hero-body">
-            <p class="hero-desc"><strong>בלוז ישראלי</strong> כמו שלא שמעתם אף פעם!<br>
+            <p class="hero-desc">אם אתם באמת אוהבים <strong class="pulse-blues">בלוז</strong>, את זה עוד לא שמעתם.<br>
               הרכב של 5 מוזיקאים בערב של שירים מקוריים לצד קלאסיקות מוכרות, מלא באנרגיה סוחפת, נשמה, הומור
               <strong>וטקסטים חדים</strong>
               על המצב בארץ.
