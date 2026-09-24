@@ -294,9 +294,12 @@ a {
 }
 
 @keyframes pulse-blues {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.15);
   }
@@ -632,8 +635,20 @@ h2 {
 }
 
 .close-row .coupon-hint {
-  flex-basis: 100%;
-  margin-top: -8px;
+  display: inline-block;
+  margin-top: 12px;
+  color: rgba(245, 240, 235, 0.85);
+  font-family: var(--util);
+  font-size: clamp(0.88rem, 1.05vw, 1.15rem);
+  line-height: 1.55;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.close-row .coupon-hint:hover {
+  color: #FFFFFF;
 }
 
 .action-links {
@@ -701,6 +716,7 @@ h2 {
     color: #12823a;
     border-color: #1DB954;
   }
+
   .action-pill-spotify:hover svg[fill="currentColor"] {
     color: #1DB954;
   }
@@ -709,6 +725,7 @@ h2 {
     color: #cf2b36;
     border-color: #FC3C44;
   }
+
   .action-pill-apple:hover svg[fill="currentColor"] {
     color: #FC3C44;
   }
@@ -717,6 +734,7 @@ h2 {
     color: #cc0000;
     border-color: #FF0000;
   }
+
   .action-pill-youtube:hover svg[fill="currentColor"] {
     color: #FF0000;
   }
@@ -1014,9 +1032,23 @@ address a {
     border-radius: 8px;
   }
 
+  .close-row .coupon-hint {
+    font-size: clamp(1.2rem, 1.4vw, 1.55rem);
+    font-weight: 500;
+    color: #FFF6EC;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 1px 2px rgba(0, 0, 0, 0.9);
+    margin-top: 14px;
+    letter-spacing: 0.01em;
+  }
+
+  .close-row .coupon-hint:hover {
+    color: #FFFFFF;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 1), 0 0 8px rgba(255, 255, 255, 0.35);
+  }
+
   .action-links {
     gap: 14px;
-    margin-top: 42px;
+    margin-top: 26px;
   }
 
   .action-pill {
@@ -1103,7 +1135,7 @@ address a {
   /* Mobile Scroll Cue: Clean floating down arrow at bottom of screen */
   .cue {
     display: flex;
-    bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    bottom: max(26px, calc(env(safe-area-inset-bottom, 0px) + 20px));
     z-index: 5;
   }
 
@@ -1172,7 +1204,7 @@ address a {
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    padding: max(64px, calc(env(safe-area-inset-top, 0px) + 56px)) 16px max(68px, calc(env(safe-area-inset-bottom, 16px) + 54px));
+    padding: max(58px, calc(env(safe-area-inset-top, 0px) + 50px)) 16px max(92px, calc(env(safe-area-inset-bottom, 16px) + 78px));
     height: 100%;
     width: 100%;
     max-width: 100%;
@@ -1231,7 +1263,7 @@ address a {
 
   /* 2. Text description: Crisp, clear, perfectly readable with generous line height */
   .copy .hero-desc {
-    font-size: 0.93rem;
+    font-size: 0.99rem;
     font-weight: 400;
     line-height: 1.68;
     color: #F7F3EE;
@@ -1329,6 +1361,22 @@ address a {
   .close-row .col {
     flex: 1 1 100%;
     width: 100%;
+  }
+
+  .close-row .coupon-hint {
+    display: block;
+    text-align: center;
+    font-size: 0.83rem;
+    margin: 10px auto 0;
+    width: 100%;
+  }
+
+  .close-row .coupon-hint:active {
+    opacity: 0.7;
+  }
+
+  .action-links {
+    margin-top: 20px;
   }
 
   .action-pill {
