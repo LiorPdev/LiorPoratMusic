@@ -89,8 +89,27 @@ function openInApp(playlistUrl) {
     return;
   }
 
-  // מחשב: קישור HTTPS ישיר
-  location.href = web;
+  // מחשב: נסה לפתוח באפליקציית הדסקטופ, ואם היא לא נפתחת/אין מענה – fallback לאתר
+  let hasBlurred = false;
+  const onBlur = () => {
+    hasBlurred = true;
+  };
+
+  window.addEventListener("blur", onBlur, { once: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) hasBlurred = true;
+  }, { once: true });
+
+  const t = Date.now();
+  location.href = uri;
+
+  setTimeout(() => {
+    window.removeEventListener("blur", onBlur);
+    // אם הדפדפן לא איבד פוקוס ולא הושעה (כלומר האפליקציה לא נפתחה), עוברים לאתר
+    if (!hasBlurred && Date.now() - t < 2000) {
+      location.href = web;
+    }
+  }, 1500);
 }
 
 function cardTemplate({ name, url, thumbnail, description }) {
