@@ -916,8 +916,7 @@ h2 {
   }
 
   .g-band {
-    grid-column: span 2;
-    aspect-ratio: 16/9
+    display: none;
   }
 
   .g-drums {
@@ -1607,12 +1606,79 @@ address a {
   transition: background 180ms ease, border-color 180ms ease, transform 180ms cubic-bezier(.22, 1, .3, 1), box-shadow 180ms ease;
 }
 
+/* Attention-grabbing blink / beacon pulse when muted */
+.sound-toggle.is-muted {
+  animation: sound-blink 2s ease-in-out infinite;
+}
+
+.sound-toggle.is-muted::before,
+.sound-toggle.is-muted::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 2px solid var(--red-hot);
+  pointer-events: none;
+  opacity: 0;
+  animation: sound-radar 2.4s cubic-bezier(0.2, 0.8, 0.25, 1) infinite;
+}
+
+.sound-toggle.is-muted::after {
+  animation-delay: 1.2s;
+}
+
+@keyframes sound-blink {
+  0%, 100% {
+    background: rgba(14, 12, 20, 0.65);
+    border-color: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+    transform: scale(1);
+  }
+  35% {
+    background: rgba(45, 16, 24, 0.88);
+    border-color: var(--red-hot);
+    box-shadow: 0 0 0 4px rgba(226, 56, 69, 0.3), 0 0 24px rgba(226, 56, 69, 0.75), 0 6px 22px rgba(0, 0, 0, 0.55);
+    transform: scale(1.08);
+  }
+  60% {
+    background: rgba(25, 14, 20, 0.75);
+    border-color: rgba(226, 56, 69, 0.6);
+    box-shadow: 0 0 0 2px rgba(226, 56, 69, 0.15), 0 0 14px rgba(226, 56, 69, 0.4);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes sound-radar {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.85;
+  }
+  60% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .sound-toggle:hover {
     background: rgba(24, 20, 34, 0.9);
     border-color: rgba(255, 255, 255, 0.75);
     transform: scale(1.08);
     box-shadow: 0 8px 28px rgba(0, 0, 0, 0.6);
+  }
+
+  .sound-toggle.is-muted:hover {
+    animation-play-state: paused;
+  }
+
+  .sound-toggle.is-muted:hover::before,
+  .sound-toggle.is-muted:hover::after {
+    animation-play-state: paused;
+    opacity: 0;
   }
 }
 
@@ -1625,6 +1691,7 @@ address a {
   align-items: center;
   justify-content: center;
   flex: none;
+  transition: transform 180ms ease;
 }
 
 .sound-toggle .sound-icon svg {
@@ -1638,6 +1705,16 @@ address a {
 
 .sound-toggle.is-playing .sound-icon-off {
   display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-toggle.is-muted {
+    animation: none;
+  }
+  .sound-toggle.is-muted::before,
+  .sound-toggle.is-muted::after {
+    display: none;
+  }
 }
 
 @media (max-width: 680px) {
