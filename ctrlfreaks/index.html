@@ -389,7 +389,10 @@
         ticketLinks[i].addEventListener('click', function () {
           safeFbq('track', 'InitiateCheckout', {
             content_name: 'כרטיסים להקונטרול פריקס בבאבי בר',
-            content_category: 'Concert Ticket'
+            content_category: 'Concert Ticket',
+            value: 60.00,
+            currency: 'ILS',
+            num_items: 1
           });
         });
       }
