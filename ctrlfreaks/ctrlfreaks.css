@@ -46,7 +46,6 @@ body {
   font-size: 17px;
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 86px;
 }
 
 .page {
@@ -175,9 +174,9 @@ a {
   position: absolute;
   inset-inline: 0;
   top: 122svh;
-  height: 120svh;
+  bottom: 0;
   opacity: 0;
-  pointer-events: none
+  pointer-events: none;
 }
 
 .pin {
@@ -541,6 +540,7 @@ a {
   border-top: 2.5px solid #C89558;
   box-shadow: 0 -26px 60px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(235, 195, 145, 0.25);
   overflow: hidden;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
 }
 
 /* רקע העץ: כאן קובעים ישירות את ה-opacity מ-0 (בלתי נראה) עד 1 (אטום לחלוטין) */
