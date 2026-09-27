@@ -1262,7 +1262,7 @@ address a {
 
   /* 2. Text description: Crisp, clear, perfectly readable with generous line height */
   .copy .hero-desc {
-    font-size: 0.99rem;
+    font-size: 1rem;
     font-weight: 400;
     line-height: 1.68;
     color: #F7F3EE;
@@ -1628,18 +1628,22 @@ address a {
 }
 
 @keyframes sound-blink {
-  0%, 100% {
+
+  0%,
+  100% {
     background: rgba(14, 12, 20, 0.65);
     border-color: rgba(255, 255, 255, 0.35);
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
     transform: scale(1);
   }
+
   35% {
     background: rgba(45, 16, 24, 0.88);
     border-color: var(--red-hot);
     box-shadow: 0 0 0 4px rgba(226, 56, 69, 0.3), 0 0 24px rgba(226, 56, 69, 0.75), 0 6px 22px rgba(0, 0, 0, 0.55);
     transform: scale(1.08);
   }
+
   60% {
     background: rgba(25, 14, 20, 0.75);
     border-color: rgba(226, 56, 69, 0.6);
@@ -1653,10 +1657,12 @@ address a {
     transform: scale(0.95);
     opacity: 0.85;
   }
+
   60% {
     transform: scale(1.55);
     opacity: 0;
   }
+
   100% {
     transform: scale(1.55);
     opacity: 0;
@@ -1711,6 +1717,7 @@ address a {
   .sound-toggle.is-muted {
     animation: none;
   }
+
   .sound-toggle.is-muted::before,
   .sound-toggle.is-muted::after {
     display: none;

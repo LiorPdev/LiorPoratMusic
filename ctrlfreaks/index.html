@@ -159,7 +159,7 @@
             </a>
           </div>
           <div class="hero-body">
-            <p class="hero-desc">אם אתם באמת אוהבים <strong class="pulse-blues">בלוז</strong>, כדאי לכם
+            <p class="hero-desc">אם אתם אוהבים <strong class="pulse-blues">בלוז</strong>, כדאי לכם
               להצטרף אלינו לחוויה של בלוז מקורי לצד קלאסיקות מוכרות, עם אנרגיה סוחפת, נשמה, הומור
               <strong>וטקסטים חדים</strong> על חיינו בארץ.
               <br>
@@ -176,9 +176,9 @@
             </p>
             <a class="cta cta-lg" id="heroCta" href="https://babebar.co.il/event/con/#tribe-events-content">כרטיסים</a>
             <a class="coupon-hint" id="couponHint" href="https://babebar.co.il/event/con/#tribe-events-content">
-              <span><span id="twPart1">10 קופוני הנחה למזמינים הראשונים. </span><span id="twCursor1" class="tw-cursor"
-                  style="display:none">|</span><br class="mobile-br"><span id="twPart2">הזינו "BLUES" במסך
-                  התשלום.</span><span id="twCursor2" class="tw-cursor" style="display:none">|</span></span>
+              <span><span id="twPart1"></span><span id="twCursor1" class="tw-cursor" style="display:none">|</span><br
+                  class="mobile-br"><span id="twPart2"></span><span id="twCursor2" class="tw-cursor"
+                  style="display:none">|</span></span>
             </a>
           </div>
         </div>
@@ -235,7 +235,7 @@
               <a class="cta cta-lg" href="https://babebar.co.il/event/con/#tribe-events-content">להזמנת כרטיסים</a>
             </div>
             <a class="coupon-hint" href="https://babebar.co.il/event/con/#tribe-events-content">
-              <span>10 קופוני הנחה למזמינים הראשונים. <br class="mobile-br">הזינו "BLUES" במסך התשלום.</span>
+              <span id="bottomCouponText"></span>
             </a>
             <div class="action-links">
               <a class="action-pill" data-navigate
@@ -246,7 +246,7 @@
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
-                <span>ניווט לבאבי בר</span>
+                <span>ניווט</span>
               </a>
               <a class="action-pill" data-calendar
                 href="https://calendar.google.com/calendar/render?action=TEMPLATE&amp;text=%D7%94%D7%A7%D7%95%D7%A0%D7%98%D7%A8%D7%95%D7%9C%20%D7%A4%D7%A8%D7%99%D7%A7%D7%A1%20%D7%91%D7%91%D7%90%D7%91%D7%99%20%D7%91%D7%A8&amp;dates=20261010T183000Z/20261010T200000Z&amp;location=%D7%94%D7%A0%D7%92%D7%A8%208%2C%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&amp;details=%D7%93%D7%9C%D7%AA%D7%95%D7%AA%2020%3A00"
@@ -598,16 +598,23 @@
       });
     })();
 
-    // Coupon hint typewriter effect
+    // Coupon hint typewriter effect & unified coupon text
     (function () {
+      // מקור יחיד לטקסט הקופון (עדכון כאן משפיע על כל הדף)
+      const COUPON_PART1 = '10 קופוני הנחה למזמינים מראש. ';
+      const COUPON_PART2 = 'הזינו "BLUES" במסך התשלום.';
+
+      // עדכון הטקסט בחלק התחתון של הדף
+      var bottomText = document.getElementById('bottomCouponText');
+      if (bottomText) {
+        bottomText.innerHTML = COUPON_PART1 + '<br class="mobile-br">' + COUPON_PART2;
+      }
+
       var p1 = document.getElementById('twPart1');
       var p2 = document.getElementById('twPart2');
       var c1 = document.getElementById('twCursor1');
       var c2 = document.getElementById('twCursor2');
       if (!p1 || !p2 || !c1 || !c2) return;
-
-      var text1 = 'קופון הנחה למזמינים מראש. ';
-      var text2 = 'הזינו "BLUES" .';
 
       p1.textContent = '';
       p2.textContent = '';
@@ -631,11 +638,11 @@
       }
 
       setTimeout(function () {
-        typeText(p1, text1, 40, function () {
+        typeText(p1, COUPON_PART1, 40, function () {
           setTimeout(function () {
             c1.style.display = 'none';
             c2.style.display = 'inline-block';
-            typeText(p2, text2, 40, function () {
+            typeText(p2, COUPON_PART2, 40, function () {
               setTimeout(function () {
                 c2.classList.add('fade-out');
                 setTimeout(function () {
