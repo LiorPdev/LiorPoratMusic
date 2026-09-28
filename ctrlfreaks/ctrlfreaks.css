@@ -1887,7 +1887,9 @@ address a {
   }
 
   /* Hide the entire scarcity sentence on very narrow screens */
-  .scarcity-hint {
+  .scarcity-hint,
+  .copy .scarcity-hint,
+  .close-row .scarcity-hint {
     display: none;
   }
 }
