@@ -81,6 +81,8 @@ a {
 .cta {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: .7em;
   font-family: var(--util);
   font-weight: 700;
