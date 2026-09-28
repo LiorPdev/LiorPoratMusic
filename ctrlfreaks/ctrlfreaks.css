@@ -32,6 +32,17 @@
   display: none;
 }
 
+@media (max-width: 680px) {
+  .mobile-br {
+    display: block;
+  }
+
+  .coupon-line2 {
+    display: block;
+    margin-top: 5px;
+  }
+}
+
 html {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
@@ -604,6 +615,14 @@ h2 {
   line-height: 1.4;
 }
 
+/* Price (40 ₪) stands out in bold yellow */
+.coupon-hint strong:not(.coupon-code) {
+  color: #FFD000;
+  font-weight: 800;
+  font-size: 1.1em;
+  text-shadow: 0 1px 8px rgba(255, 208, 0, 0.35);
+}
+
 .coupon-hint svg {
   flex: none;
   stroke: var(--red);
@@ -614,22 +633,28 @@ h2 {
   margin-top: 12px;
 }
 
+.copy .coupon-hint strong:not(.coupon-code) {
+  color: #FFD000;
+  font-weight: 800;
+  font-size: 1.1em;
+  text-shadow: 0 1px 10px rgba(255, 208, 0, 0.5);
+}
+
 .copy .coupon-hint svg {
   stroke: var(--mint);
 }
 
 .coupon-code {
-  color: #FFD180;
+  color: #FFFFFF;
   font-weight: 700;
   letter-spacing: .04em;
 }
 
 .coupon-orig {
-  text-decoration: line-through;
-  opacity: 0.65;
-  text-decoration-color: rgba(230, 57, 70, 0.85);
-  text-decoration-thickness: 1.5px;
-  font-weight: 500;
+  text-decoration: none;
+  opacity: 0.9;
+  color: #FFD000;
+  font-weight: 700;
 }
 
 .coupon-sep {
@@ -638,7 +663,7 @@ h2 {
 }
 
 .coupon-limit {
-  color: #FFD180;
+  color: #FFFFFF;
   font-weight: 700;
   letter-spacing: 0.01em;
   margin-inline-end: 3px;
@@ -659,6 +684,13 @@ h2 {
 
 .close-row .coupon-hint:hover {
   color: #FFFFFF;
+}
+
+.close-row .coupon-hint strong:not(.coupon-code) {
+  color: #FFD000;
+  font-weight: 800;
+  font-size: 1.1em;
+  text-shadow: 0 1px 8px rgba(255, 208, 0, 0.4);
 }
 
 .scarcity-hint {
