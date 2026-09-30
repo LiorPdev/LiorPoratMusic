@@ -8,37 +8,128 @@
   y.parentNode.insertBefore(t, y);
 })(window, document, "clarity", "script", "tqmhdyey6p");
 
-// Share button logic
 document.addEventListener('DOMContentLoaded', () => {
+  // 1. Toast notification helper
+  const toast = document.getElementById('toast');
+  let toastTimer = null;
+  function showToast(message) {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2800);
+  }
+
+  // 2. Share button logic
   const shareBtn = document.getElementById('shareBtn');
-  if (!shareBtn) return;
+  if (shareBtn) {
+    function fallbackCopy() {
+      const url = window.location.href;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url)
+          .then(() => showToast('הקישור הועתק בהצלחה!'))
+          .catch(() => prompt('העתיקו את הקישור:', url));
+      } else {
+        prompt('העתיקו את הקישור:', url);
+      }
+    }
 
-  function fallbackCopy() {
-    const url = window.location.href;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url)
-        .then(() => alert('הקישור הועתק'))
-        .catch(() => prompt('העתיקו את הקישור', url));
-    } else {
-      prompt('העתיקו את הקישור', url);
+    function doShare() {
+      const payload = {
+        title: document.title || 'ליאור פורת',
+        text: 'ליאור פורת - בלוז-רוק ומה שביניהם',
+        url: window.location.href
+      };
+      if (navigator.share && navigator.canShare && navigator.canShare(payload)) {
+        navigator.share(payload).catch((err) => {
+          if (err && err.name !== 'AbortError') {
+            fallbackCopy();
+          }
+        });
+      } else {
+        fallbackCopy();
+      }
+    }
+
+    shareBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      doShare();
+    });
+  }
+
+  // 3. Scroll cue button (Scroll smoothly to gallery)
+  const cueBtn = document.getElementById('cueBtn');
+  const sheet = document.querySelector('.sheet');
+  if (cueBtn && sheet) {
+    cueBtn.addEventListener('click', () => {
+      const y = sheet.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+  }
+
+  // 4. Hero docking / parallax effect with IntersectionObserver
+  const pin = document.querySelector('.pin');
+  const dockAt = document.getElementById('dockAt');
+  if (pin && dockAt && 'IntersectionObserver' in window) {
+    try {
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        new IntersectionObserver((entries) => {
+          pin.classList.toggle('docked', entries[0].isIntersecting);
+        }, { threshold: 0 }).observe(dockAt);
+      }
+    } catch (e) {
+      console.warn('IntersectionObserver error', e);
     }
   }
 
-  function doShare() {
-    const payload = {
-      title: document.title || 'Share',
-      text: '',
-      url: window.location.href
-    };
-    if (navigator.share && navigator.canShare && navigator.canShare(payload)) {
-      navigator.share(payload).catch(() => { });
-    } else {
-      fallbackCopy();
-    }
-  }
+  // 5. Gallery Lightbox Modal
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const shots = document.querySelectorAll('.shot');
 
-  shareBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    doShare();
-  });
+  if (lightbox && lightboxImg) {
+    function openLightbox(src, alt) {
+      lightboxImg.src = src;
+      lightboxImg.alt = alt || 'תמונה בהגדלה';
+      lightbox.classList.add('is-open');
+      lightbox.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('is-open');
+      lightbox.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      lightboxImg.src = '';
+    }
+
+    shots.forEach(shot => {
+      shot.addEventListener('click', () => {
+        const img = shot.querySelector('img');
+        const highRes = shot.getAttribute('data-src') || (img ? img.src : '');
+        if (highRes) {
+          openLightbox(highRes, img ? img.alt : '');
+        }
+      });
+    });
+
+    if (lightboxClose) {
+      lightboxClose.addEventListener('click', closeLightbox);
+    }
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
+        closeLightbox();
+      }
+    });
+  }
 });
