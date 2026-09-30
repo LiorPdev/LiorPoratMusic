@@ -580,6 +580,61 @@ a {
 }
 
 /* ============================================================
+   SITE FOOTER
+   ============================================================ */
+.site-footer {
+  margin-top: 48px;
+  padding: 36px 20px 48px;
+  text-align: center;
+  border-top: 1.5px solid var(--gold-border);
+  background: linear-gradient(to bottom, rgba(14, 12, 20, 0.85) 0%, rgba(10, 8, 14, 0.96) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  position: relative;
+  z-index: 10;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 14px;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.footer-links a {
+  color: #FFF3E2;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95);
+}
+
+.footer-links a:hover {
+  color: var(--gold-light);
+  text-shadow: 0 0 14px var(--gold-glow);
+}
+
+.footer-links span {
+  color: var(--gold-light);
+  opacity: 0.65;
+  user-select: none;
+}
+
+.copyright {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(247, 239, 226, 0.8);
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.95);
+}
+
+/* ============================================================
    LIGHTBOX MODAL
    ============================================================ */
 .lightbox {
@@ -803,5 +858,19 @@ a {
   .share-icon-btn {
     width: 46px;
     height: 46px;
+  }
+
+  .site-footer {
+    margin-top: 32px;
+    padding: 28px 14px 40px;
+  }
+
+  .footer-links {
+    gap: 8px 12px;
+    font-size: 0.95rem;
+  }
+
+  .copyright {
+    font-size: 0.85rem;
   }
 }
