@@ -123,10 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
         continue;
       }
 
-      const isSubLine = /^(\t{2,}|\t {2,}| {2,}\t| {4,})/.test(line);
+      const isSubLine = /^(\t{2,}|\t {4,}| {4,}\t| {6,})/.test(line);
       const isChorus = !isSubLine && /^(\t| {2,})/.test(line);
       const displayLine = isSubLine
-        ? line.replace(/^(\t{2,}|\t {2,}| {2,}\t| {4,})/, '')
+        ? line.replace(/^(\t{2,}|\t {4,}| {4,}\t| {6,})/, '')
         : (isChorus ? line.replace(/^(\t| {2,})/, '') : line);
       const isChordsOnly = /\[[^\]]+\]/.test(displayLine) && !/[\u0590-\u05FF]/.test(displayLine);
 
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/\[(.*?)\]/g, '<b class="chord">[$1]</b>')
+        .replace(/\[(.*?)\]/g, '<b class="chord" dir="ltr">[$1]</b>')
         .replace(/♫/g, '<span class="scroll-pause-marker">♫</span>');
 
       const secToAttach = pendingSeconds !== null ? pendingSeconds : lineSeconds;

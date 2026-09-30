@@ -10,7 +10,13 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Toast notification helper
-  const toast = document.getElementById('toast');
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
   let toastTimer = null;
   function showToast(message) {
     if (!toast) return;
