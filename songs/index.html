@@ -30,6 +30,12 @@
   <meta name="twitter:description" content="כל המילים של השירים במקום אחד כולל תמונות">
   <meta name="twitter:image" content="https://liorporat.com/Media/main/og.webp">
 
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700&family=Heebo:wght@400;500;700&display=swap" />
+
   <link rel="stylesheet" href="../styles.css?v=1.5.8" />
   <link rel="stylesheet" href="../songs.css?v=1.5.8" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -45,7 +51,7 @@
           <option value="">הכל</option>
         </select>
       </div>
-      <a href="../index.html" class="close-btn" aria-label="חזרה">×</a>
+      <a href="../index.html" class="close-btn" aria-label="חזרה לדף הראשי" title="חזרה לדף הראשי">✕</a>
     </div>
   </div>
 
@@ -53,14 +59,7 @@
 
   <main class="songs" id="songs"></main>
 
-  <div style="height:20px;"></div>
-  <div class="back-link">
-    <a href="../index.html">חזרה לדף הראשי</a>
-    <div style="height:20px;"></div>
-    <a href="#" class="share-link" id="shareBtn" aria-label="שתף עמוד זה">
-      <i class="fa-solid fa-share-nodes"></i>
-    </a>
-  </div>
+
 
   <script>
     const songs = [
@@ -147,6 +146,11 @@
         return matchesSearch && matchesGenre;
       });
 
+      if (filteredSongs.length === 0) {
+        el.innerHTML = '<div class="no-songs-found">לא נמצאו שירים התואמים לחיפוש</div>';
+        return;
+      }
+
       filteredSongs.forEach(song => {
         const row = document.createElement('div');
         row.className = 'song-item';
@@ -158,6 +162,9 @@
         img.src = `../Media/songs/${song.name}.webp`;
         img.alt = song.name;
         img.className = 'song-thumb';
+        img.loading = 'lazy';
+        img.width = 90;
+        img.height = 90;
 
         const info = document.createElement('div');
         info.className = 'song-info';
