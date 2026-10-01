@@ -502,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
       kEl.className = 'show-karaoke-countdown';
       document.body.appendChild(kEl);
     }
-    let remaining = 5;
+    let remaining = 3;
     const renderKaraokeNumber = () => {
       kEl.textContent = remaining;
       kEl.style.animation = 'none';
