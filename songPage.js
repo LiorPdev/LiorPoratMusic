@@ -1101,25 +1101,136 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Hardware Bluetooth Foot Pedal & Keyboard Listener ──────────────────────
   // An invisible focus sink with inputmode="none" guarantees that iOS Safari / iPadOS
-  // and Android Chrome in PWA / fullscreen deliver hardware Bluetooth keyboard events
-  // without displaying the on-screen virtual keyboard.
+  // and Android Chrome deliver hardware Bluetooth keyboard events without displaying
+  // the on-screen virtual keyboard.
   const pedalFocusSink = document.createElement('input');
   pedalFocusSink.type = 'text';
   pedalFocusSink.id = 'pedal-focus-sink';
   pedalFocusSink.setAttribute('inputmode', 'none');
-  pedalFocusSink.setAttribute('tabindex', '-1');
-  pedalFocusSink.setAttribute('aria-hidden', 'true');
+  pedalFocusSink.setAttribute('tabindex', '0');
   pedalFocusSink.setAttribute('autocomplete', 'off');
   pedalFocusSink.setAttribute('autocorrect', 'off');
   pedalFocusSink.setAttribute('autocapitalize', 'off');
   pedalFocusSink.setAttribute('spellcheck', 'false');
-  pedalFocusSink.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.001;pointer-events:none;z-index:-9999;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;';
+  // Positioned safely in bottom corner without pointer-events:none so iOS/Android allow focus
+  pedalFocusSink.style.cssText = 'position:fixed;bottom:12px;right:12px;width:30px;height:30px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
   document.body.appendChild(pedalFocusSink);
+
+  // ── On-Screen Real-Time Debug HUD ──────────────────────────────────────────
+  const debugHud = document.createElement('div');
+  debugHud.id = 'pedal-debug-hud';
+  debugHud.style.cssText = [
+    'position: fixed',
+    'bottom: 12px',
+    'left: 12px',
+    'right: 12px',
+    'max-width: 480px',
+    'margin: 0 auto',
+    'background: rgba(15, 23, 42, 0.95)',
+    'border: 1px solid #6366f1',
+    'border-radius: 12px',
+    'padding: 10px 14px',
+    'color: #f8fafc',
+    'font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+    'font-size: 11px',
+    'line-height: 1.4',
+    'z-index: 100000',
+    'box-shadow: 0 10px 30px rgba(0,0,0,0.85)',
+    'backdrop-filter: blur(12px)',
+    '-webkit-backdrop-filter: blur(12px)',
+    'direction: ltr',
+    'text-align: left'
+  ].join(';');
+
+  debugHud.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:5px;">
+      <span style="font-weight:700; color:#818cf8; display:flex; align-items:center; gap:6px;">
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22c55e;" id="pedal-hud-indicator"></span>
+        PEDAL DEBUG HUD
+      </span>
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button type="button" id="pedal-hud-focus-btn" style="background:#4f46e5; color:#fff; border:none; border-radius:6px; padding:3px 9px; font-size:11px; font-weight:600; cursor:pointer;">Focus Pedal</button>
+        <button type="button" id="pedal-hud-close-btn" style="background:rgba(255,255,255,0.1); color:#94a3b8; border:none; border-radius:6px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px;">&times;</button>
+      </div>
+    </div>
+    <div style="margin-bottom:3px;"><span style="color:#94a3b8;">Active Target:</span> <span id="pedal-hud-active" style="color:#38bdf8; font-weight:600;">detecting...</span></div>
+    <div style="margin-bottom:3px;"><span style="color:#94a3b8;">Last Action:</span> <span id="pedal-hud-action" style="color:#4ade80; font-weight:700;">NONE</span></div>
+    <div style="margin-bottom:2px; color:#94a3b8;">Recent Keystrokes / Inputs:</div>
+    <div id="pedal-hud-log" style="background:rgba(0,0,0,0.5); border-radius:6px; padding:6px 8px; max-height:85px; overflow-y:auto; color:#e2e8f0; font-size:10.5px;">Waiting for pedal stomp or keypress...</div>
+  `;
+  document.body.appendChild(debugHud);
+
+  const recentLogs = [];
+  function logDebug(type, details) {
+    const timeStr = new Date().toTimeString().split(' ')[0] + '.' + String(Date.now() % 1000).padStart(3, '0');
+    const line = `[${timeStr}] ${type}: ${details}`;
+    console.log('[PEDAL-DEBUG]', line);
+    recentLogs.unshift(line);
+    if (recentLogs.length > 5) recentLogs.pop();
+    const logEl = document.getElementById('pedal-hud-log');
+    if (logEl) {
+      logEl.innerHTML = recentLogs.map(l => `<div>${l}</div>`).join('');
+    }
+    updateActiveElementDisplay();
+  }
+
+  function logAction(act) {
+    console.log('[PEDAL-ACTION]', act);
+    const actEl = document.getElementById('pedal-hud-action');
+    if (actEl) {
+      actEl.textContent = act;
+      actEl.style.color = '#4ade80';
+    }
+    const indicator = document.getElementById('pedal-hud-indicator');
+    if (indicator) {
+      indicator.style.background = '#38bdf8';
+      setTimeout(() => { if (indicator) indicator.style.background = '#22c55e'; }, 300);
+    }
+  }
+
+  function updateActiveElementDisplay() {
+    const active = document.activeElement;
+    const actEl = document.getElementById('pedal-hud-active');
+    const indicator = document.getElementById('pedal-hud-indicator');
+    if (!actEl) return;
+    if (active === pedalFocusSink) {
+      actEl.textContent = 'PEDAL SINK (READY ✓)';
+      actEl.style.color = '#4ade80';
+      if (indicator) indicator.style.background = '#22c55e';
+    } else if (active) {
+      actEl.textContent = `<${active.tagName.toLowerCase()}${active.id ? '#' + active.id : ''}>`;
+      actEl.style.color = '#f59e0b';
+      if (indicator) indicator.style.background = '#f59e0b';
+    } else {
+      actEl.textContent = 'NONE';
+      actEl.style.color = '#ef4444';
+      if (indicator) indicator.style.background = '#ef4444';
+    }
+  }
+
+  const focusBtn = document.getElementById('pedal-hud-focus-btn');
+  if (focusBtn) {
+    focusBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ensurePedalFocus();
+      logDebug('manual-tap', 'Focus Pedal button tapped');
+    });
+  }
+  const closeHudBtn = document.getElementById('pedal-hud-close-btn');
+  if (closeHudBtn) {
+    closeHudBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      debugHud.style.display = 'none';
+    });
+  }
 
   function ensurePedalFocus() {
     const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
-      if (active !== pedalFocusSink) return;
+      if (active !== pedalFocusSink) {
+        updateActiveElementDisplay();
+        return;
+      }
     }
     // If a button or link holds focus, blur it so Space/Enter never triggers it by mistake
     if (active && (active.tagName === 'BUTTON' || active.tagName === 'A')) {
@@ -1130,6 +1241,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (_) {
       try { pedalFocusSink.focus(); } catch (__) {}
     }
+    updateActiveElementDisplay();
   }
 
   // Ensure focus is established on load and maintained
@@ -1141,6 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ['click', 'touchend', 'pointerup'].forEach(evt => {
     document.addEventListener(evt, (e) => {
       if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
+      if (e.target && e.target.closest('#pedal-debug-hud')) return;
       setTimeout(ensurePedalFocus, 50);
     }, { passive: true });
   });
@@ -1159,7 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
     if (e.target && typeof e.target.closest === 'function') {
       const btnOrLink = e.target.closest('button, a');
-      if (btnOrLink) {
+      if (btnOrLink && !btnOrLink.closest('#pedal-debug-hud')) {
         setTimeout(() => {
           try { btnOrLink.blur(); } catch (_) {}
           ensurePedalFocus();
@@ -1175,8 +1288,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const key = e.key || '';
     const keyCode = e.keyCode || e.which || 0;
 
-    const isSpace = code === 'Space' || key === ' ' || key === 'Spacebar' || keyCode === 32;
-    const isEnter = code === 'Enter' || code === 'NumpadEnter' || key === 'Enter' || keyCode === 13;
+    const isSpace = code === 'Space' || key === ' ' || key === 'Spacebar' || key === 'Space' || keyCode === 32 || (key === 'Unidentified' && keyCode === 32);
+    const isEnter = code === 'Enter' || code === 'NumpadEnter' || key === 'Enter' || keyCode === 13 || (key === 'Unidentified' && keyCode === 13);
     const isPageDown = code === 'PageDown' || key === 'PageDown' || keyCode === 34;
     const isPageUp = code === 'PageUp' || key === 'PageUp' || keyCode === 33;
     const isDown = code === 'ArrowDown' || key === 'ArrowDown' || keyCode === 40;
@@ -1187,15 +1300,73 @@ document.addEventListener('DOMContentLoaded', () => {
     return { isSpace, isEnter, isPageDown, isPageUp, isDown, isUp, isLeft, isRight };
   }
 
+  // Support pedals emitting text input events (like in WhatsApp/Notes)
+  pedalFocusSink.addEventListener('beforeinput', (e) => {
+    const data = e.data || '';
+    const inputType = e.inputType || '';
+    logDebug('beforeinput', `data="${data}" type="${inputType}"`);
+
+    // Space character insertion
+    if (data === ' ') {
+      e.preventDefault();
+      pedalFocusSink.value = '';
+      const now = performance.now();
+      if (now - lastPedalTime < 240) return;
+      lastPedalTime = now;
+      logAction('SPACE (beforeinput) -> TOGGLE SCROLL');
+      handleUserToggleScroll();
+      return;
+    }
+
+    // Enter / newline insertion
+    if (data === '\n' || data === '\r' || inputType === 'insertParagraph' || inputType === 'insertLineBreak') {
+      e.preventDefault();
+      pedalFocusSink.value = '';
+      const now = performance.now();
+      if (now - lastPedalTime < 300) return;
+      lastPedalTime = now;
+      logAction('ENTER (beforeinput) -> NEXT SONG');
+      goToNextSong();
+      return;
+    }
+  });
+
+  pedalFocusSink.addEventListener('input', () => {
+    const val = pedalFocusSink.value || '';
+    logDebug('input', `value="${val}"`);
+    if (val.includes(' ')) {
+      pedalFocusSink.value = '';
+      const now = performance.now();
+      if (now - lastPedalTime >= 240) {
+        lastPedalTime = now;
+        logAction('SPACE (input) -> TOGGLE SCROLL');
+        handleUserToggleScroll();
+      }
+    } else if (val.includes('\n') || val.includes('\r')) {
+      pedalFocusSink.value = '';
+      const now = performance.now();
+      if (now - lastPedalTime >= 300) {
+        lastPedalTime = now;
+        logAction('ENTER (input) -> NEXT SONG');
+        goToNextSong();
+      }
+    }
+  });
+
   function handlePedalKeydown(e) {
+    const key = e.key || '';
+    const code = e.code || '';
+    const keyCode = e.keyCode || e.which || 0;
+    const targetTag = (e.target && e.target.tagName) || '';
+
+    logDebug('keydown', `key="${key}" code="${code}" which=${keyCode} target=<${targetTag}>`);
+
     const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable) && active !== pedalFocusSink) {
       return;
     }
 
     const { isSpace, isEnter, isPageDown, isPageUp, isDown, isUp, isLeft, isRight } = isPedalKey(e);
-    const key = e.key || '';
-    const code = e.code || '';
 
     // Space (or PageDown / DownArrow): Start and stop auto-scroll
     if (isSpace || isPageDown || isDown) {
@@ -1206,10 +1377,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = performance.now();
       // Hardware switch bounce / rapid repeat debounce
       if (e.repeat || (now - lastPedalTime < 240)) {
+        logDebug('debounce', 'space ignored (debounce)');
         return;
       }
       lastPedalTime = now;
 
+      logAction('SPACE (keydown) -> TOGGLE SCROLL');
       handleUserToggleScroll();
       return;
     }
@@ -1222,10 +1395,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const now = performance.now();
       if (e.repeat || (now - lastPedalTime < 300)) {
+        logDebug('debounce', 'enter ignored (debounce)');
         return;
       }
       lastPedalTime = now;
 
+      logAction('ENTER (keydown) -> NEXT SONG');
       goToNextSong();
       return;
     }
@@ -1236,11 +1411,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
       const now = performance.now();
-      if (e.repeat || (now - lastPedalTime < 240)) {
-        return;
-      }
+      if (e.repeat || (now - lastPedalTime < 240)) return;
       lastPedalTime = now;
 
+      logAction('PAGE_UP (keydown) -> SCROLL UP');
       if (scrollRafId) {
         stopScroll();
       } else {
@@ -1256,6 +1430,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = performance.now();
         if (now - lastPedalTime < 300) return;
         lastPedalTime = now;
+        logAction('ARROW_LEFT -> NEXT SONG');
         goToNextSong();
       }
     } else if (isRight) {
@@ -1265,6 +1440,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = performance.now();
         if (now - lastPedalTime < 300) return;
         lastPedalTime = now;
+        logAction('ARROW_RIGHT -> PREV SONG');
         goToPrevSong();
       }
     } else if (key === '+' || key === '=' || code === 'NumpadAdd') {
@@ -1277,6 +1453,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handlePedalKeyup(e) {
+    const key = e.key || '';
+    const code = e.code || '';
+    const keyCode = e.keyCode || e.which || 0;
+    logDebug('keyup', `key="${key}" code="${code}" which=${keyCode}`);
+
     const { isSpace, isEnter, isPageDown, isDown } = isPedalKey(e);
     if (isSpace || isEnter || isPageDown || isDown) {
       const active = document.activeElement;
