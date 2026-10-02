@@ -35,8 +35,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b0e14" />
 
-  <link rel="stylesheet" href="../styles.css?v=1.5.8" />
-  <link rel="stylesheet" href="../songs.css?v=1.5.8" />
+  <link rel="stylesheet" href="../styles.css?v=1.6.1" />
+  <link rel="stylesheet" href="../songs.css?v=1.6.1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     html,
@@ -148,11 +148,13 @@
       transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .song-item:hover {
+    .song-item:hover,
+    .song-item:focus-within,
+    .song-item.pedal-selected {
       background: #202738;
-      border-color: rgba(99, 102, 241, 0.45);
-      transform: scale(1.015);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      border-color: rgba(99, 102, 241, 0.7);
+      transform: scale(1.02);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5), 0 6px 18px rgba(0, 0, 0, 0.4);
     }
 
     .song-item a {
@@ -869,6 +871,7 @@
     function closeColorModal() {
       colorModal.classList.remove('active');
       colorModal.setAttribute('aria-hidden', 'true');
+      if (typeof ensurePedalFocus === 'function') ensurePedalFocus();
     }
 
     if (openSettingsBtn) openSettingsBtn.addEventListener('click', openColorModal);
@@ -919,8 +922,188 @@
       stageColors = { ...DEFAULT_COLORS };
       updatePreviewScreen();
     });
+
+    // ── Hardware Bluetooth Foot Pedal & Keyboard Support ─────────────────────
+    // Dedicated focus sink with inputmode="none" to guarantee hardware Bluetooth
+    // keyboard reception without opening the mobile on-screen keyboard.
+    const pedalFocusSink = document.createElement('input');
+    pedalFocusSink.type = 'text';
+    pedalFocusSink.id = 'pedal-focus-sink';
+    pedalFocusSink.setAttribute('inputmode', 'none');
+    pedalFocusSink.setAttribute('tabindex', '-1');
+    pedalFocusSink.setAttribute('aria-hidden', 'true');
+    pedalFocusSink.setAttribute('autocomplete', 'off');
+    pedalFocusSink.setAttribute('autocorrect', 'off');
+    pedalFocusSink.setAttribute('autocapitalize', 'off');
+    pedalFocusSink.setAttribute('spellcheck', 'false');
+    pedalFocusSink.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.001;pointer-events:none;z-index:-9999;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;';
+    document.body.appendChild(pedalFocusSink);
+
+    let selectedSongIdx = -1;
+    const songCards = document.querySelectorAll('.song-item');
+
+    function highlightSong(idx) {
+      if (!songCards.length) return;
+      selectedSongIdx = Math.max(0, Math.min(songCards.length - 1, idx));
+      songCards.forEach((c, i) => {
+        if (i === selectedSongIdx) {
+          c.classList.add('pedal-selected');
+          c.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else {
+          c.classList.remove('pedal-selected');
+        }
+      });
+    }
+
+    function openSelectedSong() {
+      const targetIdx = selectedSongIdx >= 0 ? selectedSongIdx : 0;
+      const targetCard = songCards[targetIdx];
+      if (targetCard) {
+        const link = targetCard.querySelector('a');
+        if (link && link.href) {
+          window.location.href = link.href;
+        }
+      }
+    }
+
+    function ensurePedalFocus() {
+      if (colorModal.classList.contains('active')) return;
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+        if (active !== pedalFocusSink) return;
+      }
+      if (active && (active.tagName === 'BUTTON' || active.tagName === 'A')) {
+        active.blur();
+      }
+      try {
+        pedalFocusSink.focus({ preventScroll: true });
+      } catch (_) {
+        try { pedalFocusSink.focus(); } catch (__) {}
+      }
+    }
+
+    ensurePedalFocus();
+    setTimeout(ensurePedalFocus, 100);
+    setTimeout(ensurePedalFocus, 400);
+
+    ['click', 'touchend', 'pointerup'].forEach(evt => {
+      document.addEventListener(evt, (e) => {
+        if (colorModal.classList.contains('active')) return;
+        if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
+        setTimeout(ensurePedalFocus, 50);
+      }, { passive: true });
+    });
+
+    window.addEventListener('focus', ensurePedalFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') ensurePedalFocus();
+    });
+    document.addEventListener('fullscreenchange', ensurePedalFocus);
+    pedalFocusSink.addEventListener('blur', () => {
+      setTimeout(ensurePedalFocus, 80);
+    });
+
+    // Blur buttons/links after click so future pedal taps don't click them
+    document.addEventListener('click', (e) => {
+      if (e.target && typeof e.target.closest === 'function') {
+        const btnOrLink = e.target.closest('button, a');
+        if (btnOrLink) {
+          setTimeout(() => {
+            try { btnOrLink.blur(); } catch (_) {}
+            ensurePedalFocus();
+          }, 40);
+        }
+      }
+    }, { capture: true, passive: true });
+
+    let lastPedalTime = 0;
+
+    function handleShowPedalKey(e) {
+      if (colorModal.classList.contains('active')) return;
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable) && active !== pedalFocusSink) {
+        return;
+      }
+
+      const code = e.code || '';
+      const key = e.key || '';
+      const keyCode = e.keyCode || e.which || 0;
+
+      const isSpace = code === 'Space' || key === ' ' || key === 'Spacebar' || keyCode === 32;
+      const isEnter = code === 'Enter' || code === 'NumpadEnter' || key === 'Enter' || keyCode === 13;
+      const isPageDown = code === 'PageDown' || key === 'PageDown' || keyCode === 34;
+      const isPageUp = code === 'PageUp' || key === 'PageUp' || keyCode === 33;
+      const isDown = code === 'ArrowDown' || key === 'ArrowDown' || keyCode === 40;
+      const isUp = code === 'ArrowUp' || key === 'ArrowUp' || keyCode === 38;
+      const isLeft = code === 'ArrowLeft' || key === 'ArrowLeft' || keyCode === 37;
+      const isRight = code === 'ArrowRight' || key === 'ArrowRight' || keyCode === 39;
+
+      if (isSpace || isEnter) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+        const now = performance.now();
+        if (e.repeat || (now - lastPedalTime < 240)) return;
+        lastPedalTime = now;
+        openSelectedSong();
+        return;
+      }
+
+      // Grid navigation (columns depend on screen width/aspect ratio: 4 cols on wide, 2 cols on portrait)
+      const isPortrait = window.matchMedia('(max-aspect-ratio: 1/1)').matches;
+      const cols = isPortrait ? 2 : 4;
+
+      if (isDown || isPageDown) {
+        e.preventDefault();
+        e.stopPropagation();
+        const now = performance.now();
+        if (now - lastPedalTime < 180) return;
+        lastPedalTime = now;
+        highlightSong(selectedSongIdx === -1 ? 0 : selectedSongIdx + cols);
+      } else if (isUp || isPageUp) {
+        e.preventDefault();
+        e.stopPropagation();
+        const now = performance.now();
+        if (now - lastPedalTime < 180) return;
+        lastPedalTime = now;
+        highlightSong(selectedSongIdx === -1 ? 0 : selectedSongIdx - cols);
+      } else if (isLeft) { // In RTL, Left moves to the next card
+        e.preventDefault();
+        e.stopPropagation();
+        const now = performance.now();
+        if (now - lastPedalTime < 180) return;
+        lastPedalTime = now;
+        highlightSong(selectedSongIdx === -1 ? 0 : selectedSongIdx + 1);
+      } else if (isRight) { // In RTL, Right moves to the previous card
+        e.preventDefault();
+        e.stopPropagation();
+        const now = performance.now();
+        if (now - lastPedalTime < 180) return;
+        lastPedalTime = now;
+        highlightSong(selectedSongIdx === -1 ? 0 : selectedSongIdx - 1);
+      }
+    }
+
+    function handleShowPedalKeyup(e) {
+      if (colorModal.classList.contains('active')) return;
+      const code = e.code || '';
+      const key = e.key || '';
+      const keyCode = e.keyCode || e.which || 0;
+      if (code === 'Space' || key === ' ' || key === 'Spacebar' || keyCode === 32 || code === 'Enter' || key === 'Enter' || keyCode === 13) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+
+    window.addEventListener('keydown', handleShowPedalKey, { capture: true });
+    document.addEventListener('keydown', handleShowPedalKey, { capture: true });
+    pedalFocusSink.addEventListener('keydown', handleShowPedalKey, { capture: true });
+
+    window.addEventListener('keyup', handleShowPedalKeyup, { capture: true });
+    document.addEventListener('keyup', handleShowPedalKeyup, { capture: true });
+    pedalFocusSink.addEventListener('keyup', handleShowPedalKeyup, { capture: true });
   </script>
-  <script src="../script.js?v=1.5.8"></script>
+  <script src="../script.js?v=1.6.1"></script>
 </body>
 
 </html>

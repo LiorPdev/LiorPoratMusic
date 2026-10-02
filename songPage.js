@@ -653,14 +653,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (idx !== -1) {
-      // Set URLs for swipe navigation (no buttons in menu)
+      // Set URLs for swipe and pedal navigation (loops continuously)
       if (idx < SHOW_SONGS.length - 1) {
         const nextSong = SHOW_SONGS[idx + 1];
         nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
+      } else {
+        // Last song loops back to the first song
+        const firstSong = SHOW_SONGS[0];
+        nextSongUrl = `${encodeURIComponent(firstSong.file || firstSong.name)}.html`;
       }
       if (idx > 0) {
         const prevSong = SHOW_SONGS[idx - 1];
         prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
+      } else {
+        // First song loops back to the last song
+        const lastSong = SHOW_SONGS[SHOW_SONGS.length - 1];
+        prevSongUrl = `${encodeURIComponent(lastSong.file || lastSong.name)}.html`;
       }
     }
 
@@ -1000,12 +1008,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleUserToggleScroll() {
-    if (autoNextInterval && nextSongUrl) {
-      cancelAutoNext();
-      window.location.href = nextSongUrl;
-      return;
-    }
     cancelAutoNext();
+
     if (scrollRafId) {
       stopScroll();
     } else if (autoStartInterval) {
@@ -1027,6 +1031,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!nextSongUrl) return;
     cancelAutoNext();
     cancelOpeningCountdown();
+    if (scrollRafId) stopScroll();
     window.location.href = nextSongUrl;
   }
 
@@ -1034,6 +1039,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!prevSongUrl) return;
     cancelAutoNext();
     cancelOpeningCountdown();
+    if (scrollRafId) stopScroll();
     window.location.href = prevSongUrl;
   }
 
@@ -1093,34 +1099,203 @@ document.addEventListener('DOMContentLoaded', () => {
     handleUserToggleScroll();
   });
 
-  // Keyboard controls
-  window.addEventListener('keydown', (e) => {
-    const tag = (e.target && e.target.tagName) || '';
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || (e.target && e.target.isContentEditable)) {
+  // ── Hardware Bluetooth Foot Pedal & Keyboard Listener ──────────────────────
+  // An invisible focus sink with inputmode="none" guarantees that iOS Safari / iPadOS
+  // and Android Chrome in PWA / fullscreen deliver hardware Bluetooth keyboard events
+  // without displaying the on-screen virtual keyboard.
+  const pedalFocusSink = document.createElement('input');
+  pedalFocusSink.type = 'text';
+  pedalFocusSink.id = 'pedal-focus-sink';
+  pedalFocusSink.setAttribute('inputmode', 'none');
+  pedalFocusSink.setAttribute('tabindex', '-1');
+  pedalFocusSink.setAttribute('aria-hidden', 'true');
+  pedalFocusSink.setAttribute('autocomplete', 'off');
+  pedalFocusSink.setAttribute('autocorrect', 'off');
+  pedalFocusSink.setAttribute('autocapitalize', 'off');
+  pedalFocusSink.setAttribute('spellcheck', 'false');
+  pedalFocusSink.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.001;pointer-events:none;z-index:-9999;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;';
+  document.body.appendChild(pedalFocusSink);
+
+  function ensurePedalFocus() {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+      if (active !== pedalFocusSink) return;
+    }
+    // If a button or link holds focus, blur it so Space/Enter never triggers it by mistake
+    if (active && (active.tagName === 'BUTTON' || active.tagName === 'A')) {
+      active.blur();
+    }
+    try {
+      pedalFocusSink.focus({ preventScroll: true });
+    } catch (_) {
+      try { pedalFocusSink.focus(); } catch (__) {}
+    }
+  }
+
+  // Ensure focus is established on load and maintained
+  ensurePedalFocus();
+  setTimeout(ensurePedalFocus, 100);
+  setTimeout(ensurePedalFocus, 400);
+
+  // Re-acquire focus after any tap/click anywhere on screen (even in fullscreen/PWA)
+  ['click', 'touchend', 'pointerup'].forEach(evt => {
+    document.addEventListener(evt, (e) => {
+      if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
+      setTimeout(ensurePedalFocus, 50);
+    }, { passive: true });
+  });
+
+  window.addEventListener('focus', ensurePedalFocus);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') ensurePedalFocus();
+  });
+  document.addEventListener('fullscreenchange', ensurePedalFocus);
+  window.addEventListener('resize', ensurePedalFocus);
+  pedalFocusSink.addEventListener('blur', () => {
+    setTimeout(ensurePedalFocus, 80);
+  });
+
+  // Blur buttons and links immediately after click so future pedal presses aren't captured by that button
+  document.addEventListener('click', (e) => {
+    if (e.target && typeof e.target.closest === 'function') {
+      const btnOrLink = e.target.closest('button, a');
+      if (btnOrLink) {
+        setTimeout(() => {
+          try { btnOrLink.blur(); } catch (_) {}
+          ensurePedalFocus();
+        }, 40);
+      }
+    }
+  }, { capture: true, passive: true });
+
+  let lastPedalTime = 0;
+
+  function isPedalKey(e) {
+    const code = e.code || '';
+    const key = e.key || '';
+    const keyCode = e.keyCode || e.which || 0;
+
+    const isSpace = code === 'Space' || key === ' ' || key === 'Spacebar' || keyCode === 32;
+    const isEnter = code === 'Enter' || code === 'NumpadEnter' || key === 'Enter' || keyCode === 13;
+    const isPageDown = code === 'PageDown' || key === 'PageDown' || keyCode === 34;
+    const isPageUp = code === 'PageUp' || key === 'PageUp' || keyCode === 33;
+    const isDown = code === 'ArrowDown' || key === 'ArrowDown' || keyCode === 40;
+    const isUp = code === 'ArrowUp' || key === 'ArrowUp' || keyCode === 38;
+    const isLeft = code === 'ArrowLeft' || key === 'ArrowLeft' || keyCode === 37;
+    const isRight = code === 'ArrowRight' || key === 'ArrowRight' || keyCode === 39;
+
+    return { isSpace, isEnter, isPageDown, isPageUp, isDown, isUp, isLeft, isRight };
+  }
+
+  function handlePedalKeydown(e) {
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable) && active !== pedalFocusSink) {
       return;
     }
 
-    if (e.key === 'ArrowLeft') {
+    const { isSpace, isEnter, isPageDown, isPageUp, isDown, isUp, isLeft, isRight } = isPedalKey(e);
+    const key = e.key || '';
+    const code = e.code || '';
+
+    // Space (or PageDown / DownArrow): Start and stop auto-scroll
+    if (isSpace || isPageDown || isDown) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+      const now = performance.now();
+      // Hardware switch bounce / rapid repeat debounce
+      if (e.repeat || (now - lastPedalTime < 240)) {
+        return;
+      }
+      lastPedalTime = now;
+
+      handleUserToggleScroll();
+      return;
+    }
+
+    // Enter: Advance to next song immediately
+    if (isEnter) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+      const now = performance.now();
+      if (e.repeat || (now - lastPedalTime < 300)) {
+        return;
+      }
+      lastPedalTime = now;
+
+      goToNextSong();
+      return;
+    }
+
+    if (isPrevAction) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+      const now = performance.now();
+      if (e.repeat || (now - lastPedalTime < 240)) {
+        return;
+      }
+      lastPedalTime = now;
+
+      if (scrollRafId) {
+        stopScroll();
+      } else {
+        window.scrollBy({ top: -Math.round(window.innerHeight * 0.4), behavior: 'smooth' });
+      }
+      return;
+    }
+
+    if (isLeft) {
       if (nextSongUrl) {
         e.preventDefault();
+        e.stopPropagation();
+        const now = performance.now();
+        if (now - lastPedalTime < 300) return;
+        lastPedalTime = now;
         goToNextSong();
       }
-    } else if (e.key === 'ArrowRight') {
+    } else if (isRight) {
       if (prevSongUrl) {
         e.preventDefault();
+        e.stopPropagation();
+        const now = performance.now();
+        if (now - lastPedalTime < 300) return;
+        lastPedalTime = now;
         goToPrevSong();
       }
-    } else if (e.code === 'Space' || e.key === ' ' || e.keyCode === 32) {
-      e.preventDefault();
-      handleUserToggleScroll();
-    } else if (e.key === '+' || e.key === '=' || e.code === 'NumpadAdd') {
+    } else if (key === '+' || key === '=' || code === 'NumpadAdd') {
       e.preventDefault();
       changeSpeed(0.10);
-    } else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract') {
+    } else if (key === '-' || key === '_' || code === 'NumpadSubtract') {
       e.preventDefault();
       changeSpeed(-0.10);
     }
-  });
+  }
+
+  function handlePedalKeyup(e) {
+    const { isSpace, isEnter, isPageDown, isDown } = isPedalKey(e);
+    if (isSpace || isEnter || isPageDown || isDown) {
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable) && active !== pedalFocusSink) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  // Register on window, document, and sink in capture phase
+  window.addEventListener('keydown', handlePedalKeydown, { capture: true });
+  document.addEventListener('keydown', handlePedalKeydown, { capture: true });
+  pedalFocusSink.addEventListener('keydown', handlePedalKeydown, { capture: true });
+
+  window.addEventListener('keyup', handlePedalKeyup, { capture: true });
+  document.addEventListener('keyup', handlePedalKeyup, { capture: true });
+  pedalFocusSink.addEventListener('keyup', handlePedalKeyup, { capture: true });
 
   // User manual scroll gestures immediately pause auto-scroll
   window.addEventListener('wheel', () => {
