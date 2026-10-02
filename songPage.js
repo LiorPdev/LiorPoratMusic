@@ -1100,20 +1100,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Hardware Bluetooth Foot Pedal & Keyboard Listener ──────────────────────
-  // An invisible focus sink with inputmode="none" guarantees that iOS Safari / iPadOS
-  // and Android Chrome deliver hardware Bluetooth keyboard events without displaying
-  // the on-screen virtual keyboard.
+  // Real text input sink (NO inputmode="none" so iOS Safari does NOT disable hardware keyboard).
   const pedalFocusSink = document.createElement('input');
   pedalFocusSink.type = 'text';
   pedalFocusSink.id = 'pedal-focus-sink';
-  pedalFocusSink.setAttribute('inputmode', 'none');
   pedalFocusSink.setAttribute('tabindex', '0');
   pedalFocusSink.setAttribute('autocomplete', 'off');
   pedalFocusSink.setAttribute('autocorrect', 'off');
   pedalFocusSink.setAttribute('autocapitalize', 'off');
   pedalFocusSink.setAttribute('spellcheck', 'false');
-  // Positioned safely in bottom corner without pointer-events:none so iOS/Android allow focus
-  pedalFocusSink.style.cssText = 'position:fixed;bottom:12px;right:12px;width:30px;height:30px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
+  // Kept interactable in viewport so iOS Safari grants first-responder status
+  pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
   document.body.appendChild(pedalFocusSink);
 
   // ── On-Screen Real-Time Debug HUD ──────────────────────────────────────────
@@ -1126,7 +1123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'right: 12px',
     'max-width: 480px',
     'margin: 0 auto',
-    'background: rgba(15, 23, 42, 0.95)',
+    'background: rgba(15, 23, 42, 0.96)',
     'border: 1px solid #6366f1',
     'border-radius: 12px',
     'padding: 10px 14px',
@@ -1232,7 +1229,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
     }
-    // If a button or link holds focus, blur it so Space/Enter never triggers it by mistake
     if (active && (active.tagName === 'BUTTON' || active.tagName === 'A')) {
       active.blur();
     }
@@ -1244,18 +1240,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateActiveElementDisplay();
   }
 
-  // Ensure focus is established on load and maintained
-  ensurePedalFocus();
-  setTimeout(ensurePedalFocus, 100);
-  setTimeout(ensurePedalFocus, 400);
-
-  // Re-acquire focus after any tap/click anywhere on screen (even in fullscreen/PWA)
-  ['click', 'touchend', 'pointerup'].forEach(evt => {
+  // Ensure focus is established synchronously upon any touch / user gesture
+  ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'].forEach(evt => {
     document.addEventListener(evt, (e) => {
       if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
       if (e.target && e.target.closest('#pedal-debug-hud')) return;
-      setTimeout(ensurePedalFocus, 50);
-    }, { passive: true });
+      // Synchronous focus call required by iOS Safari security model
+      ensurePedalFocus();
+    }, { capture: true, passive: true });
   });
 
   window.addEventListener('focus', ensurePedalFocus);
@@ -1265,21 +1257,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('fullscreenchange', ensurePedalFocus);
   window.addEventListener('resize', ensurePedalFocus);
   pedalFocusSink.addEventListener('blur', () => {
-    setTimeout(ensurePedalFocus, 80);
+    updateActiveElementDisplay();
   });
-
-  // Blur buttons and links immediately after click so future pedal presses aren't captured by that button
-  document.addEventListener('click', (e) => {
-    if (e.target && typeof e.target.closest === 'function') {
-      const btnOrLink = e.target.closest('button, a');
-      if (btnOrLink && !btnOrLink.closest('#pedal-debug-hud')) {
-        setTimeout(() => {
-          try { btnOrLink.blur(); } catch (_) {}
-          ensurePedalFocus();
-        }, 40);
-      }
-    }
-  }, { capture: true, passive: true });
 
   let lastPedalTime = 0;
 
@@ -1300,13 +1279,12 @@ document.addEventListener('DOMContentLoaded', () => {
     return { isSpace, isEnter, isPageDown, isPageUp, isDown, isUp, isLeft, isRight };
   }
 
-  // Support pedals emitting text input events (like in WhatsApp/Notes)
+  // 1. BeforeInput event (standard mobile/tablet text insertion from pedal)
   pedalFocusSink.addEventListener('beforeinput', (e) => {
     const data = e.data || '';
     const inputType = e.inputType || '';
     logDebug('beforeinput', `data="${data}" type="${inputType}"`);
 
-    // Space character insertion
     if (data === ' ') {
       e.preventDefault();
       pedalFocusSink.value = '';
@@ -1318,7 +1296,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Enter / newline insertion
     if (data === '\n' || data === '\r' || inputType === 'insertParagraph' || inputType === 'insertLineBreak') {
       e.preventDefault();
       pedalFocusSink.value = '';
@@ -1331,6 +1308,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 2. Legacy textInput event (WebKit specific)
+  pedalFocusSink.addEventListener('textInput', (e) => {
+    const data = e.data || '';
+    logDebug('textInput', `data="${data}"`);
+    if (data === ' ') {
+      e.preventDefault();
+      pedalFocusSink.value = '';
+      const now = performance.now();
+      if (now - lastPedalTime < 240) return;
+      lastPedalTime = now;
+      logAction('SPACE (textInput) -> TOGGLE SCROLL');
+      handleUserToggleScroll();
+    } else if (data === '\n' || data === '\r') {
+      e.preventDefault();
+      pedalFocusSink.value = '';
+      const now = performance.now();
+      if (now - lastPedalTime < 300) return;
+      lastPedalTime = now;
+      logAction('ENTER (textInput) -> NEXT SONG');
+      goToNextSong();
+    }
+  });
+
+  // 3. Fallback Input event
   pedalFocusSink.addEventListener('input', () => {
     const val = pedalFocusSink.value || '';
     logDebug('input', `value="${val}"`);
@@ -1353,6 +1354,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 4. Keydown event
   function handlePedalKeydown(e) {
     const key = e.key || '';
     const code = e.code || '';
@@ -1375,7 +1377,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
 
       const now = performance.now();
-      // Hardware switch bounce / rapid repeat debounce
       if (e.repeat || (now - lastPedalTime < 240)) {
         logDebug('debounce', 'space ignored (debounce)');
         return;
@@ -1452,6 +1453,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // 5. Keypress event
+  function handlePedalKeypress(e) {
+    const key = e.key || '';
+    const charCode = e.charCode || e.keyCode || 0;
+    logDebug('keypress', `key="${key}" charCode=${charCode}`);
+    if (key === ' ' || charCode === 32) {
+      e.preventDefault();
+      const now = performance.now();
+      if (now - lastPedalTime < 240) return;
+      lastPedalTime = now;
+      logAction('SPACE (keypress) -> TOGGLE SCROLL');
+      handleUserToggleScroll();
+    } else if (key === 'Enter' || charCode === 13) {
+      e.preventDefault();
+      const now = performance.now();
+      if (now - lastPedalTime < 300) return;
+      lastPedalTime = now;
+      logAction('ENTER (keypress) -> NEXT SONG');
+      goToNextSong();
+    }
+  }
+
   function handlePedalKeyup(e) {
     const key = e.key || '';
     const code = e.code || '';
@@ -1474,9 +1497,44 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', handlePedalKeydown, { capture: true });
   pedalFocusSink.addEventListener('keydown', handlePedalKeydown, { capture: true });
 
+  window.addEventListener('keypress', handlePedalKeypress, { capture: true });
+  document.addEventListener('keypress', handlePedalKeypress, { capture: true });
+  pedalFocusSink.addEventListener('keypress', handlePedalKeypress, { capture: true });
+
   window.addEventListener('keyup', handlePedalKeyup, { capture: true });
   document.addEventListener('keyup', handlePedalKeyup, { capture: true });
   pedalFocusSink.addEventListener('keyup', handlePedalKeyup, { capture: true });
+
+  // 6. Gamepad API listener for pedals operating as HID game controllers
+  let prevGamepadButtons = [];
+  function pollPedalGamepad() {
+    try {
+      if (typeof navigator.getGamepads === 'function') {
+        const gamepads = navigator.getGamepads();
+        for (let i = 0; i < gamepads.length; i++) {
+          const gp = gamepads[i];
+          if (!gp) continue;
+          for (let b = 0; b < gp.buttons.length; b++) {
+            const isPressed = gp.buttons[b] && gp.buttons[b].pressed;
+            const wasPressed = prevGamepadButtons[b] || false;
+            if (isPressed && !wasPressed) {
+              logDebug('gamepad', `Btn ${b} pressed on ${gp.id}`);
+              if (b === 0) {
+                logAction('GAMEPAD BTN 0 -> TOGGLE SCROLL');
+                handleUserToggleScroll();
+              } else if (b === 1) {
+                logAction('GAMEPAD BTN 1 -> NEXT SONG');
+                goToNextSong();
+              }
+            }
+            prevGamepadButtons[b] = isPressed;
+          }
+        }
+      }
+    } catch (_) {}
+    requestAnimationFrame(pollPedalGamepad);
+  }
+  requestAnimationFrame(pollPedalGamepad);
 
   // User manual scroll gestures immediately pause auto-scroll
   window.addEventListener('wheel', () => {

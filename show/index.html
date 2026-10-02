@@ -35,8 +35,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b0e14" />
 
-  <link rel="stylesheet" href="../styles.css?v=1.6.2" />
-  <link rel="stylesheet" href="../songs.css?v=1.6.2" />
+  <link rel="stylesheet" href="../styles.css?v=1.6.3" />
+  <link rel="stylesheet" href="../songs.css?v=1.6.3" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     html,
@@ -927,13 +927,12 @@
     const pedalFocusSink = document.createElement('input');
     pedalFocusSink.type = 'text';
     pedalFocusSink.id = 'pedal-focus-sink';
-    pedalFocusSink.setAttribute('inputmode', 'none');
     pedalFocusSink.setAttribute('tabindex', '0');
     pedalFocusSink.setAttribute('autocomplete', 'off');
     pedalFocusSink.setAttribute('autocorrect', 'off');
     pedalFocusSink.setAttribute('autocapitalize', 'off');
     pedalFocusSink.setAttribute('spellcheck', 'false');
-    pedalFocusSink.style.cssText = 'position:fixed;bottom:12px;right:12px;width:30px;height:30px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
+    pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
     document.body.appendChild(pedalFocusSink);
 
     // ── On-Screen Real-Time Debug HUD ──────────────────────────────────────────
@@ -946,7 +945,7 @@
       'right: 12px',
       'max-width: 480px',
       'margin: 0 auto',
-      'background: rgba(15, 23, 42, 0.95)',
+      'background: rgba(15, 23, 42, 0.96)',
       'border: 1px solid #6366f1',
       'border-radius: 12px',
       'padding: 10px 14px',
@@ -1093,17 +1092,14 @@
       updateActiveElementDisplay();
     }
 
-    ensurePedalFocus();
-    setTimeout(ensurePedalFocus, 100);
-    setTimeout(ensurePedalFocus, 400);
-
-    ['click', 'touchend', 'pointerup'].forEach(evt => {
+    // Synchronous focus on any user interaction
+    ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'].forEach(evt => {
       document.addEventListener(evt, (e) => {
         if (colorModal.classList.contains('active')) return;
         if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
         if (e.target && e.target.closest('#pedal-debug-hud')) return;
-        setTimeout(ensurePedalFocus, 50);
-      }, { passive: true });
+        ensurePedalFocus();
+      }, { capture: true, passive: true });
     });
 
     window.addEventListener('focus', ensurePedalFocus);
@@ -1111,26 +1107,14 @@
       if (document.visibilityState === 'visible') ensurePedalFocus();
     });
     document.addEventListener('fullscreenchange', ensurePedalFocus);
+    window.addEventListener('resize', ensurePedalFocus);
     pedalFocusSink.addEventListener('blur', () => {
-      setTimeout(ensurePedalFocus, 80);
+      updateActiveElementDisplay();
     });
-
-    // Blur buttons/links after click so future pedal taps don't click them
-    document.addEventListener('click', (e) => {
-      if (e.target && typeof e.target.closest === 'function') {
-        const btnOrLink = e.target.closest('button, a');
-        if (btnOrLink && !btnOrLink.closest('#pedal-debug-hud')) {
-          setTimeout(() => {
-            try { btnOrLink.blur(); } catch (_) {}
-            ensurePedalFocus();
-          }, 40);
-        }
-      }
-    }, { capture: true, passive: true });
 
     let lastPedalTime = 0;
 
-    // Support pedals emitting text input events (like in WhatsApp/Notes)
+    // 1. BeforeInput event
     pedalFocusSink.addEventListener('beforeinput', (e) => {
       if (colorModal.classList.contains('active')) return;
       const data = e.data || '';
@@ -1148,6 +1132,23 @@
       }
     });
 
+    // 2. Legacy textInput event
+    pedalFocusSink.addEventListener('textInput', (e) => {
+      if (colorModal.classList.contains('active')) return;
+      const data = e.data || '';
+      logDebug('textInput', `data="${data}"`);
+      if (data === ' ' || data === '\n' || data === '\r') {
+        e.preventDefault();
+        pedalFocusSink.value = '';
+        const now = performance.now();
+        if (now - lastPedalTime < 240) return;
+        lastPedalTime = now;
+        logAction('PEDAL TEXTINPUT -> OPEN SONG');
+        openSelectedSong();
+      }
+    });
+
+    // 3. Fallback input event
     pedalFocusSink.addEventListener('input', () => {
       if (colorModal.classList.contains('active')) return;
       const val = pedalFocusSink.value || '';
@@ -1257,7 +1258,7 @@
     document.addEventListener('keyup', handleShowPedalKeyup, { capture: true });
     pedalFocusSink.addEventListener('keyup', handleShowPedalKeyup, { capture: true });
   </script>
-  <script src="../script.js?v=1.6.2"></script>
+  <script src="../script.js?v=1.6.3"></script>
 </body>
 
 </html>
