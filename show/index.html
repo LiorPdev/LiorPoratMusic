@@ -35,8 +35,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b0e14" />
 
-  <link rel="stylesheet" href="../styles.css?v=1.6.3" />
-  <link rel="stylesheet" href="../songs.css?v=1.6.3" />
+  <link rel="stylesheet" href="../styles.css?v=1.6.4" />
+  <link rel="stylesheet" href="../songs.css?v=1.6.4" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     html,
@@ -924,15 +924,20 @@
     });
 
     // ── Hardware Bluetooth Foot Pedal & Keyboard Support ─────────────────────
+    // Input sink with inputmode="none" so iOS Safari captures Bluetooth pedal/keyboard
+    // WITHOUT showing the on-screen virtual software keyboard.
     const pedalFocusSink = document.createElement('input');
     pedalFocusSink.type = 'text';
     pedalFocusSink.id = 'pedal-focus-sink';
     pedalFocusSink.setAttribute('tabindex', '0');
+    pedalFocusSink.setAttribute('inputmode', 'none');
+    pedalFocusSink.setAttribute('virtualkeyboardpolicy', 'manual');
     pedalFocusSink.setAttribute('autocomplete', 'off');
     pedalFocusSink.setAttribute('autocorrect', 'off');
     pedalFocusSink.setAttribute('autocapitalize', 'off');
     pedalFocusSink.setAttribute('spellcheck', 'false');
-    pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
+    // Kept in viewport with pointer-events:none and opacity:0.01 so iOS grants focus without showing keyboard
+    pedalFocusSink.style.cssText = 'position:fixed;bottom:0;right:0;width:24px;height:24px;opacity:0.01;pointer-events:none;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
     document.body.appendChild(pedalFocusSink);
 
     // ── On-Screen Real-Time Debug HUD ──────────────────────────────────────────
@@ -1258,7 +1263,7 @@
     document.addEventListener('keyup', handleShowPedalKeyup, { capture: true });
     pedalFocusSink.addEventListener('keyup', handleShowPedalKeyup, { capture: true });
   </script>
-  <script src="../script.js?v=1.6.3"></script>
+  <script src="../script.js?v=1.6.4"></script>
 </body>
 
 </html>

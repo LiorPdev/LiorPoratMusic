@@ -1100,17 +1100,20 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Hardware Bluetooth Foot Pedal & Keyboard Listener ──────────────────────
-  // Real text input sink (NO inputmode="none" so iOS Safari does NOT disable hardware keyboard).
+  // Input sink with inputmode="none" so iOS Safari captures Bluetooth pedal/keyboard
+  // WITHOUT showing the on-screen virtual software keyboard.
   const pedalFocusSink = document.createElement('input');
   pedalFocusSink.type = 'text';
   pedalFocusSink.id = 'pedal-focus-sink';
   pedalFocusSink.setAttribute('tabindex', '0');
+  pedalFocusSink.setAttribute('inputmode', 'none');
+  pedalFocusSink.setAttribute('virtualkeyboardpolicy', 'manual');
   pedalFocusSink.setAttribute('autocomplete', 'off');
   pedalFocusSink.setAttribute('autocorrect', 'off');
   pedalFocusSink.setAttribute('autocapitalize', 'off');
   pedalFocusSink.setAttribute('spellcheck', 'false');
-  // Kept interactable in viewport so iOS Safari grants first-responder status
-  pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
+  // Kept in viewport with pointer-events:none and opacity:0.01 so iOS grants focus without showing keyboard
+  pedalFocusSink.style.cssText = 'position:fixed;bottom:0;right:0;width:24px;height:24px;opacity:0.01;pointer-events:none;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
   document.body.appendChild(pedalFocusSink);
 
   // ── On-Screen Real-Time Debug HUD ──────────────────────────────────────────
