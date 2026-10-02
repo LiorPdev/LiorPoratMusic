@@ -1236,14 +1236,23 @@ document.addEventListener('DOMContentLoaded', () => {
   pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
   document.body.appendChild(pedalFocusSink);
 
-  // Discreet visual prompt if iOS blocked initial autofocus
-  const focusPrompt = document.createElement('div');
-  focusPrompt.id = 'pedal-focus-prompt';
-  focusPrompt.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);color:#38bdf8;font-size:12px;font-weight:600;padding:7px 16px;border-radius:20px;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 15px rgba(0,0,0,0.6);z-index:9998;pointer-events:none;transition:opacity 0.3s ease;display:none;font-family:sans-serif;direction:rtl;';
-  focusPrompt.textContent = '⚡ נגיעה במסך מחברת את הפדל לשיר';
-  document.body.appendChild(focusPrompt);
+  // Discreet visual prompt if iOS blocked initial autofocus (only in show mode)
+  const isShowPage = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+  let focusPrompt = null;
+  if (isShowPage) {
+    focusPrompt = document.createElement('div');
+    focusPrompt.id = 'pedal-focus-prompt';
+    focusPrompt.style.cssText = 'position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.95);color:#38bdf8;font-size:13px;font-weight:700;padding:8px 18px;border-radius:24px;border:1px solid rgba(56,189,248,0.5);box-shadow:0 6px 20px rgba(0,0,0,0.65);z-index:9998;cursor:pointer;user-select:none;transition:opacity 0.25s ease, transform 0.25s ease;display:none;font-family:sans-serif;direction:rtl;';
+    focusPrompt.innerHTML = '<i class="fa-solid fa-hand-pointer" style="margin-left:7px;"></i><span>נגיעה במסך מחברת את הפדל לשיר</span>';
+    focusPrompt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ensurePedalFocus();
+    });
+    document.body.appendChild(focusPrompt);
+  }
 
   function checkFocusPrompt() {
+    if (!focusPrompt) return;
     if (document.activeElement === pedalFocusSink) {
       focusPrompt.style.display = 'none';
     } else {
