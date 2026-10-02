@@ -17,7 +17,22 @@
 
 // Build the repeated song page chrome from window.SONG and the lyrics block
 document.addEventListener('DOMContentLoaded', () => {
-  const main = document.querySelector('main.wrap') || document.body;
+  let nextSongUrl = null;
+  let prevSongUrl = null;
+  let autoNextInterval = null;
+  let autoStartInterval = null;
+  let songHasStarted = false;
+  let scrollRafId = null;
+  let activeKeyframes = null;
+  let playBtn = null;
+  let handleUserToggleScroll = () => {};
+  let stopScroll = () => {};
+  let startScroll = () => {};
+  let cancelAutoNext = () => {};
+  let cancelOpeningCountdown = () => {};
+
+  function buildSongContent() {
+    const main = document.querySelector('main.wrap') || document.body;
 
   const cfg = window.SONG || {};
   const title = document.title.trim();
@@ -292,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Auto-scroll state variables (declared early to avoid TDZ errors on load) ──
-  let scrollRafId = null;
+  scrollRafId = null;
   let scrollSpeed = (cfg.scrollSpeed ?? 0.1) * (isShow ? 2 : 1);
   let scrollAccum = 0;
   let pauseUntil = 0;
@@ -302,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Timed scroll state
   let currentElapsedSec = 0;
   let lastTargetY = 0;
-  let activeKeyframes = null;
+  activeKeyframes = null;
 
   // Speed modifier & controls (defaults to cfg.speedModifier or 0)
   const parseSpeedModifier = (val) => {
@@ -375,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Auto-scroll Play/Stop button – available for all views (lyrics & chords)
-  let playBtn;
+  playBtn = null;
   if (lyricsText || chordsText) {
     playBtn = document.createElement('button');
     playBtn.id = 'scroll-play-btn';
@@ -473,14 +488,14 @@ document.addEventListener('DOMContentLoaded', () => {
     h1.appendChild(playBtn);
   }
 
-  let nextSongUrl = null;
-  let prevSongUrl = null;
-  let autoNextInterval = null;
-  let autoStartInterval = null;
-  let songHasStarted = false;
+  nextSongUrl = null;
+  prevSongUrl = null;
+  autoNextInterval = null;
+  autoStartInterval = null;
+  songHasStarted = false;
   let showMenuTrigger = null;
 
-  function cancelOpeningCountdown() {
+  cancelOpeningCountdown = function() {
     if (autoStartInterval) {
       clearInterval(autoStartInterval);
       autoStartInterval = null;
@@ -489,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kEl) {
       kEl.remove();
     }
-  }
+  };
 
   function startSongOpeningCountdown() {
     if (!isShow) return;
@@ -548,13 +563,13 @@ document.addEventListener('DOMContentLoaded', () => {
           renderNextKaraoke();
         } else {
           cancelAutoNext();
-          window.location.href = nextSongUrl;
+          navigateToSong(nextSongUrl);
         }
       }, 1000);
     }
   }
 
-  function cancelAutoNext() {
+  cancelAutoNext = function() {
     if (autoNextInterval) {
       clearInterval(autoNextInterval);
       autoNextInterval = null;
@@ -563,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (kEl) {
       kEl.remove();
     }
-  }
+  };
 
   const SHOW_SONGS = [
     { name: "בלוז לשבת", file: "בלוז לשבת" },
@@ -652,6 +667,16 @@ document.addEventListener('DOMContentLoaded', () => {
       idx = SHOW_SONGS.findIndex(s => curTitle.includes(s.name) || curTitle.includes(s.file));
     }
 
+    // Toggle menu
+    const openMenu = () => {
+      menuOverlay.classList.add('open');
+      document.body.classList.add('show-menu-opened');
+    };
+    const closeMenu = () => {
+      menuOverlay.classList.remove('open');
+      document.body.classList.remove('show-menu-opened');
+    };
+
     if (idx !== -1) {
       // Set URLs for swipe and pedal navigation (loops continuously)
       if (idx < SHOW_SONGS.length - 1) {
@@ -670,6 +695,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastSong = SHOW_SONGS[SHOW_SONGS.length - 1];
         prevSongUrl = `${encodeURIComponent(lastSong.file || lastSong.name)}.html`;
       }
+
+      // Add Next / Prev navigation row in show menu
+      const navGroup = document.createElement('div');
+      navGroup.style.cssText = 'display:flex;gap:10px;width:100%;margin-bottom:12px;';
+
+      const prevBtn = document.createElement('button');
+      prevBtn.type = 'button';
+      prevBtn.className = 'show-menu-list-btn';
+      prevBtn.style.cssText = 'flex:1;padding:12px 8px;font-size:14px;cursor:pointer;';
+      prevBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> <span>שיר קודם</span>';
+      prevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeMenu();
+        goToPrevSong();
+      });
+
+      const nextBtn = document.createElement('button');
+      nextBtn.type = 'button';
+      nextBtn.className = 'show-menu-list-btn';
+      nextBtn.style.cssText = 'flex:1;padding:12px 8px;font-size:14px;cursor:pointer;';
+      nextBtn.innerHTML = '<span>שיר הבא</span> <i class="fa-solid fa-arrow-left"></i>';
+      nextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeMenu();
+        goToNextSong();
+      });
+
+      navGroup.appendChild(prevBtn);
+      navGroup.appendChild(nextBtn);
+      menuCard.appendChild(navGroup);
     }
 
     // Return to show songs list
@@ -681,16 +736,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     menuOverlay.appendChild(menuCard);
     document.body.appendChild(menuOverlay);
-
-    // Toggle menu
-    const openMenu = () => {
-      menuOverlay.classList.add('open');
-      document.body.classList.add('show-menu-opened');
-    };
-    const closeMenu = () => {
-      menuOverlay.classList.remove('open');
-      document.body.classList.remove('show-menu-opened');
-    };
 
     menuTrigger.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -866,7 +911,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return kfs;
   }
 
-  function startScroll() {
+  startScroll = function() {
     if (scrollRafId) return;
     cancelAutoNext();
     cancelOpeningCountdown();
@@ -999,15 +1044,15 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollRafId = requestAnimationFrame(stepTimed);
   }
 
-  function stopScroll() {
+  stopScroll = function() {
     if (!scrollRafId) return;
     cancelAnimationFrame(scrollRafId);
     scrollRafId = null;
     lastTargetY = window.scrollY;
     setPlaying(false);
-  }
+  };
 
-  function handleUserToggleScroll() {
+  handleUserToggleScroll = function() {
     cancelAutoNext();
 
     if (scrollRafId) {
@@ -1020,28 +1065,101 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       startScroll();
     }
-  }
+  };
 
   if (playBtn) {
     playBtn.addEventListener('click', handleUserToggleScroll);
   }
+} // end buildSongContent
 
-  // ── Song navigation helpers ──
+  // ── In-Place Dynamic Song Navigation (SPA) ─────────────────────────────────
+  async function navigateToSong(url) {
+    if (!url) return;
+    try {
+      if (typeof cancelAutoNext === 'function') cancelAutoNext();
+      if (typeof cancelOpeningCountdown === 'function') cancelOpeningCountdown();
+      if (typeof stopScroll === 'function') stopScroll();
+
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('Fetch failed: ' + resp.status);
+      const htmlText = await resp.text();
+      const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+
+      // 1. Update Title and History URL
+      const newTitle = doc.title ? doc.title.trim() : '';
+      if (newTitle) document.title = newTitle;
+      window.history.pushState({ url }, '', url);
+
+      // 2. Extract window.SONG
+      let newConfig = {};
+      doc.querySelectorAll('script').forEach(s => {
+        const text = s.textContent || '';
+        if (text.includes('window.SONG')) {
+          const match = text.match(/window\.SONG\s*=\s*(\{[\s\S]*?\});/);
+          if (match) {
+            try {
+              newConfig = new Function(`return ${match[1]}`)();
+            } catch (_) {}
+          }
+        }
+      });
+      window.SONG = newConfig;
+
+      // 3. Extract lyrics and chords
+      const newLyrics = doc.getElementById('lyrics');
+      const newChords = doc.getElementById('chords');
+      let curLyrics = document.getElementById('lyrics');
+      let curChords = document.getElementById('chords');
+      const mainWrap = document.querySelector('main.wrap') || document.body;
+      if (!curLyrics) {
+        curLyrics = document.createElement('script');
+        curLyrics.type = 'text/plain';
+        curLyrics.id = 'lyrics';
+        mainWrap.appendChild(curLyrics);
+      }
+      if (!curChords) {
+        curChords = document.createElement('script');
+        curChords.type = 'text/plain';
+        curChords.id = 'chords';
+        mainWrap.appendChild(curChords);
+      }
+      curLyrics.textContent = newLyrics ? newLyrics.textContent : '';
+      curChords.textContent = newChords ? newChords.textContent : '';
+
+      // 4. Scroll to top
+      window.scrollTo(0, 0);
+
+      // 5. Rebuild song content in place
+      buildSongContent();
+
+      // 6. Ensure pedal focus is maintained
+      ensurePedalFocus();
+    } catch (err) {
+      console.warn('In-place navigation fallback to href:', err);
+      window.location.href = url;
+    }
+  }
+
   function goToNextSong() {
     if (!nextSongUrl) return;
-    cancelAutoNext();
-    cancelOpeningCountdown();
-    if (scrollRafId) stopScroll();
-    window.location.href = nextSongUrl;
+    navigateToSong(nextSongUrl);
   }
 
   function goToPrevSong() {
     if (!prevSongUrl) return;
-    cancelAutoNext();
-    cancelOpeningCountdown();
-    if (scrollRafId) stopScroll();
-    window.location.href = prevSongUrl;
+    navigateToSong(prevSongUrl);
   }
+
+  window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.url) {
+      navigateToSong(e.state.url);
+    } else {
+      navigateToSong(window.location.href);
+    }
+  });
+
+  // Initial build of current song
+  buildSongContent();
 
   // ── Swipe gestures for mobile song navigation ──
   let touchStartX = 0;
@@ -1078,12 +1196,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { isSwipeGesture = false; }, 400);
       }
 
-      // Horizontal swipe: navigate between songs
+      // Horizontal swipe: navigate between songs (RTL: swipe right = prev song, swipe left = next song)
       if (absDx >= 50 && absDx > absDy && dt < 700) {
-        if (dx > 0 && nextSongUrl) {
-          goToNextSong();
-        } else if (dx < 0 && prevSongUrl) {
+        if (dx > 0 && prevSongUrl) {
           goToPrevSong();
+        } else if (dx < 0 && nextSongUrl) {
+          goToNextSong();
         }
       }
     }
@@ -1108,24 +1226,40 @@ document.addEventListener('DOMContentLoaded', () => {
   pedalFocusSink.setAttribute('tabindex', '0');
   pedalFocusSink.setAttribute('inputmode', 'none');
   pedalFocusSink.setAttribute('virtualkeyboardpolicy', 'manual');
+  pedalFocusSink.setAttribute('autofocus', 'true');
+  pedalFocusSink.autofocus = true;
   pedalFocusSink.setAttribute('autocomplete', 'off');
   pedalFocusSink.setAttribute('autocorrect', 'off');
   pedalFocusSink.setAttribute('autocapitalize', 'off');
   pedalFocusSink.setAttribute('spellcheck', 'false');
-  // Kept in viewport with pointer-events:none and opacity:0.01 so iOS grants focus without showing keyboard
-  pedalFocusSink.style.cssText = 'position:fixed;bottom:0;right:0;width:24px;height:24px;opacity:0.01;pointer-events:none;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
+  // Kept interactable in viewport so iOS Safari grants first-responder status
+  pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
   document.body.appendChild(pedalFocusSink);
+
+  // Discreet visual prompt if iOS blocked initial autofocus
+  const focusPrompt = document.createElement('div');
+  focusPrompt.id = 'pedal-focus-prompt';
+  focusPrompt.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,0.92);color:#38bdf8;font-size:12px;font-weight:600;padding:7px 16px;border-radius:20px;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 15px rgba(0,0,0,0.6);z-index:9998;pointer-events:none;transition:opacity 0.3s ease;display:none;font-family:sans-serif;direction:rtl;';
+  focusPrompt.textContent = '⚡ נגיעה במסך מחברת את הפדל לשיר';
+  document.body.appendChild(focusPrompt);
+
+  function checkFocusPrompt() {
+    if (document.activeElement === pedalFocusSink) {
+      focusPrompt.style.display = 'none';
+    } else {
+      focusPrompt.style.display = 'block';
+    }
+  }
 
   // Debug logging disabled in production
   function logDebug() {}
   function logAction() {}
-  function updateActiveElementDisplay() {}
 
   function ensurePedalFocus() {
     const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
       if (active !== pedalFocusSink) {
-        updateActiveElementDisplay();
+        checkFocusPrompt();
         return;
       }
     }
@@ -1137,14 +1271,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (_) {
       try { pedalFocusSink.focus(); } catch (__) {}
     }
-    updateActiveElementDisplay();
+    checkFocusPrompt();
   }
 
   // Ensure focus is established synchronously upon any touch / user gesture
   ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'].forEach(evt => {
     document.addEventListener(evt, (e) => {
       if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
-      if (e.target && e.target.closest('#pedal-debug-hud')) return;
       // Synchronous focus call required by iOS Safari security model
       ensurePedalFocus();
     }, { capture: true, passive: true });
@@ -1157,8 +1290,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('fullscreenchange', ensurePedalFocus);
   window.addEventListener('resize', ensurePedalFocus);
   pedalFocusSink.addEventListener('blur', () => {
-    updateActiveElementDisplay();
+    checkFocusPrompt();
   });
+
+  // Initial focus attempts
+  ensurePedalFocus();
+  setTimeout(ensurePedalFocus, 60);
+  setTimeout(ensurePedalFocus, 250);
+  setInterval(checkFocusPrompt, 1500);
 
   let lastPedalTime = 0;
 
@@ -1306,7 +1445,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (isPrevAction) {
+    if (isPageUp || isUp) {
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
