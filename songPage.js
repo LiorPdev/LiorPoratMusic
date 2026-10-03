@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (!line.trim()) {
-          // Collapse multiple blank lines to at most one empty-line spacer
+          // Collapse multiple blank lines to at most one empty line spacer
           if (resultLines.length > 0 && !resultLines[resultLines.length - 1].includes('class="empty-line"')) {
             resultLines.push('<span class="empty-line"></span>');
           }
@@ -201,8 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const isBlock = lineContent.includes('class="chords-line"') || lineContent.includes('class="empty-line"');
 
         if (i > 0) {
-          // A block element (display: block) already establishes its own line boundaries.
-          // Only add '\n' when separating two adjacent inline lines.
           if (!prevWasBlock && !isBlock) {
             finalHtml += '\n';
           }
