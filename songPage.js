@@ -1173,12 +1173,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { isSwipeGesture = false; }, 400);
       }
 
-      // Horizontal swipe: navigate between songs (RTL: swipe right = prev song, swipe left = next song)
+      // Horizontal swipe: navigate between songs (swipe right = next song, swipe left = prev song)
       if (absDx >= 50 && absDx > absDy && dt < 700) {
-        if (dx > 0 && prevSongUrl) {
-          goToPrevSong();
-        } else if (dx < 0 && nextSongUrl) {
+        if (dx > 0 && nextSongUrl) {
           goToNextSong();
+        } else if (dx < 0 && prevSongUrl) {
+          goToPrevSong();
         }
       }
     }
