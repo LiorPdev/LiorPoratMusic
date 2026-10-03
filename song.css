@@ -509,7 +509,7 @@ body.show-song pre {
   font-weight: 800 !important;
   line-height: var(--song-line-height, 1.6) !important;
   letter-spacing: 0.8px;
-  padding: 16px 16px 105px 16px !important;
+  padding: 8px 4px 105px 2px !important;
   box-sizing: border-box !important;
   width: 100% !important;
   overflow-x: hidden !important;
@@ -918,8 +918,8 @@ body.show-song .credits {
     font-size: var(--song-font-size, 20px);
     padding-top: 6px !important;
     padding-bottom: 105px !important;
-    padding-right: 6px !important;
-    padding-left: 6px !important;
+    padding-right: 4px !important;
+    padding-left: 2px !important;
   }
 }
 

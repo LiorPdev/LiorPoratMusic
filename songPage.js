@@ -238,9 +238,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Available content width inside pre
       const computed = window.getComputedStyle(pre);
-      const paddingLeft = parseFloat(computed.paddingLeft) || 10;
-      const paddingRight = parseFloat(computed.paddingRight) || 6;
-      const availableWidth = Math.max(100, (pre.clientWidth || window.innerWidth) - paddingLeft - paddingRight - 8);
+      const parsedPl = parseFloat(computed.paddingLeft);
+      const parsedPr = parseFloat(computed.paddingRight);
+      const paddingLeft = Number.isFinite(parsedPl) ? parsedPl : 2;
+      const paddingRight = Number.isFinite(parsedPr) ? parsedPr : 4;
+      const availableWidth = Math.max(100, (pre.clientWidth || window.innerWidth) - paddingLeft - paddingRight - 2);
 
       // Initial estimation using an off-screen clone with identical styling
       const measurer = document.createElement('div');
