@@ -266,6 +266,15 @@ pre {
   color: var(--gold-light);
 }
 
+.empty-line {
+  display: block;
+  height: 0.5em;
+  min-height: 12px;
+  line-height: 0;
+  font-size: 0;
+  user-select: none;
+}
+
 /* ── Credits & Listen Icons ──────────────────────────────────────────────── */
 .credits {
   margin-top: 22px;
@@ -544,6 +553,23 @@ body.show-song .sub-line {
 
 body.show-song .sub-line .chord {
   font-size: 0.9em !important;
+}
+
+body.show-song .empty-line {
+  display: block;
+  height: 0.5em;
+  min-height: 18px;
+  line-height: 0;
+  font-size: 0;
+  user-select: none;
+}
+
+body.show-song .scroll-pause-marker {
+  display: inline-block;
+  font-size: 0.75em !important;
+  line-height: 1 !important;
+  margin-bottom: 0.7em !important;
+  opacity: 0.85;
 }
 
 body.show-song .view-toggle {

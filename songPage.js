@@ -134,7 +134,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // If this line is empty and we have a pending timestamp for the next section,
         // preserve the blank line and keep pendingSeconds for the upcoming text
         if (pendingSeconds !== null && line.trim() === '') {
-          resultLines.push('');
+          if (resultLines.length > 0 && !resultLines[resultLines.length - 1].includes('class="empty-line"')) {
+            resultLines.push('<span class="empty-line"></span>');
+          }
           continue;
         }
 
@@ -163,9 +165,14 @@ document.addEventListener('DOMContentLoaded', () => {
           formatted = `<span class="chords-line" dir="ltr">${formatted}</span>`;
         }
 
-        if (isSubLine && line.trim()) {
+        if (!line.trim()) {
+          // Collapse multiple blank lines to at most one empty-line spacer
+          if (resultLines.length > 0 && !resultLines[resultLines.length - 1].includes('class="empty-line"')) {
+            resultLines.push('<span class="empty-line"></span>');
+          }
+        } else if (isSubLine) {
           resultLines.push(`<span class="sub-line">${formatted}</span>`);
-        } else if (isChorus && line.trim()) {
+        } else if (isChorus) {
           resultLines.push(`<span class="chorus">${formatted}</span>`);
         } else {
           resultLines.push(formatted);
@@ -173,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Strip any trailing empty lines from the end of the song
-      while (resultLines.length > 0 && resultLines[resultLines.length - 1].trim() === '') {
+      while (resultLines.length > 0 && (resultLines[resultLines.length - 1].trim() === '' || resultLines[resultLines.length - 1].includes('class="empty-line"'))) {
         resultLines.pop();
       }
 
@@ -188,26 +195,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let finalHtml = '';
-      let afterBlock = false;
+      let prevWasBlock = false;
       for (let i = 0; i < resultLines.length; i++) {
         const lineContent = resultLines[i];
-        const isBlock = lineContent.includes('class="chords-line"');
+        const isBlock = lineContent.includes('class="chords-line"') || lineContent.includes('class="empty-line"');
 
         if (i > 0) {
-          if (afterBlock) {
-            // A block element already provides 1 visual line break upon closing.
-            // To preserve the exact number of empty lines from the source,
-            // we omit exactly one redundant '\n' immediately following any block element.
-            afterBlock = false;
-          } else {
+          // A block element (display: block) already establishes its own line boundaries.
+          // Only add '\n' when separating two adjacent inline lines.
+          if (!prevWasBlock && !isBlock) {
             finalHtml += '\n';
           }
         }
 
         finalHtml += lineContent;
-        if (isBlock) {
-          afterBlock = true;
-        }
+        prevWasBlock = isBlock;
       }
 
       return finalHtml;
