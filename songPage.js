@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         kEl.className = 'show-karaoke-countdown';
         document.body.appendChild(kEl);
       }
-      let remaining = 3;
+      let remaining = 2;
       const renderKaraokeNumber = () => {
         kEl.textContent = remaining;
         kEl.style.animation = 'none';
@@ -538,35 +538,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onSongComplete() {
-      if (isShow && nextSongUrl) {
-        cancelAutoNext();
-        cancelOpeningCountdown();
-
-        let kEl = document.querySelector('.show-karaoke-countdown');
-        if (!kEl) {
-          kEl = document.createElement('div');
-          kEl.className = 'show-karaoke-countdown';
-          document.body.appendChild(kEl);
-        }
-        let remaining = 5;
-        const renderNextKaraoke = () => {
-          kEl.textContent = remaining;
-          kEl.style.animation = 'none';
-          void kEl.offsetWidth;
-          kEl.style.animation = 'karaokeTick 0.9s ease-out forwards';
-        };
-        renderNextKaraoke();
-
-        autoNextInterval = setInterval(() => {
-          remaining -= 1;
-          if (remaining > 0) {
-            renderNextKaraoke();
-          } else {
-            cancelAutoNext();
-            navigateToSong(nextSongUrl);
-          }
-        }, 1000);
-      }
+      // Automatic transition and countdown at end of song disabled (manual advance only)
+      cancelAutoNext();
+      cancelOpeningCountdown();
     }
 
     cancelAutoNext = function () {
