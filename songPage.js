@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let startScroll = () => { };
   let cancelAutoNext = () => { };
   let cancelOpeningCountdown = () => { };
+  let nudgeScrollForward = () => { };
 
   function buildSongContent() {
     const main = document.querySelector('main.wrap') || document.body;
@@ -320,6 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentElapsedSec = 0;
     let lastTargetY = 0;
     activeKeyframes = null;
+    let nudgeBonusRemaining = 0;
+    let nudgeScrollPxRemaining = 0;
 
     // Speed modifier & controls (defaults to cfg.speedModifier or 0)
     const parseSpeedModifier = (val) => {
@@ -365,12 +368,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnMinus = document.createElement('button');
     btnMinus.className = 'speed-btn speed-minus';
-    btnMinus.setAttribute('aria-label', 'האט מהירות ב-10%');
-    btnMinus.title = 'האט ב-10%';
+    btnMinus.setAttribute('aria-label', 'האט מהירות ב-1%');
+    btnMinus.title = 'האט ב-1%';
     btnMinus.innerHTML = '<i class="fa-solid fa-minus"></i>';
     btnMinus.addEventListener('click', (e) => {
       e.stopPropagation();
-      changeSpeed(-0.10);
+      changeSpeed(-0.01);
     });
 
     speedBadge = document.createElement('span');
@@ -383,12 +386,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnPlus = document.createElement('button');
     btnPlus.className = 'speed-btn speed-plus';
-    btnPlus.setAttribute('aria-label', 'הגבר מהירות ב-10%');
-    btnPlus.title = 'הגבר ב-10%';
+    btnPlus.setAttribute('aria-label', 'הגבר מהירות ב-1%');
+    btnPlus.title = 'הגבר ב-1%';
     btnPlus.innerHTML = '<i class="fa-solid fa-plus"></i>';
     btnPlus.addEventListener('click', (e) => {
       e.stopPropagation();
-      changeSpeed(0.10);
+      changeSpeed(0.01);
     });
 
     // Auto-scroll Play/Stop button – available for all views (lyrics & chords)
@@ -639,9 +642,9 @@ document.addEventListener('DOMContentLoaded', () => {
       speedLabel.textContent = 'מהירות גלילה';
       speedSection.appendChild(speedLabel);
 
-      speedGroup.appendChild(btnMinus);
-      speedGroup.appendChild(speedBadge);
       speedGroup.appendChild(btnPlus);
+      speedGroup.appendChild(speedBadge);
+      speedGroup.appendChild(btnMinus);
       speedSection.appendChild(speedGroup);
       menuCard.appendChild(speedSection);
 
@@ -677,12 +680,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add Next / Prev navigation row in show menu
         const navGroup = document.createElement('div');
-        navGroup.style.cssText = 'display:flex;gap:10px;width:100%;margin-bottom:12px;';
+        navGroup.style.cssText = 'display:flex;gap:12px;width:100%;';
 
         const prevBtn = document.createElement('button');
         prevBtn.type = 'button';
-        prevBtn.className = 'show-menu-list-btn';
-        prevBtn.style.cssText = 'flex:1;padding:12px 8px;font-size:14px;cursor:pointer;';
+        prevBtn.className = 'show-menu-list-btn show-menu-nav-large-btn';
         prevBtn.innerHTML = '<i class="fa-solid fa-arrow-right"></i> <span>שיר קודם</span>';
         prevBtn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -692,8 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nextBtn = document.createElement('button');
         nextBtn.type = 'button';
-        nextBtn.className = 'show-menu-list-btn';
-        nextBtn.style.cssText = 'flex:1;padding:12px 8px;font-size:14px;cursor:pointer;';
+        nextBtn.className = 'show-menu-list-btn show-menu-nav-large-btn';
         nextBtn.innerHTML = '<span>שיר הבא</span> <i class="fa-solid fa-arrow-left"></i>';
         nextBtn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -710,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const listBtn = document.createElement('a');
       listBtn.href = './';
       listBtn.className = 'show-menu-list-btn';
-      listBtn.innerHTML = '<i class="fa-solid fa-list-ul"></i> <span>רשימת שירי המופע</span>';
+      listBtn.innerHTML = '<i class="fa-solid fa-list-ul"></i> <span>רשימת השירים</span>';
       menuCard.appendChild(listBtn);
 
       menuOverlay.appendChild(menuCard);
@@ -927,7 +928,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
 
-          scrollAccum += scrollSpeed * speedMultiplier;
+          let extraPx = 0;
+          if (nudgeScrollPxRemaining > 0.5) {
+            extraPx = Math.max(1, Math.round(nudgeScrollPxRemaining * 0.12));
+            nudgeScrollPxRemaining -= extraPx;
+          } else {
+            nudgeScrollPxRemaining = 0;
+          }
+
+          scrollAccum += (scrollSpeed * speedMultiplier) + extraPx;
           const px = Math.floor(scrollAccum);
           if (px > 0) {
             window.scrollBy(0, px);
@@ -986,7 +995,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const stepTimed = (now) => {
         const dt = Math.min((now - lastFrameTime) / 1000, 0.1);
         lastFrameTime = now;
-        currentElapsedSec += dt * speedMultiplier;
+
+        let extraSec = 0;
+        if (nudgeBonusRemaining > 0.001) {
+          extraSec = nudgeBonusRemaining * Math.min(1, dt * 6.0);
+          nudgeBonusRemaining -= extraSec;
+        } else {
+          nudgeBonusRemaining = 0;
+        }
+
+        currentElapsedSec += (dt * speedMultiplier) + extraSec;
 
         const elapsed = currentElapsedSec;
         const firstKf = activeKeyframes[0];
@@ -1027,6 +1045,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!scrollRafId) return;
       cancelAnimationFrame(scrollRafId);
       scrollRafId = null;
+      nudgeBonusRemaining = 0;
+      nudgeScrollPxRemaining = 0;
       lastTargetY = window.scrollY;
       setPlaying(false);
     };
@@ -1043,6 +1063,18 @@ document.addEventListener('DOMContentLoaded', () => {
         startSongOpeningCountdown();
       } else {
         startScroll();
+      }
+    };
+
+    nudgeScrollForward = function () {
+      if (!scrollRafId) return;
+      pauseUntil = 0;
+      if (activeKeyframes && activeKeyframes.length > 0) {
+        const lastKf = activeKeyframes[activeKeyframes.length - 1];
+        const maxBonus = Math.max(0, lastKf.seconds - currentElapsedSec);
+        nudgeBonusRemaining = Math.min(maxBonus, nudgeBonusRemaining + 2.5);
+      } else {
+        nudgeScrollPxRemaining += 140;
       }
     };
 
@@ -1320,6 +1352,16 @@ document.addEventListener('DOMContentLoaded', () => {
     return { isSpace, isEnter, isPageDown, isPageUp, isDown, isUp, isLeft, isRight };
   }
 
+  function handleEnterAction(source) {
+    if (scrollRafId) {
+      logAction(`ENTER (${source}) -> NUDGE SCROLL FORWARD`);
+      nudgeScrollForward();
+    } else {
+      logAction(`ENTER (${source}) -> NEXT SONG`);
+      goToNextSong();
+    }
+  }
+
   // 1. BeforeInput event (standard mobile/tablet text insertion from pedal)
   pedalFocusSink.addEventListener('beforeinput', (e) => {
     const data = e.data || '';
@@ -1343,8 +1385,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = performance.now();
       if (now - lastPedalTime < 300) return;
       lastPedalTime = now;
-      logAction('ENTER (beforeinput) -> NEXT SONG');
-      goToNextSong();
+      handleEnterAction('beforeinput');
       return;
     }
   });
@@ -1367,8 +1408,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = performance.now();
       if (now - lastPedalTime < 300) return;
       lastPedalTime = now;
-      logAction('ENTER (textInput) -> NEXT SONG');
-      goToNextSong();
+      handleEnterAction('textInput');
     }
   });
 
@@ -1389,8 +1429,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = performance.now();
       if (now - lastPedalTime >= 300) {
         lastPedalTime = now;
-        logAction('ENTER (input) -> NEXT SONG');
-        goToNextSong();
+        handleEnterAction('input');
       }
     }
   });
@@ -1429,7 +1468,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Enter: Advance to next song immediately
+    // Enter: Advance scroll forward if active; otherwise go to next song
     if (isEnter) {
       e.preventDefault();
       e.stopPropagation();
@@ -1442,8 +1481,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       lastPedalTime = now;
 
-      logAction('ENTER (keydown) -> NEXT SONG');
-      goToNextSong();
+      handleEnterAction('keydown');
       return;
     }
 
@@ -1487,10 +1525,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (key === '+' || key === '=' || code === 'NumpadAdd') {
       e.preventDefault();
-      changeSpeed(0.10);
+      changeSpeed(0.01);
     } else if (key === '-' || key === '_' || code === 'NumpadSubtract') {
       e.preventDefault();
-      changeSpeed(-0.10);
+      changeSpeed(-0.01);
     }
   }
 
@@ -1511,8 +1549,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const now = performance.now();
       if (now - lastPedalTime < 300) return;
       lastPedalTime = now;
-      logAction('ENTER (keypress) -> NEXT SONG');
-      goToNextSong();
+      handleEnterAction('keypress');
     }
   }
 

@@ -665,7 +665,7 @@ body.show-song .toggle-btn.active {
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 26px;
   box-sizing: border-box;
 }
 
@@ -865,17 +865,19 @@ body.show-song .toggle-btn.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 15px 20px;
+  gap: 12px;
+  padding: 30px 20px;
+  min-height: 110px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
-  color: #b0b8cc;
+  border-radius: 16px;
+  color: #dcdee6;
   text-decoration: none;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   transition: all 0.2s ease;
   user-select: none;
+  box-sizing: border-box;
 }
 
 .show-menu-list-btn:hover {
@@ -883,6 +885,30 @@ body.show-song .toggle-btn.active {
   border-color: rgba(255, 255, 255, 0.3);
   color: #ffffff;
   transform: translateY(-1px);
+}
+
+.show-menu-nav-large-btn {
+  flex: 1;
+  min-height: 58px;
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.show-menu-nav-large-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #00ff88;
+}
+
+.show-menu-nav-large-btn i {
+  font-size: 18px;
 }
 
 /* Karaoke-style Center Countdown Number */
@@ -914,11 +940,6 @@ body.show-song .toggle-btn.active {
     opacity: 0.45;
   }
 }
-
-
-
-
-
 
 body.show-song .credits {
   display: none !important;
