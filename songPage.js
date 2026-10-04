@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let cancelAutoNext = () => { };
   let cancelOpeningCountdown = () => { };
   let nudgeScrollForward = () => { };
+  let changeSpeed = () => { };
+  let resetSpeed = () => { };
 
   function buildSongContent() {
     const main = document.querySelector('main.wrap') || document.body;
@@ -324,7 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let nudgeBonusRemaining = 0;
     let nudgeScrollPxRemaining = 0;
 
-    // Speed modifier & controls (defaults to cfg.speedModifier or 0)
+    // Speed modifier & controls (persisted in localStorage per song)
+    const rawSongPath = decodeURIComponent(window.location.pathname).replace(/\\/g, '/');
+    const songFile = rawSongPath.split('/').pop().replace(/\.html$/i, '').trim();
+    const songStorageKey = (songFile && songFile !== 'index') ? songFile : (title || (cfg && cfg.spotifyId) || 'default_song');
+
     const parseSpeedModifier = (val) => {
       if (val == null) return 0;
       if (typeof val === 'number') {
@@ -341,7 +347,47 @@ document.addEventListener('DOMContentLoaded', () => {
       return 0;
     };
 
-    let speedModifier = parseSpeedModifier(cfg.speedModifier);
+    const getSavedSpeedModifier = () => {
+      try {
+        const savedMap = JSON.parse(localStorage.getItem('song_speeds') || '{}');
+        if (!savedMap) return null;
+        const candidates = [songStorageKey, songFile, title].filter(Boolean);
+        for (const key of candidates) {
+          if (savedMap[key] !== undefined && savedMap[key] !== null) {
+            return parseSpeedModifier(savedMap[key]);
+          }
+        }
+      } catch (e) { }
+      return null;
+    };
+
+    const saveCurrentSpeed = (mod) => {
+      try {
+        const savedMap = JSON.parse(localStorage.getItem('song_speeds') || '{}');
+        savedMap[songStorageKey] = mod;
+        localStorage.setItem('song_speeds', JSON.stringify(savedMap));
+      } catch (e) { }
+    };
+
+    const removeSavedSpeed = () => {
+      try {
+        const savedMap = JSON.parse(localStorage.getItem('song_speeds') || '{}');
+        const candidates = [songStorageKey, songFile, title].filter(Boolean);
+        let changed = false;
+        candidates.forEach(k => {
+          if (savedMap[k] !== undefined) {
+            delete savedMap[k];
+            changed = true;
+          }
+        });
+        if (changed) {
+          localStorage.setItem('song_speeds', JSON.stringify(savedMap));
+        }
+      } catch (e) { }
+    };
+
+    const initialSavedMod = getSavedSpeedModifier();
+    let speedModifier = initialSavedMod !== null ? initialSavedMod : parseSpeedModifier(cfg.speedModifier);
     let speedMultiplier = Math.max(0.4, Math.min(2.5, Math.round((1.0 + speedModifier) * 100) / 100));
 
     let speedBadge = null;
@@ -351,16 +397,20 @@ document.addEventListener('DOMContentLoaded', () => {
       speedBadge.textContent = `${pct}%`;
       const diff = Math.round(speedModifier * 100);
       const diffStr = diff > 0 ? `+${diff}%` : (diff < 0 ? `${diff}%` : '0%');
-      speedBadge.setAttribute('title', `מהירות: ${pct}% (${diffStr}) - לחץ לאיפוס`);
+      const titleText = `מהירות: ${pct}% (${diffStr}) - לחץ לאיפוס`;
+      speedBadge.setAttribute('title', titleText);
+      speedBadge.setAttribute('aria-label', titleText);
     };
 
-    const changeSpeed = (delta) => {
+    changeSpeed = (delta) => {
       speedModifier = Math.round((speedModifier + delta) * 100) / 100;
       speedMultiplier = Math.max(0.4, Math.min(2.5, Math.round((1.0 + speedModifier) * 100) / 100));
+      saveCurrentSpeed(speedModifier);
       updateSpeedDisplay();
     };
 
-    const resetSpeed = () => {
+    resetSpeed = () => {
+      removeSavedSpeed();
       speedModifier = parseSpeedModifier(cfg.speedModifier);
       speedMultiplier = Math.max(0.4, Math.min(2.5, Math.round((1.0 + speedModifier) * 100) / 100));
       updateSpeedDisplay();
@@ -634,8 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnPlus.className = 'show-menu-speed-btn';
       btnPlus.setAttribute('aria-label', 'הגבר מהירות');
       speedBadge.className = 'show-menu-speed-badge';
-      speedBadge.setAttribute('title', 'לחץ לאיפוס מהירות ל-100%');
-      speedBadge.setAttribute('aria-label', 'איפוס מהירות ל-100%');
+      updateSpeedDisplay();
 
       const speedLabel = document.createElement('div');
       speedLabel.className = 'show-menu-section-label';
