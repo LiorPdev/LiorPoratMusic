@@ -19,8 +19,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   let nextSongUrl = null;
   let prevSongUrl = null;
-  let autoNextInterval = null;
-  let autoStartInterval = null;
+  let goTimeout = null;
   let songHasStarted = false;
   let scrollRafId = null;
   let activeKeyframes = null;
@@ -29,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let stopScroll = () => { };
   let startScroll = () => { };
   let cancelAutoNext = () => { };
-  let cancelOpeningCountdown = () => { };
+  let removeGoBanner = () => { };
   let nudgeScrollForward = () => { };
   let changeSpeed = () => { };
   let resetSpeed = () => { };
@@ -61,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Remove any legacy duplicated markup if exists
-    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-menu-trigger, .show-menu-overlay, .show-countdown-toast, .show-karaoke-countdown').forEach(n => n.remove());
+    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-menu-trigger, .show-menu-overlay, .show-karaoke-countdown').forEach(n => n.remove());
 
     // ── Fixed top bar ────────────────────────────────────────────────────────
     const topbar = document.createElement('div');
@@ -545,15 +544,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nextSongUrl = null;
     prevSongUrl = null;
-    autoNextInterval = null;
-    autoStartInterval = null;
+    goTimeout = null;
     songHasStarted = false;
     let showMenuTrigger = null;
 
-    cancelOpeningCountdown = function () {
-      if (autoStartInterval) {
-        clearInterval(autoStartInterval);
-        autoStartInterval = null;
+    removeGoBanner = function () {
+      if (goTimeout) {
+        clearTimeout(goTimeout);
+        goTimeout = null;
       }
       const kEl = document.querySelector('.show-karaoke-countdown');
       if (kEl) {
@@ -561,10 +559,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    function startSongOpeningCountdown() {
+    function showGoBanner() {
       if (!isShow) return;
-      cancelOpeningCountdown();
-      cancelAutoNext();
+      removeGoBanner();
 
       let kEl = document.querySelector('.show-karaoke-countdown');
       if (!kEl) {
@@ -572,41 +569,23 @@ document.addEventListener('DOMContentLoaded', () => {
         kEl.className = 'show-karaoke-countdown';
         document.body.appendChild(kEl);
       }
-      let remaining = 2;
-      const renderKaraokeNumber = () => {
-        kEl.textContent = remaining;
-        kEl.style.animation = 'none';
-        void kEl.offsetWidth; // trigger reflow for tick animation
-        kEl.style.animation = 'karaokeTick 0.9s ease-out forwards';
-      };
-      renderKaraokeNumber();
+      kEl.textContent = 'GO';
+      kEl.style.animation = 'none';
+      void kEl.offsetWidth; // trigger reflow for animation
+      kEl.style.animation = 'karaokeGo 1s ease-out forwards';
 
-      autoStartInterval = setInterval(() => {
-        remaining -= 1;
-        if (remaining > 0) {
-          renderKaraokeNumber();
-        } else {
-          cancelOpeningCountdown();
-          startScroll();
-        }
+      goTimeout = setTimeout(() => {
+        removeGoBanner();
+        startScroll();
       }, 1000);
     }
 
     function onSongComplete() {
-      // Automatic transition and countdown at end of song disabled (manual advance only)
-      cancelAutoNext();
-      cancelOpeningCountdown();
+      removeGoBanner();
     }
 
     cancelAutoNext = function () {
-      if (autoNextInterval) {
-        clearInterval(autoNextInterval);
-        autoNextInterval = null;
-      }
-      const kEl = document.querySelector('.show-karaoke-countdown');
-      if (kEl) {
-        kEl.remove();
-      }
+      removeGoBanner();
     };
 
     const SHOW_SONGS = [
@@ -943,7 +922,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startScroll = function () {
       if (scrollRafId) return;
       cancelAutoNext();
-      cancelOpeningCountdown();
+      removeGoBanner();
       songHasStarted = true;
 
       activeKeyframes = getKeyframes();
@@ -1098,6 +1077,7 @@ document.addEventListener('DOMContentLoaded', () => {
       nudgeScrollPxRemaining = 0;
       lastTargetY = window.scrollY;
       setPlaying(false);
+      removeGoBanner();
     };
 
     handleUserToggleScroll = function () {
@@ -1105,11 +1085,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (scrollRafId) {
         stopScroll();
-      } else if (autoStartInterval) {
-        cancelOpeningCountdown();
+      } else if (goTimeout) {
+        removeGoBanner();
         startScroll();
       } else if (isShow && !songHasStarted && window.scrollY <= 40) {
-        startSongOpeningCountdown();
+        showGoBanner();
       } else {
         startScroll();
       }
@@ -1137,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!url) return;
     try {
       if (typeof cancelAutoNext === 'function') cancelAutoNext();
-      if (typeof cancelOpeningCountdown === 'function') cancelOpeningCountdown();
+      if (typeof removeGoBanner === 'function') removeGoBanner();
       if (typeof stopScroll === 'function') stopScroll();
 
       const resp = await fetch(url);
@@ -1666,13 +1646,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // User manual scroll gestures immediately pause auto-scroll
   window.addEventListener('wheel', () => {
     cancelAutoNext();
-    cancelOpeningCountdown();
+    removeGoBanner();
     if (scrollRafId) stopScroll();
   }, { passive: true });
 
   window.addEventListener('touchmove', () => {
     cancelAutoNext();
-    cancelOpeningCountdown();
+    removeGoBanner();
     if (scrollRafId) stopScroll();
   }, { passive: true });
 
