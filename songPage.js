@@ -608,6 +608,10 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     if (isShow) {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+
       // Find current song index in show list (1-indexed for stage display)
       const rawPath = decodeURIComponent(window.location.pathname).replace(/\\/g, '/');
       const curFile = rawPath.split('/').pop().replace(/\.html$/i, '').trim();

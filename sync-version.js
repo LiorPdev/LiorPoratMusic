@@ -40,4 +40,15 @@ function processDirectory(dir, isSongsDir = false) {
 
 console.log(`Starting sync to version ${version}...`);
 processDirectory(__dirname);
+
+// Also sync show/sw.js cache version and asset query versions
+const swPath = path.join(__dirname, 'show', 'sw.js');
+if (fs.existsSync(swPath)) {
+    let swContent = fs.readFileSync(swPath, 'utf8');
+    swContent = swContent.replace(/const CACHE_NAME = ['"]liorporat-show-v[^'"]*['"];/, `const CACHE_NAME = 'liorporat-show-v${version}';`);
+    swContent = swContent.replace(/\?v=[0-9.]+/g, `?v=${version}`);
+    fs.writeFileSync(swPath, swContent, 'utf8');
+    console.log(`Updated show/sw.js to v${version}`);
+}
+
 console.log('Sync complete!');
