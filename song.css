@@ -575,7 +575,7 @@ body.show-song .toggle-btn.active {
 
 .show-menu-trigger {
   position: fixed;
-  bottom: 22px;
+  bottom: 60px;
   left: 22px;
   z-index: 1000;
   width: 60px;
@@ -613,6 +613,7 @@ body.show-song .toggle-btn.active {
 }
 
 @keyframes showMenuBlinkRed {
+
   0%,
   100% {
     opacity: 1;
@@ -944,19 +945,23 @@ body.show-song .toggle-btn.active {
     transform: translate(-50%, -50%) scale(0.4);
     opacity: 0;
   }
+
   22% {
     transform: translate(-50%, -50%) scale(1.18);
     opacity: 1;
     text-shadow: 0 0 45px rgba(255, 50, 70, 1), 0 0 85px rgba(255, 50, 70, 0.7);
   }
+
   45% {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
+
   75% {
     transform: translate(-50%, -50%) scale(1.04);
     opacity: 0.95;
   }
+
   100% {
     transform: translate(-50%, -50%) scale(1.35);
     opacity: 0;
