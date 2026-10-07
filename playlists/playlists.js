@@ -6,10 +6,22 @@ const PLAYLISTS = [
     description: "פלייליסט לאוטו/לחג/כל מצב רוח",
   },
   {
+    name: "Quiet",
+    url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU",
+    image: "../Media/playlists/quiet.webp",
+    description: "ישראלי שקט ברקע",
+  },
+  {
     name: "Indie",
     url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
     image: "../Media/playlists/Indie.webp",
     description: "פולק/אינדי ישראלי רגוע",
+  },
+  {
+    name: "Blues",
+    url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
+    image: "../Media/playlists/blues.webp",
+    description: "בלוז ישראלי לנשמה",
   },
   {
     name: "Radio - Heb",
@@ -28,18 +40,6 @@ const PLAYLISTS = [
     url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb",
     image: "../Media/playlists/groove.webp",
     description: "קצב טוב, פאנקי/גרוב שמח ומקפיץ",
-  },
-  {
-    name: "Quiet",
-    url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU",
-    image: "../Media/playlists/quiet.webp",
-    description: "ישראלי שקט ברקע",
-  },
-  {
-    name: "Blues",
-    url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
-    image: "../Media/playlists/blues.webp",
-    description: "בלוז ישראלי לנשמה",
   },
   {
     name: "Words",
