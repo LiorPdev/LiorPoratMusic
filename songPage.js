@@ -1,8 +1,12 @@
 // Immediately apply stage colors from localStorage if in show mode
 (function applyStageColors() {
   try {
-    const isShow = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+    const isShow = window.location.search.includes('mode=show') ||
+                   window.location.search.includes('show=') ||
+                   window.location.search === '?show' ||
+                   window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
     if (isShow) {
+      document.documentElement.classList.add('show-song-root');
       const saved = JSON.parse(localStorage.getItem('stage_colors') || '{}');
       if (saved.verse) document.documentElement.style.setProperty('--show-text-color', saved.verse);
       if (saved.chorus) {
@@ -44,7 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
       youtube: cfg.youtubeId ? `https://www.youtube.com/watch?v=${cfg.youtubeId}` : null
     };
 
-    const isShow = Boolean(cfg.hideFooter || window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/'));
+    const urlParams = new URLSearchParams(window.location.search);
+    const isShow = Boolean(
+      urlParams.get('mode') === 'show' ||
+      urlParams.has('show') ||
+      cfg.hideFooter ||
+      window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/')
+    );
     if (isShow) {
       document.body.classList.add('show-song');
       try {
@@ -60,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Remove any legacy duplicated markup if exists
-    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-menu-trigger, .show-menu-overlay, .show-karaoke-countdown').forEach(n => n.remove());
+    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-exit-btn, .show-menu-trigger, .show-menu-overlay, .show-karaoke-countdown').forEach(n => n.remove());
 
     // ── Fixed top bar ────────────────────────────────────────────────────────
     const topbar = document.createElement('div');
@@ -73,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let closeBtn = null;
     if (!isShow) {
       closeBtn = document.createElement('a');
-      closeBtn.href = './';
+      closeBtn.href = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/content/') ? '../songs/' : './';
       closeBtn.className = 'close-btn';
       closeBtn.setAttribute('aria-label', 'חזרה');
       closeBtn.innerHTML = '×';
@@ -100,17 +110,15 @@ document.addEventListener('DOMContentLoaded', () => {
     spanTitle.textContent = title;
     h1.appendChild(spanTitle);
 
-    // Read lyrics / chords
+    // Read 3 distinct parts: 1. lyrics (clean), 2. chords, 3. show (stage live version)
     const lyricsNode = document.getElementById('lyrics');
     const chordsNode = document.getElementById('chords');
+    const showNode = document.getElementById('show');
     let lyricsText = lyricsNode ? lyricsNode.textContent.trim() : '';
     let chordsText = chordsNode ? chordsNode.textContent.trim() : '';
+    let showText = showNode ? showNode.textContent.trim() : '';
 
-    if (cfg.mode === 'lyrics') {
-      chordsText = '';
-    } else if (cfg.mode === 'chords') {
-      lyricsText = '';
-    }
+    const activeShowText = showText || (cfg.mode === 'chords' ? chordsText : (lyricsText || chordsText));
 
     const highlightChords = (text) => {
       const rawLines = text.split('\n');
@@ -137,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // preserve the blank line and keep pendingSeconds for the upcoming text
         if (pendingSeconds !== null && line.trim() === '') {
           if (resultLines.length > 0 && !resultLines[resultLines.length - 1].includes('class="empty-line"')) {
-            resultLines.push('<span class="empty-line"></span>');
+            resultLines.push('<span class="empty-line" style="display:block;height:0.9em;"></span>');
           }
           continue;
         }
@@ -170,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!line.trim()) {
           // Collapse multiple blank lines to at most one empty line spacer
           if (resultLines.length > 0 && !resultLines[resultLines.length - 1].includes('class="empty-line"')) {
-            resultLines.push('<span class="empty-line"></span>');
+            resultLines.push('<span class="empty-line" style="display:block;height:0.9em;"></span>');
           }
         } else if (isSubLine) {
           resultLines.push(`<span class="sub-line">${formatted}</span>`);
@@ -231,8 +239,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isShow) {
       pre.style.paddingBottom = '40px';
     }
-    if (lyricsText || chordsText) {
-      pre.innerHTML = highlightChords(lyricsText || chordsText);
+    if (isShow) {
+      if (activeShowText) {
+        pre.innerHTML = highlightChords(activeShowText);
+      }
+    } else if (lyricsText || chordsText) {
+      const initialShowChords = window.location.hash
+        ? (window.location.hash === '#chords')
+        : (cfg.mode === 'chords' && Boolean(chordsText));
+      const initialText = initialShowChords ? (chordsText || lyricsText) : (lyricsText || chordsText);
+      pre.innerHTML = highlightChords(initialText);
     }
 
     const fitSongFontSize = () => {
@@ -445,7 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auto-scroll Play/Stop button – available for all views (lyrics & chords)
     playBtn = null;
-    if (lyricsText || chordsText) {
+    if ((isShow && activeShowText) || (!isShow && (lyricsText || chordsText))) {
       playBtn = document.createElement('button');
       playBtn.id = 'scroll-play-btn';
       playBtn.setAttribute('aria-label', 'הפעל גלילה אוטומטית');
@@ -492,7 +508,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       btnLyrics.addEventListener('click', () => updateView(false));
       btnChords.addEventListener('click', () => updateView(true));
-      updateView(window.location.hash === '#chords');
+      const initialShowChords = window.location.hash
+        ? (window.location.hash === '#chords')
+        : (cfg.mode === 'chords' && Boolean(chordsText));
+      updateView(initialShowChords);
     }
 
     // YouTube Play/Stop button (available for any song with youtubeId in regular mode)
@@ -547,6 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
     goTimeout = null;
     songHasStarted = false;
     let showMenuTrigger = null;
+    let showExitBtn = null;
 
     removeGoBanner = function () {
       if (goTimeout) {
@@ -588,42 +608,15 @@ document.addEventListener('DOMContentLoaded', () => {
       removeGoBanner();
     };
 
-    const SHOW_SONGS = [
-      { name: "אסיר 1376", file: "אסיר 1376" },
-      { name: "בדד", file: "בדד" },
-      { name: "בלוז לחילוני", file: "בלוז לחילוני" },
-      { name: "בלוז לנפטר", file: "בלוז לנפטר" },
-      { name: "בלוז לשבת", file: "בלוז לשבת" },
-      { name: "בלוז לשירלי", file: "בלוז לשירלי" },
-      { name: "גרשון רוזנצוויג", file: "גרשון רוזנצוויג" },
-      { name: "דמייני שאת בסרט", file: "דמייני שאת בסרט" },
-      { name: "הדברים הפשוטים שבחיים", file: "הדברים הפשוטים שבחיים" },
-      { name: "היא לא מוצאת", file: "היא לא מוצאת" },
-      { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
-      { name: "הרשימה", file: "הרשימה" },
-      { name: "כל כך לחוץ", file: "כל כך לחוץ" },
-      { name: "לאון השען", file: "לאון השען" },
-      { name: "להיות ישראלי", file: "להיות ישראלי" },
-      { name: "לוח וגיר", file: "לוח וגיר" },
-      { name: "מדריך געגוע", file: "מדריך געגוע" },
-      { name: "מה עוד צריך לקרות", file: "מה עוד צריך לקרות" },
-      { name: "ניפגש שוב בקרוב", file: "ניפגש שוב בקרוב" },
-      { name: "נמאס לי", file: "נמאס לי" },
-      { name: "צוף לעמק האסור", file: "צוף לעמק האסור" },
-      { name: "צל עץ תמר", file: "צל עץ תמר" },
-      { name: "קונספירציה", file: "קונספירציה" },
-      { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
-      { name: "שלושים שנה וחלום", file: "שלושים שנה וחלום" },
-      { name: "שתיים כוסות של תה אדום", file: "שתיים כוסות של תה אדום" },
-      { name: "תופסים ראש קטן", file: "תופסים ראש קטן" },
-      { name: "תל אביבי", file: "תל אביבי" },
-      { name: "תקוע באדום", file: "תקוע באדום" }
-    ];
+    const SHOW_SONGS = (typeof getShowSongs === 'function')
+      ? getShowSongs()
+      : (window.SHOW_SONGS || []);
 
     if (isShow) {
       if ('serviceWorker' in navigator) {
-        const isShowSongsSubdir = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/songs/');
-        navigator.serviceWorker.register(isShowSongsSubdir ? '../sw.js' : './sw.js').catch(() => {});
+        const swPath = (window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/content/') ||
+                        window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/songs/')) ? '../sw.js' : './sw.js';
+        navigator.serviceWorker.register(swPath).catch(() => {});
       }
 
       // Find current song index in show list (1-indexed for stage display)
@@ -645,6 +638,23 @@ document.addEventListener('DOMContentLoaded', () => {
       menuTrigger.title = songNumber ? `שיר ${songNumber} - פתח תפריט` : 'תפריט מופע';
       menuTrigger.innerHTML = songNumber ? `<span class="show-song-num">${songNumber}</span>` : '<i class="fa-solid fa-bars"></i>';
       document.body.prepend(menuTrigger);
+
+      // ── Fixed Top-Left Red Exit Button (X) to Return to Songs List ──
+      const inContentOrSongs = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/content/') ||
+                               window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/songs/');
+      const exitBtn = document.createElement('a');
+      showExitBtn = exitBtn;
+      exitBtn.href = inContentOrSongs ? '../show/index.html' : './';
+      exitBtn.className = 'show-exit-btn';
+      exitBtn.setAttribute('aria-label', 'חזרה לרשימת השירים');
+      exitBtn.title = 'חזרה לרשימת השירים';
+      exitBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+      exitBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof stopScroll === 'function') stopScroll();
+        if (typeof removeGoBanner === 'function') removeGoBanner();
+      });
+      document.body.prepend(exitBtn);
 
       // ── Menu Modal Overlay & Card ──
       const menuOverlay = document.createElement('div');
@@ -706,22 +716,23 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       if (idx !== -1) {
+        const showParam = isShow ? '?mode=show' : '';
         // Set URLs for swipe and pedal navigation (loops continuously)
         if (idx < SHOW_SONGS.length - 1) {
           const nextSong = SHOW_SONGS[idx + 1];
-          nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html`;
+          nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html${showParam}`;
         } else {
           // Last song loops back to the first song
           const firstSong = SHOW_SONGS[0];
-          nextSongUrl = `${encodeURIComponent(firstSong.file || firstSong.name)}.html`;
+          nextSongUrl = `${encodeURIComponent(firstSong.file || firstSong.name)}.html${showParam}`;
         }
         if (idx > 0) {
           const prevSong = SHOW_SONGS[idx - 1];
-          prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html`;
+          prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html${showParam}`;
         } else {
           // First song loops back to the last song
           const lastSong = SHOW_SONGS[SHOW_SONGS.length - 1];
-          prevSongUrl = `${encodeURIComponent(lastSong.file || lastSong.name)}.html`;
+          prevSongUrl = `${encodeURIComponent(lastSong.file || lastSong.name)}.html${showParam}`;
         }
 
         // Add Next / Prev navigation row in show menu
@@ -755,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Return to show songs list
       const listBtn = document.createElement('a');
-      listBtn.href = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/songs/') ? '../' : './';
+      listBtn.href = inContentOrSongs ? '../show/index.html' : './';
       listBtn.className = 'show-menu-list-btn';
       listBtn.innerHTML = '<i class="fa-solid fa-list-ul"></i> <span>רשימת השירים</span>';
       menuCard.appendChild(listBtn);
@@ -897,6 +908,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (showMenuTrigger) {
         showMenuTrigger.classList.toggle('scrolling', playing);
+      }
+      if (showExitBtn) {
+        showExitBtn.classList.toggle('scrolling', playing);
       }
     }
 

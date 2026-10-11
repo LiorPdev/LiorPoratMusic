@@ -11,7 +11,7 @@ function processDirectory(dir, isSongsDir = false) {
         const filePath = path.join(dir, file);
         const stats = fs.statSync(filePath);
 
-        if (stats.isDirectory() && (file === 'songs' || file === 'show' || file === 'ctrlfreaks' || file === 'playlists')) {
+        if (stats.isDirectory() && (file === 'songs' || file === 'show' || file === 'content' || file === 'ctrlfreaks' || file === 'playlists')) {
             processDirectory(filePath, true);
         } else if (file.endsWith('.html')) {
             let content = fs.readFileSync(filePath, 'utf8');
@@ -41,14 +41,14 @@ function processDirectory(dir, isSongsDir = false) {
 console.log(`Starting sync to version ${version}...`);
 processDirectory(__dirname);
 
-// Also sync show/sw.js cache version and asset query versions
-const swPath = path.join(__dirname, 'show', 'sw.js');
-if (fs.existsSync(swPath)) {
-    let swContent = fs.readFileSync(swPath, 'utf8');
+// Also sync root sw.js cache version and asset query versions
+const rootSwPath = path.join(__dirname, 'sw.js');
+if (fs.existsSync(rootSwPath)) {
+    let swContent = fs.readFileSync(rootSwPath, 'utf8');
     swContent = swContent.replace(/const CACHE_NAME = ['"]liorporat-show-v[^'"]*['"];/, `const CACHE_NAME = 'liorporat-show-v${version}';`);
     swContent = swContent.replace(/\?v=[0-9.]+/g, `?v=${version}`);
-    fs.writeFileSync(swPath, swContent, 'utf8');
-    console.log(`Updated show/sw.js to v${version}`);
+    fs.writeFileSync(rootSwPath, swContent, 'utf8');
+    console.log(`Updated sw.js to v${version}`);
 }
 
 console.log('Sync complete!');

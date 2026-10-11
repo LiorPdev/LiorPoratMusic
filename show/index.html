@@ -35,8 +35,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b0e14" />
 
-  <link rel="stylesheet" href="../styles.css?v=1.8.3" />
-  <link rel="stylesheet" href="../songs.css?v=1.8.3" />
+  <link rel="stylesheet" href="../styles.css?v=1.9.1" />
+  <link rel="stylesheet" href="../songs.css?v=1.9.1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     html,
@@ -200,12 +200,18 @@
       font-size: var(--song-font-size, 20px);
       font-weight: 700;
       color: #ffffff;
-      white-space: nowrap;
+      white-space: normal;
+      word-break: normal;
+      overflow-wrap: break-word;
       overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-clamp: 2;
+      line-height: 1.25;
       flex: 1;
       min-width: 0;
+      text-align: right;
     }
 
     @media (max-width: 480px) {
@@ -568,38 +574,9 @@
 
   <main class="songs" id="songs"></main>
 
+  <script src="../songsData.js?v=1.9.1"></script>
   <script>
-    const songs = [
-      { name: "אסיר 1376", file: "אסיר 1376" },
-      { name: "בדד", file: "בדד" },
-      { name: "בלוז לחילוני", file: "בלוז לחילוני" },
-      { name: "בלוז לנפטר", file: "בלוז לנפטר" },
-      { name: "בלוז לשבת", file: "בלוז לשבת" },
-      { name: "בלוז לשירלי", file: "בלוז לשירלי" },
-      { name: "גרשון רוזנצוויג", file: "גרשון רוזנצוויג" },
-      { name: "דמייני שאת בסרט", file: "דמייני שאת בסרט" },
-      { name: "הדברים הפשוטים שבחיים", file: "הדברים הפשוטים שבחיים" },
-      { name: "היא לא מוצאת", file: "היא לא מוצאת" },
-      { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
-      { name: "הרשימה", file: "הרשימה" },
-      { name: "כל כך לחוץ", file: "כל כך לחוץ" },
-      { name: "לאון השען", file: "לאון השען" },
-      { name: "להיות ישראלי", file: "להיות ישראלי" },
-      { name: "לוח וגיר", file: "לוח וגיר" },
-      { name: "מדריך געגוע", file: "מדריך געגוע" },
-      { name: "מה עוד צריך לקרות", file: "מה עוד צריך לקרות" },
-      { name: "ניפגש שוב בקרוב", file: "ניפגש שוב בקרוב" },
-      { name: "נמאס לי", file: "נמאס לי" },
-      { name: "צוף לעמק האסור", file: "צוף לעמק האסור" },
-      { name: "צל עץ תמר", file: "צל עץ תמר" },
-      { name: "קונספירציה", file: "קונספירציה" },
-      { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
-      { name: "שלושים שנה וחלום", file: "שלושים שנה וחלום" },
-      { name: "שתיים כוסות של תה אדום", file: "שתיים כוסות של תה אדום" },
-      { name: "תופסים ראש קטן", file: "תופסים ראש קטן" },
-      { name: "תל אביבי", file: "תל אביבי" },
-      { name: "תקוע באדום", file: "תקוע באדום" }
-    ];
+    const songs = typeof getShowSongs === 'function' ? getShowSongs() : [];
 
     const el = document.getElementById('songs');
 
@@ -609,7 +586,7 @@
 
       const a = document.createElement('a');
       const songFileName = song.file || song.name;
-      a.href = `songs/${songFileName}.html`;
+      a.href = `../content/${encodeURIComponent(songFileName)}.html?mode=show`;
 
       const img = document.createElement('img');
       img.src = `../Media/songs/${songFileName}.webp`;
@@ -646,9 +623,10 @@
       const cardHeight = cardRect.height;
       if (cardHeight <= 0) return;
 
-      const maxAllowedByHeight = Math.floor(cardHeight * 0.45);
-      let minFs = 10;
-      let maxFs = Math.max(minFs, Math.min(maxAllowedByHeight, 36));
+      // Allow 2 lines of text comfortably within card height
+      const maxAllowedByHeight = Math.floor((cardHeight * 0.82) / 2.3);
+      let minFs = 12;
+      let maxFs = Math.max(minFs, Math.min(maxAllowedByHeight, 26));
       let bestFs = minFs;
 
       const root = document.documentElement;
@@ -660,7 +638,11 @@
         let fits = true;
         for (let i = 0; i < names.length; i++) {
           const el = names[i];
-          if (el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > cardHeight) {
+          const exceeds2Lines = el.scrollHeight > el.clientHeight + 2;
+          const exceedsCardHeight = el.scrollHeight > (cardHeight * 0.88);
+          const exceedsCardWidth = el.scrollWidth > el.clientWidth + 1;
+
+          if (exceeds2Lines || exceedsCardHeight || exceedsCardWidth) {
             fits = false;
             break;
           }
@@ -939,11 +921,13 @@
     });
 
   </script>
-  <script src="../script.js?v=1.8.3"></script>
+  <script src="../script.js?v=1.9.1"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('../sw.js', { scope: '/' }).catch(() => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
       });
     }
   </script>

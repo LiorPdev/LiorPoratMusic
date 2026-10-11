@@ -3,6 +3,7 @@
   "short_name": "שירים להופעה",
   "description": "רשימת שירים ומילים להופעה של ליאור פורת",
   "start_url": "./",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0b0e14",
   "theme_color": "#0b0e14",
