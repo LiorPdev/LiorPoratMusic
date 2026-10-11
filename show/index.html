@@ -115,20 +115,22 @@
       max-width: 100%;
       height: calc(100dvh - 56px);
       margin: 0;
-      padding: clamp(8px, 1.2vh, 16px) clamp(10px, 1.5vw, 22px);
+      padding: clamp(6px, 1vh, 12px) clamp(8px, 1.2vw, 16px);
       box-sizing: border-box;
       display: grid;
-      gap: clamp(8px, 1.2vh, 14px);
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-rows: repeat(4, 1fr);
+      gap: clamp(4px, 0.8vh, 10px);
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(6, 1fr);
       overflow: hidden;
     }
 
-    /* Portrait / vertical screens: 2 columns x 8 rows */
+    /* Portrait / vertical screens: 2 columns x 15 rows */
     @media (max-aspect-ratio: 1/1) {
       .songs {
         grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(8, 1fr);
+        grid-template-rows: repeat(15, 1fr);
+        padding: clamp(4px, 0.5vh, 8px) clamp(6px, 0.8vw, 10px);
+        gap: clamp(2px, 0.4vh, 6px);
       }
     }
 
@@ -138,7 +140,7 @@
       min-height: 0;
       margin: 0;
       padding: 0;
-      border-radius: 12px;
+      border-radius: clamp(6px, 1vh, 10px);
       background: #151a26;
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-sizing: border-box;
@@ -163,23 +165,23 @@
       box-sizing: border-box;
       display: flex;
       align-items: center;
-      gap: clamp(10px, 1.2vw, 20px);
-      padding: 0 clamp(10px, 1.4vw, 20px);
+      gap: clamp(6px, 1vw, 16px);
+      padding: 0 clamp(8px, 1.2vw, 16px);
       text-decoration: none;
       color: #ffffff;
       min-width: 0;
     }
 
     .song-thumb {
-      height: 72%;
-      max-height: 74px;
-      min-height: 36px;
+      height: 75%;
+      max-height: 60px;
+      min-height: 22px;
       aspect-ratio: 1;
       width: auto;
-      border-radius: 8px;
+      border-radius: 6px;
       object-fit: cover;
       flex-shrink: 0;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
     }
 
     .song-thumb.song-thumb-placeholder {
@@ -188,7 +190,7 @@
       justify-content: center;
       background: #1e2638;
       border: 1px solid rgba(255, 255, 255, 0.12);
-      font-size: clamp(22px, 3.2vh, 32px);
+      font-size: clamp(14px, 2vh, 24px);
       line-height: 1;
       box-sizing: border-box;
       user-select: none;
@@ -568,22 +570,35 @@
 
   <script>
     const songs = [
-      { name: "בלוז לשבת", file: "בלוז לשבת" },
+      { name: "אסיר 1376", file: "אסיר 1376" },
+      { name: "בדד", file: "בדד" },
       { name: "בלוז לחילוני", file: "בלוז לחילוני" },
+      { name: "בלוז לנפטר", file: "בלוז לנפטר" },
+      { name: "בלוז לשבת", file: "בלוז לשבת" },
+      { name: "בלוז לשירלי", file: "בלוז לשירלי" },
+      { name: "גרשון רוזנצוויג", file: "גרשון רוזנצוויג" },
+      { name: "דמייני שאת בסרט", file: "דמייני שאת בסרט" },
+      { name: "הדברים הפשוטים שבחיים", file: "הדברים הפשוטים שבחיים" },
+      { name: "היא לא מוצאת", file: "היא לא מוצאת" },
+      { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
+      { name: "הרשימה", file: "הרשימה" },
+      { name: "כל כך לחוץ", file: "כל כך לחוץ" },
+      { name: "לאון השען", file: "לאון השען" },
       { name: "להיות ישראלי", file: "להיות ישראלי" },
       { name: "לוח וגיר", file: "לוח וגיר" },
-      { name: "לאון השען", file: "לאון השען" },
-      { name: "בדד", file: "בדד" },
-      { name: "תל אביבי", file: "תל אביבי" },
-      { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
-      { name: "כל כך לחוץ", file: "כל כך לחוץ" },
-      { name: "צל עץ תמר", file: "צל עץ תמר" },
-      { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
-      { name: "תקוע באדום", file: "תקוע באדום" },
-      { name: "בלוז לנפטר", file: "בלוז לנפטר" },
-      { name: "אסיר 1376", file: "אסיר 1376" },
+      { name: "מדריך געגוע", file: "מדריך געגוע" },
+      { name: "מה עוד צריך לקרות", file: "מה עוד צריך לקרות" },
       { name: "ניפגש שוב בקרוב", file: "ניפגש שוב בקרוב" },
-      { name: "הרשימה", file: "הרשימה" }
+      { name: "נמאס לי", file: "נמאס לי" },
+      { name: "צוף לעמק האסור", file: "צוף לעמק האסור" },
+      { name: "צל עץ תמר", file: "צל עץ תמר" },
+      { name: "קונספירציה", file: "קונספירציה" },
+      { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
+      { name: "שלושים שנה וחלום", file: "שלושים שנה וחלום" },
+      { name: "שתיים כוסות של תה אדום", file: "שתיים כוסות של תה אדום" },
+      { name: "תופסים ראש קטן", file: "תופסים ראש קטן" },
+      { name: "תל אביבי", file: "תל אביבי" },
+      { name: "תקוע באדום", file: "תקוע באדום" }
     ];
 
     const el = document.getElementById('songs');
@@ -594,7 +609,7 @@
 
       const a = document.createElement('a');
       const songFileName = song.file || song.name;
-      a.href = `${songFileName}.html`;
+      a.href = `songs/${songFileName}.html`;
 
       const img = document.createElement('img');
       img.src = `../Media/songs/${songFileName}.webp`;
@@ -632,8 +647,8 @@
       if (cardHeight <= 0) return;
 
       const maxAllowedByHeight = Math.floor(cardHeight * 0.45);
-      let minFs = 12;
-      let maxFs = Math.max(minFs, Math.min(maxAllowedByHeight, 42));
+      let minFs = 10;
+      let maxFs = Math.max(minFs, Math.min(maxAllowedByHeight, 36));
       let bestFs = minFs;
 
       const root = document.documentElement;

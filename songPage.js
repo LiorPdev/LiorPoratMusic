@@ -589,27 +589,41 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const SHOW_SONGS = [
-      { name: "בלוז לשבת", file: "בלוז לשבת" },
+      { name: "אסיר 1376", file: "אסיר 1376" },
+      { name: "בדד", file: "בדד" },
       { name: "בלוז לחילוני", file: "בלוז לחילוני" },
+      { name: "בלוז לנפטר", file: "בלוז לנפטר" },
+      { name: "בלוז לשבת", file: "בלוז לשבת" },
+      { name: "בלוז לשירלי", file: "בלוז לשירלי" },
+      { name: "גרשון רוזנצוויג", file: "גרשון רוזנצוויג" },
+      { name: "דמייני שאת בסרט", file: "דמייני שאת בסרט" },
+      { name: "הדברים הפשוטים שבחיים", file: "הדברים הפשוטים שבחיים" },
+      { name: "היא לא מוצאת", file: "היא לא מוצאת" },
+      { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
+      { name: "הרשימה", file: "הרשימה" },
+      { name: "כל כך לחוץ", file: "כל כך לחוץ" },
+      { name: "לאון השען", file: "לאון השען" },
       { name: "להיות ישראלי", file: "להיות ישראלי" },
       { name: "לוח וגיר", file: "לוח וגיר" },
-      { name: "לאון השען", file: "לאון השען" },
-      { name: "בדד", file: "בדד" },
-      { name: "תל אביבי", file: "תל אביבי" },
-      { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
-      { name: "כל כך לחוץ", file: "כל כך לחוץ" },
-      { name: "צל עץ תמר", file: "צל עץ תמר" },
-      { name: "הים נחצה לשניים", file: "הים נחצה לשניים" },
-      { name: "תקוע באדום", file: "תקוע באדום" },
-      { name: "בלוז לנפטר", file: "בלוז לנפטר" },
-      { name: "אסיר 1376", file: "אסיר 1376" },
+      { name: "מדריך געגוע", file: "מדריך געגוע" },
+      { name: "מה עוד צריך לקרות", file: "מה עוד צריך לקרות" },
       { name: "ניפגש שוב בקרוב", file: "ניפגש שוב בקרוב" },
-      { name: "הרשימה", file: "הרשימה" }
+      { name: "נמאס לי", file: "נמאס לי" },
+      { name: "צוף לעמק האסור", file: "צוף לעמק האסור" },
+      { name: "צל עץ תמר", file: "צל עץ תמר" },
+      { name: "קונספירציה", file: "קונספירציה" },
+      { name: "קלישאות", file: "בשורה תחתונה (קלישאות)" },
+      { name: "שלושים שנה וחלום", file: "שלושים שנה וחלום" },
+      { name: "שתיים כוסות של תה אדום", file: "שתיים כוסות של תה אדום" },
+      { name: "תופסים ראש קטן", file: "תופסים ראש קטן" },
+      { name: "תל אביבי", file: "תל אביבי" },
+      { name: "תקוע באדום", file: "תקוע באדום" }
     ];
 
     if (isShow) {
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        const isShowSongsSubdir = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/songs/');
+        navigator.serviceWorker.register(isShowSongsSubdir ? '../sw.js' : './sw.js').catch(() => {});
       }
 
       // Find current song index in show list (1-indexed for stage display)
@@ -741,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Return to show songs list
       const listBtn = document.createElement('a');
-      listBtn.href = './';
+      listBtn.href = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/songs/') ? '../' : './';
       listBtn.className = 'show-menu-list-btn';
       listBtn.innerHTML = '<i class="fa-solid fa-list-ul"></i> <span>רשימת השירים</span>';
       menuCard.appendChild(listBtn);
