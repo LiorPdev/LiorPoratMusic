@@ -109,6 +109,17 @@ a {
   transform: scale(.975)
 }
 
+.cta.is-disabled,
+.cta[disabled],
+.cta[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.5);
+  box-shadow: none !important;
+  transform: none !important;
+}
+
 .share {
   display: inline-flex;
   align-items: center;
@@ -1211,7 +1222,7 @@ address a {
 
   .hero-streaming-icons {
     gap: 12px;
-    margin: 0 auto 12px;
+    margin: 12px auto 22px;
   }
 
   .stream-icon-btn {
@@ -1320,7 +1331,7 @@ address a {
     font-size: 0.82rem;
     font-weight: 400;
     color: rgba(245, 240, 235, 0.9);
-    margin: 8px auto 0;
+    margin: 16px auto 0;
     display: block;
     text-align: center;
     line-height: 1.4;
