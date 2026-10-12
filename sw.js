@@ -1,8 +1,8 @@
 // Service Worker for Lior Porat Show PWA
-const CACHE_NAME = 'liorporat-show-v1.9.1';
+const CACHE_NAME = 'liorporat-show-v1.9.3';
 
 // Import central songs database
-importScripts('./songsData.js?v=1.9.1');
+importScripts('./songsData.js?v=1.9.3');
 
 // Core assets to precache for offline show access
 const CORE_ASSETS = [
@@ -10,12 +10,12 @@ const CORE_ASSETS = [
   'show/',
   'show/index.html',
   'show/manifest.json',
-  'styles.css?v=1.9.1',
-  'song.css?v=1.9.1',
-  'songs.css?v=1.9.1',
-  'songsData.js?v=1.9.1',
-  'songPage.js?v=1.9.1',
-  'script.js?v=1.9.1',
+  'styles.css?v=1.9.3',
+  'song.css?v=1.9.3',
+  'songs.css?v=1.9.3',
+  'songsData.js?v=1.9.3',
+  'songPage.js?v=1.9.3',
+  'script.js?v=1.9.3',
   'Media/show/icon-192.png',
   'Media/show/icon-512.png',
   'Media/show/apple-touch-icon.png'
@@ -86,7 +86,7 @@ self.addEventListener('fetch', (event) => {
         const directMatch = await caches.match(request);
         if (directMatch) return directMatch;
 
-        // Strip query string (e.g. ?mode=show or ?v=1.9.1) to find matching base asset
+        // Strip query string (e.g. ?mode=show or ?v=1.9.3) to find matching base asset
         const urlObj = new URL(request.url);
         const withoutQuery = urlObj.origin + urlObj.pathname;
         const matchWithoutQuery = await caches.match(withoutQuery);
