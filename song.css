@@ -130,6 +130,18 @@ body {
   line-height: 1;
 }
 
+#youtube-player {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  opacity: 0.001;
+  pointer-events: none;
+  border: none;
+  z-index: -9999;
+}
+
 #scroll-play-btn:hover,
 #scroll-play-btn.active,
 #youtube-play-btn:hover,
@@ -210,6 +222,8 @@ body {
   margin: 28px auto 44px;
   padding: 0 clamp(16px, 3.5vw, 36px);
   position: relative;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 pre {
@@ -228,6 +242,14 @@ pre {
   font-size: clamp(22px, 1.65vw, 26px);
   font-weight: 500;
   letter-spacing: 0.01em;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+pre ::selection,
+.wrap ::selection {
+  background: rgba(226, 167, 111, 0.45);
+  color: #FFFFFF;
 }
 
 .chord {

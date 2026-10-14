@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let nudgeScrollForward = () => { };
   let changeSpeed = () => { };
   let resetSpeed = () => { };
+  let cleanupYtPlayer = () => { };
 
   function buildSongContent() {
     const main = document.querySelector('main.wrap') || document.body;
@@ -69,8 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) { }
     }
 
+    cleanupYtPlayer();
     // Remove any legacy duplicated markup if exists
-    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-exit-btn, .show-menu-trigger, .show-menu-overlay, .show-karaoke-countdown').forEach(n => n.remove());
+    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-exit-btn, .show-menu-trigger, .show-menu-overlay, .show-karaoke-countdown, #youtube-player').forEach(n => n.remove());
 
     // ── Fixed top bar ────────────────────────────────────────────────────────
     const topbar = document.createElement('div');
@@ -516,9 +518,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // YouTube Play/Stop button (available for any song with youtubeId in regular mode)
     if (cfg.youtubeId && !isShow) {
-      let ytPlayBtn;
+      let ytPlayBtn = null;
       let ytIframe = null;
       let ytPlaying = false;
+      let isYtReady = false;
+      let pendingPlay = false;
+      let playRetryTimer = null;
 
       const setYtPlaying = (playing) => {
         if (!ytPlayBtn) return;
@@ -528,6 +533,112 @@ document.addEventListener('DOMContentLoaded', () => {
         ytPlayBtn.classList.toggle('active', playing);
       };
 
+      const sendYtCommand = (func, args) => {
+        if (!ytIframe || !ytIframe.contentWindow) return;
+        try {
+          ytIframe.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: func,
+            args: args !== undefined ? args : ''
+          }), '*');
+        } catch (_) {}
+      };
+
+      const initYtIframe = () => {
+        if (ytIframe && document.body.contains(ytIframe)) return ytIframe;
+        // Clean up any stale iframe
+        document.querySelectorAll('#youtube-player').forEach(el => el.remove());
+
+        ytIframe = document.createElement('iframe');
+        ytIframe.id = 'youtube-player';
+        ytIframe.style.cssText = 'position:fixed;bottom:0;left:0;width:200px;height:200px;opacity:0.001;pointer-events:none;border:none;z-index:-9999;';
+        ytIframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+        ytIframe.setAttribute('title', 'נגן שיר מיוטיוב');
+
+        const originParam = (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null')
+          ? `&origin=${encodeURIComponent(window.location.origin)}`
+          : '';
+        ytIframe.src = `https://www.youtube.com/embed/${cfg.youtubeId}?enablejsapi=1&playsinline=1${originParam}`;
+
+        ytIframe.addEventListener('load', () => {
+          isYtReady = true;
+          sendYtCommand('listening');
+          if (pendingPlay) {
+            sendYtCommand('playVideo');
+          }
+        });
+
+        document.body.appendChild(ytIframe);
+        return ytIframe;
+      };
+
+      const handleYtMessage = (event) => {
+        let data = event.data;
+        if (typeof data === 'string') {
+          try {
+            data = JSON.parse(data);
+          } catch (_) {
+            return;
+          }
+        }
+        if (!data || typeof data !== 'object') return;
+
+        if (data.event === 'onReady') {
+          isYtReady = true;
+          if (pendingPlay) {
+            sendYtCommand('playVideo');
+          }
+        }
+
+        let state = null;
+        if (data.event === 'onStateChange') {
+          state = data.info;
+        } else if (data.info && typeof data.info.playerState !== 'undefined') {
+          state = data.info.playerState;
+        }
+
+        if (state !== null) {
+          if (state === 1) { // Playing
+            pendingPlay = false;
+            if (playRetryTimer) {
+              clearInterval(playRetryTimer);
+              playRetryTimer = null;
+            }
+            setYtPlaying(true);
+          } else if (state === 2) { // Paused
+            if (!pendingPlay) {
+              setYtPlaying(false);
+            }
+          } else if (state === 0) { // Ended
+            pendingPlay = false;
+            if (playRetryTimer) {
+              clearInterval(playRetryTimer);
+              playRetryTimer = null;
+            }
+            setYtPlaying(false);
+          }
+        }
+      };
+
+      window.addEventListener('message', handleYtMessage);
+
+      cleanupYtPlayer = () => {
+        pendingPlay = false;
+        if (playRetryTimer) {
+          clearInterval(playRetryTimer);
+          playRetryTimer = null;
+        }
+        window.removeEventListener('message', handleYtMessage);
+        if (ytIframe) {
+          sendYtCommand('stopVideo');
+          ytIframe.remove();
+          ytIframe = null;
+        }
+      };
+
+      // Pre-initialize iframe so it is already loaded before user clicks
+      initYtIframe();
+
       ytPlayBtn = document.createElement('button');
       ytPlayBtn.id = 'youtube-play-btn';
       ytPlayBtn.setAttribute('aria-label', 'נגן שיר מיוטיוב');
@@ -536,22 +647,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
       ytPlayBtn.addEventListener('click', () => {
         if (ytPlaying) {
-          if (ytIframe) {
-            ytIframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+          pendingPlay = false;
+          if (playRetryTimer) {
+            clearInterval(playRetryTimer);
+            playRetryTimer = null;
           }
+          sendYtCommand('pauseVideo');
           setYtPlaying(false);
         } else {
-          if (!ytIframe) {
-            ytIframe = document.createElement('iframe');
-            ytIframe.id = 'youtube-player';
-            ytIframe.style.display = 'none';
-            ytIframe.setAttribute('allow', 'autoplay');
-            ytIframe.src = `https://www.youtube.com/embed/${cfg.youtubeId}?enablejsapi=1&autoplay=1`;
-            document.body.appendChild(ytIframe);
-          } else {
-            ytIframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-          }
+          pendingPlay = true;
           setYtPlaying(true);
+          initYtIframe();
+          sendYtCommand('playVideo');
+
+          // If YouTube is still completing its initial handshake, retry sending playVideo until playing starts
+          if (playRetryTimer) clearInterval(playRetryTimer);
+          let attempts = 0;
+          playRetryTimer = setInterval(() => {
+            attempts++;
+            if (!pendingPlay || ytPlaying || attempts > 6) {
+              clearInterval(playRetryTimer);
+              playRetryTimer = null;
+              return;
+            }
+            sendYtCommand('playVideo');
+          }, 350);
         }
       });
     }
@@ -1151,6 +1271,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof cancelAutoNext === 'function') cancelAutoNext();
       if (typeof removeGoBanner === 'function') removeGoBanner();
       if (typeof stopScroll === 'function') stopScroll();
+      if (typeof cleanupYtPlayer === 'function') cleanupYtPlayer();
 
       const resp = await fetch(url);
       if (!resp.ok) throw new Error('Fetch failed: ' + resp.status);
@@ -1279,63 +1400,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, { passive: true });
 
-  // Tap anywhere (not on interactive elements) to toggle scroll
-  document.addEventListener('click', (e) => {
-    if (focusPrompt && !initialTouchDone) return;
-    if (isSwipeGesture) return;
-    if (playBtn && playBtn.style.display === 'none') return;
-    const tag = e.target.tagName;
-    if (['A', 'BUTTON', 'INPUT', 'LABEL', 'SELECT', 'TEXTAREA'].includes(tag)) return;
-    if (e.target.closest('a, button, .speed-badge, #pedal-focus-prompt')) return;
-    handleUserToggleScroll();
-  });
+
 
   // ── Hardware Bluetooth Foot Pedal & Keyboard Listener ──────────────────────
-  // Input sink with inputmode="none" so iOS Safari captures Bluetooth pedal/keyboard
-  // WITHOUT showing the on-screen virtual software keyboard.
-  const pedalFocusSink = document.createElement('input');
-  pedalFocusSink.type = 'text';
-  pedalFocusSink.id = 'pedal-focus-sink';
-  pedalFocusSink.setAttribute('tabindex', '0');
-  pedalFocusSink.setAttribute('inputmode', 'none');
-  pedalFocusSink.setAttribute('virtualkeyboardpolicy', 'manual');
-  pedalFocusSink.setAttribute('autofocus', 'true');
-  pedalFocusSink.autofocus = true;
-  pedalFocusSink.setAttribute('autocomplete', 'off');
-  pedalFocusSink.setAttribute('autocorrect', 'off');
-  pedalFocusSink.setAttribute('autocapitalize', 'off');
-  pedalFocusSink.setAttribute('spellcheck', 'false');
-  // Kept interactable in viewport so iOS Safari grants first-responder status
-  pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
-  document.body.appendChild(pedalFocusSink);
+  const isShowMode = Boolean(
+    window.location.search.includes('mode=show') ||
+    window.location.search.includes('show=') ||
+    window.location.search === '?show' ||
+    window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/')
+  );
 
-  // ── Initial Focus Reminder Overlay (Shown on entering a song from index in show mode) ──
-  const isShowPage = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+  let pedalFocusSink = null;
   let focusPrompt = null;
   let initialTouchDone = false;
-
-  if (isShowPage) {
-    focusPrompt = document.createElement('div');
-    focusPrompt.id = 'pedal-focus-prompt';
-    focusPrompt.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10000;cursor:pointer;user-select:none;transition:opacity 0.25s ease;display:flex;align-items:center;justify-content:center;box-sizing:border-box;direction:rtl;';
-
-    const promptCard = document.createElement('div');
-    promptCard.className = 'pedal-focus-prompt-card';
-    promptCard.style.cssText = 'background:rgba(11,16,26,0.96);color:#38bdf8;font-size:16px;font-weight:700;padding:22px 32px;border-radius:20px;border:2px solid rgba(56,189,248,0.75);box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 25px rgba(56,189,248,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-family:sans-serif;text-align:center;max-width:85vw;box-sizing:border-box;transition:transform 0.25s ease;';
-    promptCard.innerHTML = '<i class="fa-solid fa-hand-pointer" style="font-size:28px;margin-bottom:2px;"></i><span>נגיעה במסך מחברת את הפדל</span><span style="font-size:12px;font-weight:400;color:#94a3b8;">הקש בכל מקום להמשך</span>';
-    focusPrompt.appendChild(promptCard);
-
-    // Tapping ANYWHERE on the overlay connects focus and dismisses without starting scroll
-    const handleOverlayDismiss = (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      ensurePedalFocus();
-      dismissFocusPrompt();
-    };
-    focusPrompt.addEventListener('click', handleOverlayDismiss);
-    focusPrompt.addEventListener('touchend', handleOverlayDismiss);
-    document.body.appendChild(focusPrompt);
-  }
 
   function dismissFocusPrompt() {
     if (!focusPrompt || initialTouchDone) return;
@@ -1356,6 +1433,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function logAction() { }
 
   function ensurePedalFocus() {
+    if (!isShowMode || !pedalFocusSink) return;
     const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
       if (active !== pedalFocusSink) {
@@ -1372,27 +1450,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Ensure focus is established synchronously upon any touch / user gesture
-  ['touchstart', 'touchend', 'pointerdown', 'pointerup', 'click'].forEach(evt => {
-    document.addEventListener(evt, (e) => {
-      if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
-      // Synchronous focus call required by iOS Safari security model
-      ensurePedalFocus();
-      dismissFocusPrompt();
-    }, { capture: true, passive: true });
-  });
+  if (isShowMode) {
+    pedalFocusSink = document.createElement('input');
+    pedalFocusSink.type = 'text';
+    pedalFocusSink.id = 'pedal-focus-sink';
+    pedalFocusSink.setAttribute('tabindex', '0');
+    pedalFocusSink.setAttribute('inputmode', 'none');
+    pedalFocusSink.setAttribute('virtualkeyboardpolicy', 'manual');
+    pedalFocusSink.setAttribute('autofocus', 'true');
+    pedalFocusSink.autofocus = true;
+    pedalFocusSink.setAttribute('autocomplete', 'off');
+    pedalFocusSink.setAttribute('autocorrect', 'off');
+    pedalFocusSink.setAttribute('autocapitalize', 'off');
+    pedalFocusSink.setAttribute('spellcheck', 'false');
+    pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
+    document.body.appendChild(pedalFocusSink);
 
-  window.addEventListener('focus', ensurePedalFocus);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') ensurePedalFocus();
-  });
-  document.addEventListener('fullscreenchange', ensurePedalFocus);
-  window.addEventListener('resize', ensurePedalFocus);
+    const isShowPage = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+    if (isShowPage) {
+      focusPrompt = document.createElement('div');
+      focusPrompt.id = 'pedal-focus-prompt';
+      focusPrompt.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10000;cursor:pointer;user-select:none;transition:opacity 0.25s ease;display:flex;align-items:center;justify-content:center;box-sizing:border-box;direction:rtl;';
 
-  // Initial focus attempts
-  ensurePedalFocus();
-  setTimeout(ensurePedalFocus, 60);
-  setTimeout(ensurePedalFocus, 250);
+      const promptCard = document.createElement('div');
+      promptCard.className = 'pedal-focus-prompt-card';
+      promptCard.style.cssText = 'background:rgba(11,16,26,0.96);color:#38bdf8;font-size:16px;font-weight:700;padding:22px 32px;border-radius:20px;border:2px solid rgba(56,189,248,0.75);box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 25px rgba(56,189,248,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-family:sans-serif;text-align:center;max-width:85vw;box-sizing:border-box;transition:transform 0.25s ease;';
+      promptCard.innerHTML = '<i class="fa-solid fa-hand-pointer" style="font-size:28px;margin-bottom:2px;"></i><span>נגיעה במסך מחברת את הפדל</span><span style="font-size:12px;font-weight:400;color:#94a3b8;">הקש בכל מקום להמשך</span>';
+      focusPrompt.appendChild(promptCard);
+
+      const handleOverlayDismiss = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        ensurePedalFocus();
+        dismissFocusPrompt();
+      };
+      focusPrompt.addEventListener('click', handleOverlayDismiss);
+      focusPrompt.addEventListener('touchend', handleOverlayDismiss);
+      document.body.appendChild(focusPrompt);
+    }
+
+    ['touchstart', 'touchend'].forEach(evt => {
+      document.addEventListener(evt, (e) => {
+        if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
+        ensurePedalFocus();
+        dismissFocusPrompt();
+      }, { capture: true, passive: true });
+    });
+
+    window.addEventListener('focus', ensurePedalFocus);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') ensurePedalFocus();
+    });
+    document.addEventListener('fullscreenchange', ensurePedalFocus);
+    window.addEventListener('resize', ensurePedalFocus);
+
+    ensurePedalFocus();
+    setTimeout(ensurePedalFocus, 60);
+    setTimeout(ensurePedalFocus, 250);
+  }
 
   let lastPedalTime = 0;
 
@@ -1424,76 +1539,78 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 1. BeforeInput event (standard mobile/tablet text insertion from pedal)
-  pedalFocusSink.addEventListener('beforeinput', (e) => {
-    const data = e.data || '';
-    const inputType = e.inputType || '';
-    logDebug('beforeinput', `data="${data}" type="${inputType}"`);
+  if (pedalFocusSink) {
+    pedalFocusSink.addEventListener('beforeinput', (e) => {
+      const data = e.data || '';
+      const inputType = e.inputType || '';
+      logDebug('beforeinput', `data="${data}" type="${inputType}"`);
 
-    if (data === ' ') {
-      e.preventDefault();
-      pedalFocusSink.value = '';
-      const now = performance.now();
-      if (now - lastPedalTime < 240) return;
-      lastPedalTime = now;
-      logAction('SPACE (beforeinput) -> TOGGLE SCROLL');
-      handleUserToggleScroll();
-      return;
-    }
-
-    if (data === '\n' || data === '\r' || inputType === 'insertParagraph' || inputType === 'insertLineBreak') {
-      e.preventDefault();
-      pedalFocusSink.value = '';
-      const now = performance.now();
-      if (now - lastPedalTime < 300) return;
-      lastPedalTime = now;
-      handleEnterAction('beforeinput');
-      return;
-    }
-  });
-
-  // 2. Legacy textInput event (WebKit specific)
-  pedalFocusSink.addEventListener('textInput', (e) => {
-    const data = e.data || '';
-    logDebug('textInput', `data="${data}"`);
-    if (data === ' ') {
-      e.preventDefault();
-      pedalFocusSink.value = '';
-      const now = performance.now();
-      if (now - lastPedalTime < 240) return;
-      lastPedalTime = now;
-      logAction('SPACE (textInput) -> TOGGLE SCROLL');
-      handleUserToggleScroll();
-    } else if (data === '\n' || data === '\r') {
-      e.preventDefault();
-      pedalFocusSink.value = '';
-      const now = performance.now();
-      if (now - lastPedalTime < 300) return;
-      lastPedalTime = now;
-      handleEnterAction('textInput');
-    }
-  });
-
-  // 3. Fallback Input event
-  pedalFocusSink.addEventListener('input', () => {
-    const val = pedalFocusSink.value || '';
-    logDebug('input', `value="${val}"`);
-    if (val.includes(' ')) {
-      pedalFocusSink.value = '';
-      const now = performance.now();
-      if (now - lastPedalTime >= 240) {
+      if (data === ' ') {
+        e.preventDefault();
+        pedalFocusSink.value = '';
+        const now = performance.now();
+        if (now - lastPedalTime < 240) return;
         lastPedalTime = now;
-        logAction('SPACE (input) -> TOGGLE SCROLL');
+        logAction('SPACE (beforeinput) -> TOGGLE SCROLL');
         handleUserToggleScroll();
+        return;
       }
-    } else if (val.includes('\n') || val.includes('\r')) {
-      pedalFocusSink.value = '';
-      const now = performance.now();
-      if (now - lastPedalTime >= 300) {
+
+      if (data === '\n' || data === '\r' || inputType === 'insertParagraph' || inputType === 'insertLineBreak') {
+        e.preventDefault();
+        pedalFocusSink.value = '';
+        const now = performance.now();
+        if (now - lastPedalTime < 300) return;
         lastPedalTime = now;
-        handleEnterAction('input');
+        handleEnterAction('beforeinput');
+        return;
       }
-    }
-  });
+    });
+
+    // 2. Legacy textInput event (WebKit specific)
+    pedalFocusSink.addEventListener('textInput', (e) => {
+      const data = e.data || '';
+      logDebug('textInput', `data="${data}"`);
+      if (data === ' ') {
+        e.preventDefault();
+        pedalFocusSink.value = '';
+        const now = performance.now();
+        if (now - lastPedalTime < 240) return;
+        lastPedalTime = now;
+        logAction('SPACE (textInput) -> TOGGLE SCROLL');
+        handleUserToggleScroll();
+      } else if (data === '\n' || data === '\r') {
+        e.preventDefault();
+        pedalFocusSink.value = '';
+        const now = performance.now();
+        if (now - lastPedalTime < 300) return;
+        lastPedalTime = now;
+        handleEnterAction('textInput');
+      }
+    });
+
+    // 3. Fallback Input event
+    pedalFocusSink.addEventListener('input', () => {
+      const val = pedalFocusSink.value || '';
+      logDebug('input', `value="${val}"`);
+      if (val.includes(' ')) {
+        pedalFocusSink.value = '';
+        const now = performance.now();
+        if (now - lastPedalTime >= 240) {
+          lastPedalTime = now;
+          logAction('SPACE (input) -> TOGGLE SCROLL');
+          handleUserToggleScroll();
+        }
+      } else if (val.includes('\n') || val.includes('\r')) {
+        pedalFocusSink.value = '';
+        const now = performance.now();
+        if (now - lastPedalTime >= 300) {
+          lastPedalTime = now;
+          handleEnterAction('input');
+        }
+      }
+    });
+  }
 
   // 4. Keydown event
   function handlePedalKeydown(e) {
@@ -1634,15 +1751,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // Register on window, document, and sink in capture phase
   window.addEventListener('keydown', handlePedalKeydown, { capture: true });
   document.addEventListener('keydown', handlePedalKeydown, { capture: true });
-  pedalFocusSink.addEventListener('keydown', handlePedalKeydown, { capture: true });
+  if (pedalFocusSink) {
+    pedalFocusSink.addEventListener('keydown', handlePedalKeydown, { capture: true });
+  }
 
   window.addEventListener('keypress', handlePedalKeypress, { capture: true });
   document.addEventListener('keypress', handlePedalKeypress, { capture: true });
-  pedalFocusSink.addEventListener('keypress', handlePedalKeypress, { capture: true });
+  if (pedalFocusSink) {
+    pedalFocusSink.addEventListener('keypress', handlePedalKeypress, { capture: true });
+  }
 
   window.addEventListener('keyup', handlePedalKeyup, { capture: true });
   document.addEventListener('keyup', handlePedalKeyup, { capture: true });
-  pedalFocusSink.addEventListener('keyup', handlePedalKeyup, { capture: true });
+  if (pedalFocusSink) {
+    pedalFocusSink.addEventListener('keyup', handlePedalKeyup, { capture: true });
+  }
 
   // 6. Gamepad API listener for pedals operating as HID game controllers
   let prevGamepadButtons = [];
