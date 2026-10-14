@@ -35,8 +35,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b0e14" />
 
-  <link rel="stylesheet" href="../styles.css?v=1.9.3" />
-  <link rel="stylesheet" href="../songs.css?v=1.9.3" />
+  <link rel="stylesheet" href="../styles.css?v=2.0.1" />
+  <link rel="stylesheet" href="../songs.css?v=2.0.1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     html,
@@ -574,7 +574,7 @@
 
   <main class="songs" id="songs"></main>
 
-  <script src="../songsData.js?v=1.9.3"></script>
+  <script src="../songsData.js?v=2.0.1"></script>
   <script>
     const songs = typeof getShowSongs === 'function' ? getShowSongs() : [];
 
@@ -585,11 +585,11 @@
       row.className = 'song-item';
 
       const a = document.createElement('a');
-      const songFileName = song.file || song.name;
-      a.href = `../content/${encodeURIComponent(songFileName)}.html?mode=show`;
+      const songSlug = song.slug || song.file;
+      a.href = `../content/${encodeURIComponent(songSlug)}.html?mode=show`;
 
       const img = document.createElement('img');
-      img.src = `../Media/songs/${songFileName}.webp`;
+      img.src = `../Media/songs/${song.name}.webp`;
       img.alt = song.name;
       img.className = 'song-thumb';
       img.onerror = function () {
@@ -921,7 +921,7 @@
     });
 
   </script>
-  <script src="../script.js?v=1.9.3"></script>
+  <script src="../script.js?v=2.0.1"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

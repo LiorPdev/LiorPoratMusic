@@ -3,6 +3,6 @@
 exclude:
   - Archive
   - _archive
-  - sync-version.js
+  - scripts
   - version.json
 

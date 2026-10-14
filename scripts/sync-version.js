@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const configPath = path.join(__dirname, 'version.json');
+const rootDir = path.join(__dirname, '..');
+const configPath = path.join(rootDir, 'version.json');
 const version = JSON.parse(fs.readFileSync(configPath, 'utf8')).version;
 
 function processDirectory(dir, isSongsDir = false) {
@@ -31,7 +32,7 @@ function processDirectory(dir, isSongsDir = false) {
             });
 
             if (modified) {
-                console.log(`Updated ${path.relative(__dirname, filePath)} to v${version}`);
+                console.log(`Updated ${path.relative(rootDir, filePath)} to v${version}`);
                 fs.writeFileSync(filePath, content, 'utf8');
             }
         }
@@ -39,10 +40,10 @@ function processDirectory(dir, isSongsDir = false) {
 }
 
 console.log(`Starting sync to version ${version}...`);
-processDirectory(__dirname);
+processDirectory(rootDir);
 
 // Also sync root sw.js cache version and asset query versions
-const rootSwPath = path.join(__dirname, 'sw.js');
+const rootSwPath = path.join(rootDir, 'sw.js');
 if (fs.existsSync(rootSwPath)) {
     let swContent = fs.readFileSync(rootSwPath, 'utf8');
     swContent = swContent.replace(/const CACHE_NAME = ['"]liorporat-show-v[^'"]*['"];/, `const CACHE_NAME = 'liorporat-show-v${version}';`);

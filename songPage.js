@@ -85,10 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let closeBtn = null;
     if (!isShow) {
       closeBtn = document.createElement('a');
-      closeBtn.href = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/content/') ? '../songs/' : './';
+      const songsListUrl = (window.location.origin && window.location.origin !== 'null' && window.location.protocol.startsWith('http'))
+        ? (window.location.origin + '/songs/')
+        : '../songs/';
+      closeBtn.href = songsListUrl;
       closeBtn.className = 'close-btn';
       closeBtn.setAttribute('aria-label', 'חזרה');
-      closeBtn.innerHTML = '×';
+      closeBtn.innerHTML = '✕';
       try {
         const ref = document.referrer ? new URL(document.referrer) : null;
         if (ref && ref.origin === location.origin && ref.href !== location.href) {
@@ -470,6 +473,20 @@ document.addEventListener('DOMContentLoaded', () => {
       playBtn.innerHTML = '<i class="fa-solid fa-angles-down"></i>';
     }
 
+    // Song slug & hash state
+    const songSlug = (cfg && cfg.slug) || '';
+
+    const updateAddressBar = (hash) => {
+      if (isShow) return;
+      const displayHash = (hash === '#chords') ? '#chords' : '';
+      if (window.location.hash !== displayHash) {
+        try {
+          const cleanUrl = window.location.pathname + window.location.search + displayHash;
+          history.replaceState(null, '', cleanUrl);
+        } catch (_) {}
+      }
+    };
+
     // מילים / אקורדים toggle
     if (lyricsText && chordsText) {
       const toggle = document.createElement('div');
@@ -501,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnLyrics.classList.toggle('active', !showChords);
         btnChords.classList.toggle('active', showChords);
         const hash = showChords ? '#chords' : '#lyrics';
-        if (window.location.hash !== hash) history.replaceState(null, '', hash);
+        updateAddressBar(hash);
         // hide credits in chords view
         if (cr) cr.style.display = showChords ? 'none' : '';
         if (playBtn) playBtn.style.display = '';
@@ -514,6 +531,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ? (window.location.hash === '#chords')
         : (cfg.mode === 'chords' && Boolean(chordsText));
       updateView(initialShowChords);
+    } else {
+      const initialHash = (window.location.hash === '#chords' || (!lyricsText && chordsText))
+        ? '#chords'
+        : (window.location.hash || '');
+      updateAddressBar(initialHash);
     }
 
     // YouTube Play/Stop button (available for any song with youtubeId in regular mode)
@@ -605,9 +627,15 @@ document.addEventListener('DOMContentLoaded', () => {
               playRetryTimer = null;
             }
             setYtPlaying(true);
+            if (typeof startScroll === 'function') {
+              startScroll();
+            }
           } else if (state === 2) { // Paused
             if (!pendingPlay) {
               setYtPlaying(false);
+              if (typeof stopScroll === 'function') {
+                stopScroll();
+              }
             }
           } else if (state === 0) { // Ended
             pendingPlay = false;
@@ -616,6 +644,9 @@ document.addEventListener('DOMContentLoaded', () => {
               playRetryTimer = null;
             }
             setYtPlaying(false);
+            if (typeof stopScroll === 'function') {
+              stopScroll();
+            }
           }
         }
       };
@@ -654,11 +685,17 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           sendYtCommand('pauseVideo');
           setYtPlaying(false);
+          if (typeof stopScroll === 'function') {
+            stopScroll();
+          }
         } else {
           pendingPlay = true;
           setYtPlaying(true);
           initYtIframe();
           sendYtCommand('playVideo');
+          if (typeof startScroll === 'function') {
+            startScroll();
+          }
 
           // If YouTube is still completing its initial handshake, retry sending playVideo until playing starts
           if (playRetryTimer) clearInterval(playRetryTimer);
@@ -927,7 +964,48 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.prepend(topbar);
     }
 
-    // Content goes into main (below the topbar)
+    // Keep --topbar-height CSS variable in sync with actual rendered topbar height
+    const updateTopbarHeight = () => {
+      if (topbar && topbar.offsetHeight) {
+        document.documentElement.style.setProperty('--topbar-height', `${topbar.offsetHeight}px`);
+      }
+    };
+    updateTopbarHeight();
+    window.addEventListener('resize', updateTopbarHeight);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(updateTopbarHeight);
+    }
+
+    // Listen icons (placed before song text for easy access)
+    if (!isShow) {
+      const hasAnyLink = Boolean(urls.spotify || urls.apple || urls.youtube);
+      if (hasAnyLink) {
+        const icons = document.createElement('div');
+        icons.className = 'icons';
+
+        const mkIcon = (href, cls, label) => {
+          if (!href) return null;
+          const a = document.createElement('a');
+          a.href = href;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.className = 'song-icon';
+          a.setAttribute('aria-label', label);
+          const i = document.createElement('i');
+          i.className = cls;
+          a.appendChild(i);
+          return a;
+        };
+
+        [mkIcon(urls.spotify, 'fa-brands fa-spotify', 'Spotify'),
+        mkIcon(urls.apple, 'fa-brands fa-apple', 'Apple Music'),
+        mkIcon(urls.youtube, 'fa-brands fa-youtube', 'YouTube')
+        ].forEach(x => x && icons.appendChild(x));
+        main.appendChild(icons);
+      }
+    }
+
+    // Content goes into main (below the topbar and listen icons)
     main.appendChild(pre);
 
     if (isAutoFont) {
@@ -952,33 +1030,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!isShow) {
       main.appendChild(cr);
-    }
-
-    // listen icons and footer action buttons (omitted for Show songs)
-    if (!isShow) {
-      const icons = document.createElement('span');
-      icons.className = 'icons';
-      icons.appendChild(document.createTextNode('האזינו לשיר '));
-
-      const mkIcon = (href, cls, label) => {
-        if (!href) return null;
-        const a = document.createElement('a');
-        a.href = href;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        a.className = 'song-icon';
-        a.setAttribute('aria-label', label);
-        const i = document.createElement('i');
-        i.className = cls;
-        a.appendChild(i);
-        return a;
-      };
-
-      [mkIcon(urls.spotify, 'fa-brands fa-spotify', 'Spotify'),
-      mkIcon(urls.apple, 'fa-brands fa-apple', 'Apple Music'),
-      mkIcon(urls.youtube, 'fa-brands fa-youtube', 'YouTube')
-      ].forEach(x => x && icons.appendChild(x));
-      main.appendChild(icons);
 
       const spacer1 = document.createElement('div');
       spacer1.style.height = '20px';

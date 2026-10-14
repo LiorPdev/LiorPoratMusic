@@ -31,8 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // 2. Share button logic
   const shareBtn = document.getElementById('shareBtn');
   if (shareBtn) {
+    function getCleanShareUrl() {
+      try {
+        const url = new URL(window.location.href);
+        if (url.hash === '#lyrics') url.hash = '';
+        return url.href;
+      } catch (_) {}
+      return window.location.href;
+    }
+
     function fallbackCopy() {
-      const url = window.location.href;
+      const url = getCleanShareUrl();
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url)
           .then(() => showToast('הקישור הועתק בהצלחה!'))
@@ -43,10 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function doShare() {
+      const url = getCleanShareUrl();
       const payload = {
         title: document.title || 'ליאור פורת',
-        text: 'ליאור פורת - בלוז-רוק ומה שביניהם',
-        url: window.location.href
+        text: 'ליאור פורת - שירים, מילים ואקורדים',
+        url: url
       };
       if (navigator.share && navigator.canShare && navigator.canShare(payload)) {
         navigator.share(payload).catch((err) => {
