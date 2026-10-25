@@ -11,8 +11,8 @@
 
   <!-- Open Graph -->
   <meta property="og:site_name" content="Lior Porat Music">
-  <meta property="og:title" content="שירים להופעה – ליאור פורת">
-  <meta property="og:description" content="רשימת שירים ומילים להופעה של ליאור פורת כולל אקורדים">
+  <meta property="og:title" content="שירים – ליאור פורת">
+  <meta property="og:description" content="שירים - ליאור פורת">
   <meta property="og:locale" content="he_IL">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -34,9 +34,21 @@
   <link rel="apple-touch-icon" sizes="180x180" href="../Media/show/apple-touch-icon.png" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0b0e14" />
+  <!-- iOS Standalone Web App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="שירים להופעה" />
 
-  <link rel="stylesheet" href="../styles.css?v=2.0.1" />
-  <link rel="stylesheet" href="../songs.css?v=2.0.1" />
+  <!-- Google Fonts for Stage Text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@400;600;700;800;900&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="../styles.css?v=2.0.2" />
+  <link rel="stylesheet" href="../songs.css?v=2.0.2" />
+  <link rel="stylesheet" href="../song.css?v=2.0.2" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     html,
@@ -54,6 +66,35 @@
       padding-top: 56px;
       display: flex;
       flex-direction: column;
+    }
+
+    html.show-song-root,
+    body.show-song {
+      height: auto !important;
+      min-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      display: block !important;
+      padding-top: 0 !important;
+      background: #000000 !important;
+      background-color: #000000 !important;
+    }
+
+    body.show-song #showListTopbar,
+    body.show-song #songs {
+      display: none !important;
+    }
+
+    #songView {
+      width: 100%;
+      min-height: 100vh;
+      box-sizing: border-box;
+      background: #000000;
+      display: none;
+    }
+
+    body.show-song #songView {
+      display: block !important;
     }
 
     .song-topbar {
@@ -558,7 +599,7 @@
 </head>
 
 <body>
-  <div class="song-topbar">
+  <div class="song-topbar" id="showListTopbar">
     <div class="topbar-inner">
       <div class="title-group">
         <button id="showSettingsBtn" class="settings-btn" aria-label="הגדרות צבעי הופעה" title="הגדרות צבעי הופעה">
@@ -573,8 +614,10 @@
   <h1 class="visually-hidden">שירים להופעה של ליאור פורת</h1>
 
   <main class="songs" id="songs"></main>
+  <main class="wrap" id="songView"></main>
 
-  <script src="../songsData.js?v=2.0.1"></script>
+  <script src="../songsData.js?v=2.0.2"></script>
+  <script src="../songPage.js?v=2.0.2"></script>
   <script>
     const songs = typeof getShowSongs === 'function' ? getShowSongs() : [];
 
@@ -586,7 +629,12 @@
 
       const a = document.createElement('a');
       const songSlug = song.slug || song.file;
-      a.href = `../content/${encodeURIComponent(songSlug)}.html?mode=show`;
+      a.href = `?song=${encodeURIComponent(songSlug)}`;
+
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        openShowSong(songSlug);
+      });
 
       const img = document.createElement('img');
       img.src = `../Media/songs/${song.name}.webp`;
@@ -611,6 +659,62 @@
       row.appendChild(a);
       el.appendChild(row);
     });
+
+    async function openShowSong(songSlug, pushHistory = true) {
+      if (!songSlug) return;
+      try {
+        if (pushHistory) {
+          history.pushState({ song: songSlug }, '', `?song=${encodeURIComponent(songSlug)}`);
+        }
+        document.body.classList.add('show-song');
+        document.documentElement.classList.add('show-song-root');
+
+        if (typeof window.navigateToSong === 'function') {
+          await window.navigateToSong(`?song=${encodeURIComponent(songSlug)}`);
+        }
+      } catch (err) {
+        console.error('Failed to open show song:', err);
+      }
+    }
+
+    function closeShowSongInPlace(pushHistory = true) {
+      if (pushHistory) {
+        history.pushState({}, '', './');
+      }
+      if (typeof window.stopScroll === 'function') window.stopScroll();
+      if (typeof window.removeGoBanner === 'function') window.removeGoBanner();
+
+      document.querySelectorAll('.show-menu-trigger, .show-exit-btn, .show-menu-overlay, .show-karaoke-countdown').forEach(n => n.remove());
+
+      const songView = document.getElementById('songView');
+      if (songView) {
+        songView.innerHTML = '';
+      }
+
+      document.body.classList.remove('show-song');
+      document.documentElement.classList.remove('show-song-root');
+
+      document.title = 'שירים להופעה – ליאור פורת';
+      fitSongFontSize();
+    }
+    window.closeShowSongInPlace = closeShowSongInPlace;
+    window.openShowSong = openShowSong;
+
+    window.addEventListener('popstate', () => {
+      const params = new URLSearchParams(window.location.search);
+      const songSlug = params.get('song');
+      if (songSlug) {
+        openShowSong(songSlug, false);
+      } else {
+        closeShowSongInPlace(false);
+      }
+    });
+
+    // Check if initial URL has ?song=
+    const initialSongParam = new URLSearchParams(window.location.search).get('song');
+    if (initialSongParam) {
+      openShowSong(initialSongParam, false);
+    }
 
     function fitSongFontSize() {
       const names = document.querySelectorAll('.song-name');
@@ -926,7 +1030,7 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('../sw.js', { scope: '/' }).catch(() => {
-          navigator.serviceWorker.register('./sw.js').catch(() => {});
+          navigator.serviceWorker.register('./sw.js').catch(() => { });
         });
       });
     }

@@ -1,10 +1,30 @@
+// If opened directly as a show page outside of /show/, redirect into /show/?song=slug so it stays within PWA scope
+(function checkShowRedirect() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const isShowMode = params.get('mode') === 'show' || params.has('show');
+    const isInsideShow = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+    if (isShowMode && !isInsideShow) {
+      const rawPath = decodeURIComponent(window.location.pathname).replace(/\\/g, '/');
+      const curFile = rawPath.split('/').pop().replace(/\.html$/i, '').trim();
+      const cfg = window.SONG || {};
+      const slug = cfg.slug || cfg.file || curFile;
+      if (slug) {
+        window.location.replace(`../show/?song=${encodeURIComponent(slug)}`);
+      }
+    }
+  } catch (e) { }
+})();
+
 // Immediately apply stage colors from localStorage if in show mode
 (function applyStageColors() {
   try {
-    const isShow = window.location.search.includes('mode=show') ||
-                   window.location.search.includes('show=') ||
+    const urlParams = new URLSearchParams(window.location.search);
+    const isShow = urlParams.has('song') ||
+                   urlParams.get('mode') === 'show' ||
+                   urlParams.has('show') ||
                    window.location.search === '?show' ||
-                   window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+                   (window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/') && urlParams.has('song'));
     if (isShow) {
       document.documentElement.classList.add('show-song-root');
       const saved = JSON.parse(localStorage.getItem('stage_colors') || '{}');
@@ -51,10 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const isShow = Boolean(
+      urlParams.has('song') ||
       urlParams.get('mode') === 'show' ||
       urlParams.has('show') ||
       cfg.hideFooter ||
-      window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/')
+      (window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/') && urlParams.has('song'))
     );
     if (isShow) {
       document.body.classList.add('show-song');
@@ -71,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     cleanupYtPlayer();
-    // Remove any legacy duplicated markup if exists
-    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar, .show-exit-btn, .show-menu-trigger, .show-menu-overlay, .show-karaoke-countdown, #youtube-player').forEach(n => n.remove());
+    // Remove any legacy duplicated markup if exists (preserve #showListTopbar if on show index)
+    document.querySelectorAll('h1, .icons, .share-link, .back-link, .credits, pre, .close-btn, .song-topbar:not(#showListTopbar), .show-exit-btn, .show-menu-trigger, .show-menu-overlay, .show-karaoke-countdown, #youtube-player').forEach(n => n.remove());
 
     // ── Fixed top bar ────────────────────────────────────────────────────────
     const topbar = document.createElement('div');
@@ -780,8 +801,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const rawPath = decodeURIComponent(window.location.pathname).replace(/\\/g, '/');
       const curFile = rawPath.split('/').pop().replace(/\.html$/i, '').trim();
       const curTitle = document.title.trim();
+      const songParam = urlParams.get('song');
 
-      let idx = SHOW_SONGS.findIndex(s => s.file === curFile || s.name === curFile || s.name === curTitle || s.file === curTitle);
+      let idx = -1;
+      if (songParam) {
+        idx = SHOW_SONGS.findIndex(s => s.slug === songParam || s.file === songParam || s.name === songParam);
+      }
+      if (idx === -1) {
+        idx = SHOW_SONGS.findIndex(s => s.file === curFile || s.name === curFile || s.name === curTitle || s.file === curTitle);
+      }
       if (idx === -1) {
         idx = SHOW_SONGS.findIndex(s => curTitle.includes(s.name) || curTitle.includes(s.file));
       }
@@ -797,19 +825,24 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.prepend(menuTrigger);
 
       // ── Fixed Top-Left Red Exit Button (X) to Return to Songs List ──
-      const inContentOrSongs = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/content/') ||
-                               window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/songs/');
+      const isInsideShowPath = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
       const exitBtn = document.createElement('a');
       showExitBtn = exitBtn;
-      exitBtn.href = inContentOrSongs ? '../show/index.html' : './';
+      exitBtn.href = isInsideShowPath ? './' : '../show/index.html';
       exitBtn.className = 'show-exit-btn';
       exitBtn.setAttribute('aria-label', 'חזרה לרשימת השירים');
       exitBtn.title = 'חזרה לרשימת השירים';
       exitBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
       exitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         if (typeof stopScroll === 'function') stopScroll();
         if (typeof removeGoBanner === 'function') removeGoBanner();
+        if (isInsideShowPath && typeof window.closeShowSongInPlace === 'function') {
+          window.closeShowSongInPlace();
+        } else {
+          window.location.href = exitBtn.href;
+        }
       });
       document.body.prepend(exitBtn);
 
@@ -873,23 +906,36 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       if (idx !== -1) {
+        const isShowPath = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
         const showParam = isShow ? '?mode=show' : '';
         // Set URLs for swipe and pedal navigation (loops continuously)
         if (idx < SHOW_SONGS.length - 1) {
           const nextSong = SHOW_SONGS[idx + 1];
-          nextSongUrl = `${encodeURIComponent(nextSong.file || nextSong.name)}.html${showParam}`;
+          const nextSlug = nextSong.slug || nextSong.file || nextSong.name;
+          nextSongUrl = isShowPath
+            ? `?song=${encodeURIComponent(nextSlug)}`
+            : `${encodeURIComponent(nextSong.file || nextSong.name)}.html${showParam}`;
         } else {
           // Last song loops back to the first song
           const firstSong = SHOW_SONGS[0];
-          nextSongUrl = `${encodeURIComponent(firstSong.file || firstSong.name)}.html${showParam}`;
+          const firstSlug = firstSong.slug || firstSong.file || firstSong.name;
+          nextSongUrl = isShowPath
+            ? `?song=${encodeURIComponent(firstSlug)}`
+            : `${encodeURIComponent(firstSong.file || firstSong.name)}.html${showParam}`;
         }
         if (idx > 0) {
           const prevSong = SHOW_SONGS[idx - 1];
-          prevSongUrl = `${encodeURIComponent(prevSong.file || prevSong.name)}.html${showParam}`;
+          const prevSlug = prevSong.slug || prevSong.file || prevSong.name;
+          prevSongUrl = isShowPath
+            ? `?song=${encodeURIComponent(prevSlug)}`
+            : `${encodeURIComponent(prevSong.file || prevSong.name)}.html${showParam}`;
         } else {
           // First song loops back to the last song
           const lastSong = SHOW_SONGS[SHOW_SONGS.length - 1];
-          prevSongUrl = `${encodeURIComponent(lastSong.file || lastSong.name)}.html${showParam}`;
+          const lastSlug = lastSong.slug || lastSong.file || lastSong.name;
+          prevSongUrl = isShowPath
+            ? `?song=${encodeURIComponent(lastSlug)}`
+            : `${encodeURIComponent(lastSong.file || lastSong.name)}.html${showParam}`;
         }
 
         // Add Next / Prev navigation row in show menu
@@ -922,10 +968,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Return to show songs list
+      const isInsideShow = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
       const listBtn = document.createElement('a');
-      listBtn.href = inContentOrSongs ? '../show/index.html' : './';
+      listBtn.href = isInsideShow ? './' : '../show/index.html';
       listBtn.className = 'show-menu-list-btn';
       listBtn.innerHTML = '<i class="fa-solid fa-list-ul"></i> <span>רשימת השירים</span>';
+      listBtn.addEventListener('click', (e) => {
+        if (isInsideShow && typeof window.closeShowSongInPlace === 'function') {
+          e.preventDefault();
+          e.stopPropagation();
+          closeMenu();
+          if (typeof stopScroll === 'function') stopScroll();
+          if (typeof removeGoBanner === 'function') removeGoBanner();
+          window.closeShowSongInPlace();
+        }
+      });
       menuCard.appendChild(listBtn);
 
       menuOverlay.appendChild(menuCard);
@@ -1324,14 +1381,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof stopScroll === 'function') stopScroll();
       if (typeof cleanupYtPlayer === 'function') cleanupYtPlayer();
 
-      const resp = await fetch(url);
+      const urlObj = new URL(url, window.location.href);
+      const isShowContext = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+      let fetchUrl = url;
+
+      if (isShowContext && urlObj.searchParams.has('song')) {
+        const slug = urlObj.searchParams.get('song');
+        fetchUrl = `../content/${encodeURIComponent(slug)}.html`;
+      }
+
+      const resp = await fetch(fetchUrl);
       if (!resp.ok) throw new Error('Fetch failed: ' + resp.status);
       const htmlText = await resp.text();
       const doc = new DOMParser().parseFromString(htmlText, 'text/html');
 
       // 1. Update Title and History URL
       const newTitle = doc.title ? doc.title.trim() : '';
-      if (newTitle) document.title = newTitle;
+      if (newTitle) {
+        document.title = isShowContext ? `${newTitle} – שירים להופעה` : newTitle;
+      }
       window.history.pushState({ url }, '', url);
 
       // 2. Extract window.SONG
@@ -1349,11 +1417,13 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       window.SONG = newConfig;
 
-      // 3. Extract lyrics and chords
+      // 3. Extract lyrics, chords, and show scripts
       const newLyrics = doc.getElementById('lyrics');
       const newChords = doc.getElementById('chords');
+      const newShow = doc.getElementById('show');
       let curLyrics = document.getElementById('lyrics');
       let curChords = document.getElementById('chords');
+      let curShow = document.getElementById('show');
       const mainWrap = document.querySelector('main.wrap') || document.body;
       if (!curLyrics) {
         curLyrics = document.createElement('script');
@@ -1367,8 +1437,15 @@ document.addEventListener('DOMContentLoaded', () => {
         curChords.id = 'chords';
         mainWrap.appendChild(curChords);
       }
+      if (!curShow) {
+        curShow = document.createElement('script');
+        curShow.type = 'text/plain';
+        curShow.id = 'show';
+        mainWrap.appendChild(curShow);
+      }
       curLyrics.textContent = newLyrics ? newLyrics.textContent : '';
       curChords.textContent = newChords ? newChords.textContent : '';
+      curShow.textContent = newShow ? newShow.textContent : '';
 
       // 4. Scroll to top
       window.scrollTo(0, 0);
@@ -1398,12 +1475,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.state && e.state.url) {
       navigateToSong(e.state.url);
     } else {
-      navigateToSong(window.location.href);
+      const isShowContext = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
+      if (!isShowContext) {
+        navigateToSong(window.location.href);
+      }
     }
   });
 
+  // Expose helpers for show viewer
+  window.navigateToSong = navigateToSong;
+  window.buildSongContent = buildSongContent;
+  window.stopScroll = () => { if (typeof stopScroll === 'function') stopScroll(); };
+  window.removeGoBanner = () => { if (typeof removeGoBanner === 'function') removeGoBanner(); };
+  window.handleUserToggleScroll = () => { if (typeof handleUserToggleScroll === 'function') handleUserToggleScroll(); };
+
   // Initial build of current song
-  buildSongContent();
+  const isShowIndexWithoutSong = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/') &&
+                                !new URLSearchParams(window.location.search).has('song');
+  if (!isShowIndexWithoutSong) {
+    if (window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/') && new URLSearchParams(window.location.search).has('song')) {
+      const songSlug = new URLSearchParams(window.location.search).get('song');
+      navigateToSong(`?song=${encodeURIComponent(songSlug)}`);
+    } else {
+      buildSongContent();
+    }
+  }
 
   // ── Swipe gestures for mobile song navigation ──
   let touchStartX = 0;
@@ -1411,13 +1507,55 @@ document.addEventListener('DOMContentLoaded', () => {
   let touchStartTime = 0;
   let isSwipeGesture = false;
 
+  // ── Screen Tap / Click to Toggle Auto-Scroll ──
+  let touchStartPos = { x: 0, y: 0 };
+  let touchMovedDistance = 0;
+
   window.addEventListener('touchstart', (e) => {
     if (e.touches && e.touches.length === 1) {
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
+      touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      touchMovedDistance = 0;
       touchStartTime = performance.now();
     }
-  }, { passive: true });
+  }, { passive: true, capture: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches.length === 1) {
+      const dx = e.touches[0].clientX - touchStartPos.x;
+      const dy = e.touches[0].clientY - touchStartPos.y;
+      touchMovedDistance = Math.hypot(dx, dy);
+    }
+  }, { passive: true, capture: true });
+
+  document.addEventListener('click', (e) => {
+    // If there was significant drag movement (scrolling/swiping), don't trigger toggle
+    if (touchMovedDistance > 12) return;
+    if (isSwipeGesture) return;
+
+    // Check if menus or modals are open
+    if (document.querySelector('.show-menu-overlay.open')) return;
+    if (document.querySelector('.settings-modal-overlay.active')) return;
+
+    // Check if clicked element or its parent is interactive
+    const interactive = e.target.closest(
+      'button, a, input, select, textarea, label, ' +
+      '.show-menu-trigger, .show-exit-btn, .show-menu-overlay, .show-menu-card, ' +
+      '.settings-modal, .settings-modal-overlay, .song-topbar, #showListTopbar, ' +
+      '.pedal-focus-prompt-card, .color-swatches, .swatch-btn, .custom-picker-btn, ' +
+      '.speed-btn, .speed-badge, .view-toggle'
+    );
+    if (interactive) return;
+
+    // Only toggle if a song pre exists and is connected
+    const activePre = document.querySelector('pre');
+    if (!activePre || !activePre.isConnected) return;
+
+    if (typeof handleUserToggleScroll === 'function') {
+      handleUserToggleScroll();
+    }
+  });
 
   window.addEventListener('touchend', (e) => {
     if (e.changedTouches && e.changedTouches.length === 1) {
@@ -1517,30 +1655,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pedalFocusSink.style.cssText = 'position:fixed;bottom:10px;right:10px;width:32px;height:32px;opacity:0.01;border:none;margin:0;padding:0;background:transparent;caret-color:transparent;outline:none;z-index:9999;';
     document.body.appendChild(pedalFocusSink);
 
-    const isShowPage = window.location.pathname.replace(/\\/g, '/').toLowerCase().includes('/show/');
-    if (isShowPage) {
-      focusPrompt = document.createElement('div');
-      focusPrompt.id = 'pedal-focus-prompt';
-      focusPrompt.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:10000;cursor:pointer;user-select:none;transition:opacity 0.25s ease;display:flex;align-items:center;justify-content:center;box-sizing:border-box;direction:rtl;';
-
-      const promptCard = document.createElement('div');
-      promptCard.className = 'pedal-focus-prompt-card';
-      promptCard.style.cssText = 'background:rgba(11,16,26,0.96);color:#38bdf8;font-size:16px;font-weight:700;padding:22px 32px;border-radius:20px;border:2px solid rgba(56,189,248,0.75);box-shadow:0 12px 40px rgba(0,0,0,0.85),0 0 25px rgba(56,189,248,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-family:sans-serif;text-align:center;max-width:85vw;box-sizing:border-box;transition:transform 0.25s ease;';
-      promptCard.innerHTML = '<i class="fa-solid fa-hand-pointer" style="font-size:28px;margin-bottom:2px;"></i><span>נגיעה במסך מחברת את הפדל</span><span style="font-size:12px;font-weight:400;color:#94a3b8;">הקש בכל מקום להמשך</span>';
-      focusPrompt.appendChild(promptCard);
-
-      const handleOverlayDismiss = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        ensurePedalFocus();
-        dismissFocusPrompt();
-      };
-      focusPrompt.addEventListener('click', handleOverlayDismiss);
-      focusPrompt.addEventListener('touchend', handleOverlayDismiss);
-      document.body.appendChild(focusPrompt);
-    }
-
-    ['touchstart', 'touchend'].forEach(evt => {
+    ['touchstart', 'touchend', 'click'].forEach(evt => {
       document.addEventListener(evt, (e) => {
         if (e.target && e.target.tagName === 'INPUT' && e.target !== pedalFocusSink) return;
         ensurePedalFocus();
