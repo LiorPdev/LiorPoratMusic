@@ -10,6 +10,7 @@ const CORE_ASSETS = [
   'show/',
   'show/index.html',
   'show/manifest.json',
+  'show/show.css?v=2.0.2',
   'styles.css?v=2.0.1',
   'song.css?v=2.0.1',
   'songs.css?v=2.0.1',
