@@ -549,7 +549,7 @@ body.show-song pre {
   font-weight: 800 !important;
   line-height: var(--song-line-height, 1.6) !important;
   letter-spacing: 0.8px;
-  padding: 8px 4px 105px 2px !important;
+  padding: calc(64px + env(safe-area-inset-top, 0px)) max(4px, env(safe-area-inset-left, 0px)) calc(115px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-right, 0px)) !important;
   box-sizing: border-box !important;
   width: 100% !important;
   overflow-x: hidden !important;
@@ -616,8 +616,8 @@ body.show-song .toggle-btn.active {
 /* ── Show Mode Exit Button (Top-Left White X) ── */
 .show-exit-btn {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: calc(14px + env(safe-area-inset-left, 0px));
   z-index: 1000;
   width: 44px;
   height: 44px;
@@ -654,8 +654,8 @@ body.show-song .toggle-btn.active {
 
 .show-menu-trigger {
   position: fixed;
-  bottom: 60px;
-  left: 22px;
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  left: calc(20px + env(safe-area-inset-left, 0px));
   z-index: 1000;
   width: 60px;
   height: 60px;
@@ -1056,10 +1056,10 @@ body.show-song .credits {
 @media (max-width: 768px) {
   body.show-song pre {
     font-size: var(--song-font-size, 20px);
-    padding-top: 6px !important;
-    padding-bottom: 105px !important;
-    padding-right: 4px !important;
-    padding-left: 2px !important;
+    padding-top: calc(64px + env(safe-area-inset-top, 0px)) !important;
+    padding-bottom: calc(115px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-right: max(4px, env(safe-area-inset-right, 0px)) !important;
+    padding-left: max(4px, env(safe-area-inset-left, 0px)) !important;
   }
 }
 
