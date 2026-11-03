@@ -3,19 +3,13 @@ const PLAYLISTS = [
     name: "Drive",
     url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl",
     image: "../Media/playlists/drive.webp",
-    description: "פלייליסט לאוטו/לחג/כל מצב רוח",
+    description: "לנסיעה, לעבודה, לכל מצב רוח",
   },
   {
     name: "Quiet",
     url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU",
     image: "../Media/playlists/quiet.webp",
-    description: "ישראלי שקט ברקע",
-  },
-  {
-    name: "Indie",
-    url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
-    image: "../Media/playlists/Indie.webp",
-    description: "פולק/אינדי ישראלי רגוע",
+    description: "תנו לי קצת שקט 🎧",
   },
   {
     name: "Blues",
@@ -24,10 +18,10 @@ const PLAYLISTS = [
     description: "בלוז ישראלי לנשמה",
   },
   {
-    name: "Radio - Heb",
-    url: "https://open.spotify.com/playlist/5T7r6CHJZd5ifrkjbhKHJR",
-    image: "../Media/playlists/Radio IL Playlist.webp",
-    description: "מה שמושמע עכשיו ברדיו | ישראלי",
+    name: "Indie",
+    url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
+    image: "../Media/playlists/Indie.webp",
+    description: "פולק/אינדי ישראלי",
   },
   {
     name: "Rock",
@@ -39,19 +33,25 @@ const PLAYLISTS = [
     name: "Funky",
     url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb",
     image: "../Media/playlists/groove.webp",
-    description: "קצב טוב, פאנקי/גרוב שמח ומקפיץ",
+    description: "פאנקי/גרוב שמח ומקפיץ",
   },
   {
-    name: "Words",
-    url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq",
-    image: "../Media/playlists/words.webp",
-    description: "המילים עושות את השיר",
+    name: "Radio - Heb",
+    url: "https://open.spotify.com/playlist/5T7r6CHJZd5ifrkjbhKHJR",
+    image: "../Media/playlists/Radio IL Playlist.webp",
+    description: "מה שמושמע עכשיו ברדיו | ישראלי",
   },
   {
     name: "Radio - Heb/Eng",
     url: "https://open.spotify.com/playlist/7EMf0tuEIQHBPj3ol56LyV",
     image: "../Media/playlists/Radio All Playlist.webp",
     description: "מה שמושמע עכשיו ברדיו | ישראלי/לועזי",
+  },
+  {
+    name: "Words",
+    url: "https://open.spotify.com/playlist/4tf2K4dTwv7fHRttgGhjgq",
+    image: "../Media/playlists/words.webp",
+    description: "המילים עושות את השיר",
   },
 ];
 
