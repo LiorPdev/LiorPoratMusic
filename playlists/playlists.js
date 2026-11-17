@@ -4,48 +4,57 @@ const PLAYLISTS = [
     url: "https://open.spotify.com/playlist/6VOJdiNq1lGprqQLfOm7pl",
     image: "../Media/playlists/drive.webp",
     description: "לנסיעה, לעבודה, לכל מצב רוח",
+    badge: "מעל 2500 עוקבים",
   },
   {
     name: "Quiet",
     url: "https://open.spotify.com/playlist/2pItlRIEcNpVrdrNPvTJiU",
     image: "../Media/playlists/quiet.webp",
     description: "תנו לי קצת שקט 🎧",
+    badge: "מעל 3000 עוקבים",
   },
   {
     name: "Blues",
     url: "https://open.spotify.com/playlist/65wTGctt19zF9RWcopD5uq",
     image: "../Media/playlists/blues.webp",
     description: "בלוז ישראלי לנשמה",
+    badge: "מעל 1000 עוקבים",
   },
   {
     name: "Indie",
     url: "https://open.spotify.com/playlist/0qYgjCnqOmG1WyJ3nZf841",
     image: "../Media/playlists/Indie.webp",
     description: "פולק/אינדי ישראלי",
+    badge: "פלייליסט חדש",
   },
   {
     name: "Rock",
     url: "https://open.spotify.com/playlist/36YoT388ljvJSssrC0LUMK",
     image: "../Media/playlists/rock.webp",
     description: "לאוהבי רוק ישראלי קצבי",
+    badge: "מעל 1000 עוקבים",
   },
   {
     name: "Funky",
     url: "https://open.spotify.com/playlist/79qphBQwrMcGO0j91QioBb",
     image: "../Media/playlists/groove.webp",
     description: "פאנקי/גרוב שמח ומקפיץ",
+    badge: "מעל 500 עוקבים",
   },
   {
     name: "Radio - Heb",
     url: "https://open.spotify.com/playlist/5T7r6CHJZd5ifrkjbhKHJR",
     image: "../Media/playlists/Radio IL Playlist.webp",
     description: "מה שמושמע עכשיו ברדיו | ישראלי",
+    badge: "פלייליסט חדש",
   },
   {
     name: "Radio - Heb/Eng",
     url: "https://open.spotify.com/playlist/7EMf0tuEIQHBPj3ol56LyV",
     image: "../Media/playlists/Radio All Playlist.webp",
     description: "מה שמושמע עכשיו ברדיו | ישראלי/לועזי",
+    badge: "פלייליסט חדש",
+    badge: "פלייליסט חדש",
   },
   {
     name: "Words",
@@ -112,7 +121,7 @@ function openInApp(playlistUrl) {
   }, 1500);
 }
 
-function cardTemplate({ name, url, thumbnail, description }) {
+function cardTemplate({ name, url, thumbnail, description, badge }) {
   const id = toId(url);
   const img = thumbnail || "";
   return `
@@ -123,6 +132,7 @@ function cardTemplate({ name, url, thumbnail, description }) {
       ? `<img class="img" alt="${name}" src="${img}" loading="lazy" width="512" height="512">`
       : `<div class="skeleton" aria-hidden="true"></div>`
     }
+        ${badge ? `<span class="badge">${badge}</span>` : ""}
         <span class="btn">האזנה בספוטיפיי</span>
       </div>
     </article>
